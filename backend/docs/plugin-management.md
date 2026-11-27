@@ -126,3 +126,18 @@ A V2 send-delay guest is called once per complete outgoing segment with
 pending timers. The generic host uses the existing physical work admission,
 exact generation predicate and instance-bound call, without adding a worker or
 a second work registry.
+
+### External public webpage GET preview
+
+`make -C backend wasm-web-read-get-package WEB_READ_GET_PACKAGE_DIR=/tmp/web-read`
+builds an independent, default-disabled `web-read.v2.json` and WASM pair.
+Install the manifest via the ordinary external plugin mechanism; the
+`external-only` preview image embeds neither this plugin nor the old candidate.
+
+This scoped package exposes only `web-read.read`. Native code owns URL and
+destination admission, DNS pinning, HTTP GET framing, redirects and physical
+socket lifetime. The guest interprets the inert preview; Planner sees
+extracted text and a cache reference, not a duplicate of the raw preview.
+`tool-results.read` can read the complete original entity by byte range without
+another GET. Structured requests, sends, and search providers are not part of
+this package. The default compatibility distribution is unchanged.

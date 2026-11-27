@@ -1,0 +1,96 @@
+name: Go external public webpage receipt
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/refactor-golang]
+    paths:
+      - '.github/workflows/golang-package-public-page.yml'
+      - 'backend/internal/app/external_web_read_test.go'
+      - 'backend/internal/pluginmanager/public_get.go'
+      - 'backend/internal/pluginmanager/external_v2.go'
+      - 'backend/internal/publicpage/**'
+      - 'backend/plugins/web-read/**'
+
+permissions:
+  contents: read
+
+jobs:
+  public-page:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build separate public GET guest and native test environment
+        run: |
+          make -C backend wasm-web-read-get-package WEB_READ_GET_PACKAGE_DIR="$RUNNER_TEMP/independent-page-plugin"
+          docker build --platform linux/amd64 --target build -f backend/packaging/runtime-preview/Dockerfile -t humanengine-page-fixture:local .
+          mkdir "$RUNNER_TEMP/page-test-build"
+          docker run --rm \
+            --mount "type=bind,source=$RUNNER_TEMP/page-test-build,target=/page-test-build" \
+            --entrypoint sh humanengine-page-fixture:local -ec '
+              cd /src/backend
+              . .native-build/icu/env.sh
+              go test -race -tags sqlite_fts5,humanengine_icu -c -o /page-test-build/page-fixture ./internal/app
+            '
+      - name: Prove real Planner preview and exact bytes from one origin request
+        run: |
+          set -euo pipefail
+          net="he-public-page-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          peer="$net-peer"
+          proof="$RUNNER_TEMP/page-receipt.txt"
+          cleanup() {
+            docker rm -f "$peer" >/dev/null 2>&1 || true
+            docker network rm "$net" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          # Only a synthetic peer can be contacted; the host still applies its
+          # normal public-IP admission and literal dial within this bridge.
+          docker network create --internal --subnet 192.0.1.0/29 "$net"
+          docker run -d --name "$peer" --network "$net" --ip 192.0.1.2 \
+            --entrypoint node humanengine-page-fixture:local -e '
+            const http = require("node:http");
+            const html = "<html><head><title>Fixture title</title></head><body><h1>Public fixture heading</h1><p>" +
+              "x".repeat(9000) + "缓存中的准确字节" + "</p></body></html>";
+            http.createServer((req, res) => {
+              if (req.method !== "GET" || req.url !== "/manual.html" || req.headers.cookie || req.headers.authorization) {
+                console.log("unexpected-request");
+                res.writeHead(400).end(); return;
+              }
+              console.log("page-get");
+              res.writeHead(200, {"content-type": "text/html; charset=utf-8", "content-length": Buffer.byteLength(html)}).end(html);
+            }).listen(41288,"0.0.0.0",()=>console.log("ready"));
+          '
+          for attempt in {1..50}; do
+            if docker logs "$peer" | grep -qx ready; then break; fi
+            sleep 0.1
+          done
+          docker logs "$peer" | grep -qx ready
+          docker run --rm --network "$net" \
+            --mount "type=bind,source=$RUNNER_TEMP/independent-page-plugin,target=/independent-page-plugin,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/page-test-build,target=/page-test-build,readonly" \
+            -e HE_PAGE_PACKAGE=/independent-page-plugin \
+            -e HE_PAGE_ORIGIN=http://192.0.1.2:41288/manual.html \
+            -e HE_SOURCE_ROOT=/src \
+            -e HE_IMAGE_LIBRARY=/src/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7 \
+            --entrypoint sh humanengine-page-fixture:local -ec '
+              cd /src/backend/internal/app
+              /page-test-build/page-fixture -test.v -test.run "^TestInstalledPublicPagePreviewAndByteRange$"
+            ' | tee "$proof"
+          grep -Fq "preview-and-range" "$proof"
+          test "$(docker logs "$peer" | grep -cx page-get)" = 1
+          ! docker logs "$peer" | grep -q unexpected-request
+          printf '%s\n' 'one-origin-get-exact-cached-range' | tee -a "$proof"
+      - name: Preserve synthetic page evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-public-webpage-receipt
+          path: ${{ runner.temp }}/page-receipt.txt
+          if-no-files-found: ignore

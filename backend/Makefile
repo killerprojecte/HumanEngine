@@ -339,3 +339,12 @@ wasm-typing-delay-package:
 	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
 		-o "$(TYPING_DELAY_PACKAGE_DIR)/typing-delay.wasm" ./plugins/typing-delay/wasm
 	$(PYTHON) -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); m=json.loads(pathlib.Path("plugins/typing-delay/manifest.json").read_text()); m["artifact"]="typing-delay.wasm"; m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"typing-delay.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(TYPING_DELAY_PACKAGE_DIR)"
+
+# Separate opt-in webpage GET guest, not the experimental structured/send guest.
+WEB_READ_GET_PACKAGE_DIR ?= plugins/web-read/dist/public-get
+.PHONY: wasm-web-read-get-package
+wasm-web-read-get-package:
+	mkdir -p "$(WEB_READ_GET_PACKAGE_DIR)"
+	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -tags web_read_public_get -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
+		-o "$(WEB_READ_GET_PACKAGE_DIR)/web-read.wasm" ./plugins/web-read/wasm
+	$(PYTHON) -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); m=json.loads(pathlib.Path("plugins/web-read/manifest.json").read_text()); m.update(artifact="web-read.wasm", toolWire="public-get-v1", description="Read public webpages and retrieve original bytes from the turn cache."); m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"web-read.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(WEB_READ_GET_PACKAGE_DIR)"

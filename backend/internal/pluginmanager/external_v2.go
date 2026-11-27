@@ -53,8 +53,10 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 	manifest, ok := parsed.(*jsjson.Object)
 	capabilities, _ := prop(manifest, "capabilities").([]any)
 	sendDelay := len(capabilities) == 2 && slices.Contains(capabilities, "send-delay") && slices.Contains(capabilities, "schema-form")
+	publicGET := len(capabilities) == 2 && slices.Contains(capabilities, "tool") &&
+		slices.Contains(capabilities, "schema-form") && text(manifest, "toolWire") == "public-get-v1"
 	if !ok || !validID(text(manifest, "id")) || text(manifest, "name") == "" || text(manifest, "version") == "" ||
-		(!sendDelay && (len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter"))) {
+		(!sendDelay && !publicGET && (len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter"))) {
 		return errors.New("external_v2_manifest_invalid")
 	}
 	artifact := text(manifest, "artifact")
@@ -84,6 +86,13 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 			return errors.New("external_v2_send_delay_schema_invalid")
 		}
 		binding.Schema, binding.Start = schema, m.StartSendDelay
+	case publicGET:
+		schema, _ := rawSchema.(*jsjson.Object)
+		if text(schema, "type") != "object" || schemaDeclaresSecret(schema) {
+			return errors.New("external_v2_public_get_schema_invalid")
+		}
+		binding.Schema, binding.Start = schema, m.startExternalPublicGET
+		manifest.Delete("toolWire")
 	case hasSchema:
 		return errors.New("external_v2_configuration_unsupported")
 	case capabilities[0] == "adapter":

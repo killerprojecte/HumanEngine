@@ -1,4 +1,4 @@
-//go:build web_read_candidate
+//go:build web_read_candidate || web_read_public_get
 
 package webread
 

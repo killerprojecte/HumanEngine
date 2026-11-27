@@ -28,14 +28,32 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if pkg == "" {
 		t.Skip("explicit independent web search package required")
 	}
-	bing := strings.HasPrefix(mode, "bing-")
-	mode = strings.TrimPrefix(mode, "bing-")
-	provider, host := "tavily", "api.tavily.com"
+	provider, parsedMode, external := strings.Cut(mode, "-")
+	if external {
+		mode = parsedMode
+	} else {
+		provider = "tavily"
+	}
+	host, key, clear := "api.tavily.com", "tavilyKey", "clearTavilyKey"
+	secret, snippet := "synthetic-tavily-key", "Fixture snippet"
 	prefix := `{"results":[{"title":"Fixture result","url":"https://example.com/doc","content":"Fixture snippet"}],"payload":"`
-	if bing {
-		provider, host = "bing", "www.bing.com"
+	switch provider {
+	case "tavily":
+	case "bing":
+		host = "www.bing.com"
 		// The synthetic peer uses the normal Bing tracking wrapper.
 		prefix = `<html><ol><li class="b_algo"><h2><a href="/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS9kb2M">Fixture result</a></h2><div class="b_caption">Fixture snippet</div></li></ol><div>`
+	case "deepseek":
+		host, key, clear, secret = "api.deepseek.com", "deepseekKey", "clearDeepseekKey", "synthetic-deepseek-key"
+		prefix = `{"results":[{"title":"Fixture result","url":"https://example.com/doc","snippet":"Fixture snippet"}],"payload":"`
+	case "you", "you_news":
+		host, key, clear, secret = "ydc-index.io", "youKey", "clearYouKey", "synthetic-you-key"
+		prefix = `{"results":{"web":[{"title":"Fixture result","url":"https://example.com/doc","snippets":["Fixture snippet"]}],"news":[{"title":"Fixture result","url":"https://example.com/doc","description":"Fixture news snippet"}]},"payload":"`
+		if provider == "you_news" {
+			snippet = "Fixture news snippet"
+		}
+	default:
+		t.Fatal("unsupported fixture provider", provider)
 	}
 	switch mode {
 	case "private":
@@ -48,7 +66,6 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 		t.Fatal("missing explicit search fixture mode")
 	}
 	const id = "web-search"
-	const secret = "synthetic-tavily-key"
 	const tail = "搜索缓存里的原始字节"
 	offset := len(prefix) + 9000
 	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
@@ -73,13 +90,13 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if len(catalog) != 1 || field(catalog[0], "id") != id || field(catalog[0], "builtin") != false || field(catalog[0], "enabled") != false {
 		t.Fatal("not an independent default-disabled package", catalog)
 	}
-	if field(field(catalog[0], "configuredSecrets"), "tavilyKey") != false {
+	if field(field(catalog[0], "configuredSecrets"), key) != false {
 		t.Fatal("fixture starts without a key")
 	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"provider": provider, "tavilyKey": secret})
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"provider": provider, key: secret})
 	config := appRequest(t, a, http.MethodGet, "/api/plugins/web-search/config", nil)
 	catalog = appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
-	if field(config, "tavilyKey") != nil || field(field(catalog[0], "configuredSecrets"), "tavilyKey") != true {
+	if field(config, key) != nil || field(field(catalog[0], "configuredSecrets"), key) != true {
 		t.Fatal("key did not remain write-only")
 	}
 	db, err := sql.Open("sqlite3", a.options.Installation.Database)
@@ -88,15 +105,15 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	}
 	defer db.Close()
 	var ciphertext, stored string
-	if err := db.QueryRowContext(ctx, `SELECT ciphertext FROM secrets WHERE namespace='plugin:web-search' AND name='tavilyKey'`).Scan(&ciphertext); err != nil ||
+	if err := db.QueryRowContext(ctx, `SELECT ciphertext FROM secrets WHERE namespace='plugin:web-search' AND name=?`, key).Scan(&ciphertext); err != nil ||
 		ciphertext == "" || strings.Contains(ciphertext, secret) {
 		t.Fatal("key not encrypted in plugin namespace", err)
 	}
 	if err := db.QueryRowContext(ctx, `SELECT value FROM config WHERE key='plugin:web-search'`).Scan(&stored); err != nil || strings.Contains(stored, secret) {
 		t.Fatal("ordinary configuration stored a key", err)
 	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"tavilyKey": "", "maxResults": 2})
-	if bing {
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{key: "", "maxResults": 2})
+	if provider == "bing" {
 		for _, changes := range []map[string]any{
 			{"allowExperimentalHtml": false},
 			{"allowExperimentalHtml": true, "fallbackProvider": "tavily"},
@@ -195,7 +212,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 			} else {
 				if result.Status != "ok" || result.BodyProvider != provider || len(result.Results) != 1 ||
 					result.Results[0].Provider != provider || result.Results[0].Title != "Fixture result" ||
-					result.Results[0].URL != "https://example.com/doc" || result.Results[0].Snippet != "Fixture snippet" ||
+					result.Results[0].URL != "https://example.com/doc" || result.Results[0].Snippet != snippet ||
 					result.Body.ResultID == "" || result.Body.TotalBytes <= int64(offset) || strings.Contains(result.Body.Content, tail) {
 					http.Error(w, "wrong search result or body reference", 400)
 					return
@@ -262,9 +279,9 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if a.WASM.Loaded(id) {
 		t.Fatal("retired guest remains loaded")
 	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"clearTavilyKey": true})
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{clear: true})
 	catalog = appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
-	if field(field(catalog[0], "configuredSecrets"), "tavilyKey") != false {
+	if field(field(catalog[0], "configuredSecrets"), key) != false {
 		t.Fatal("disabled plugin could not clear its credential")
 	}
 }

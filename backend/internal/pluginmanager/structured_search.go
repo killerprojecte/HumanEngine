@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,23 +24,28 @@ type structuredRoute struct {
 	credential string
 	clear      string
 	consent    string
+	authHeader string
 }
 
 func (m *Manager) bindStructuredSearch(id string, schema, route *jsjson.Object) (V2AdapterBinding, error) {
 	endpoint, err := parseStructuredEndpoint(text(route, "endpoint"))
 	out := structuredRoute{endpoint: endpoint, provider: text(route, "provider"), credential: text(route, "credential"), clear: text(route, "clear")}
 	out.consent = text(route, "consent")
+	out.authHeader = text(route, "authHeader")
 	properties, _ := prop(schema, "properties").(*jsjson.Object)
+	providerField, _ := prop(properties, "provider").(*jsjson.Object)
+	providers, _ := prop(providerField, "enum").([]any)
 	keyField, _ := prop(properties, out.credential).(*jsjson.Object)
 	clearField, _ := prop(properties, out.clear).(*jsjson.Object)
 	consentField, _ := prop(properties, out.consent).(*jsjson.Object)
 	method := text(route, "method")
-	if err != nil || m.credentials == nil || !validID(out.provider) ||
+	if err != nil || m.credentials == nil || out.provider == "" || !slices.Contains(providers, any(out.provider)) ||
 		out.credential == "" || out.clear == "" ||
 		text(schema, "type") != "object" || prop(schema, "additionalProperties") != false || prop(schema, "secret") == true ||
 		text(keyField, "type") != "string" || prop(keyField, "secret") != true ||
 		text(clearField, "type") != "boolean" ||
 		(method != "" && method != http.MethodGet) ||
+		(out.authHeader != "" && (method != "" || out.authHeader != "X-API-Key")) ||
 		(method == http.MethodGet && text(consentField, "type") != "boolean") ||
 		(method == "" && out.consent != "") {
 		return V2AdapterBinding{}, errors.New("external_v2_structured_configuration_invalid")
@@ -137,7 +143,7 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 	if err != nil {
 		return nil, err
 	}
-	owner := newStructuredTransport(in.Life, route.endpoint, key)
+	owner := newStructuredTransport(in.Life, route.endpoint, route.authHeader, key)
 	request, defaultType := owner.post, "application/json"
 	if route.consent != "" {
 		request, defaultType = owner.get, "text/html"

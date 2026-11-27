@@ -17,14 +17,23 @@ import (
 )
 
 func TestStructuredTransportFixedTLSAndStream(t *testing.T) {
-	const secret = "synthetic-tavily-key"
+	t.Run("bearer", func(t *testing.T) { testStructuredTransportFixedTLSAndStream(t, "") })
+	t.Run("x-api-key", func(t *testing.T) { testStructuredTransportFixedTLSAndStream(t, "X-API-Key") })
+}
+
+func testStructuredTransportFixedTLSAndStream(t *testing.T, header string) {
+	const secret = "synthetic-provider-key"
+	wantBearer, wantAPIKey := "Bearer "+secret, ""
+	if header == "X-API-Key" {
+		wantBearer, wantAPIKey = "", secret
+	}
 	var hits, dials atomic.Int32
 	var endpoint atomic.Bool
 	entity := `{"results":[],"payload":"` + strings.Repeat("x", 9000) + "保存的原始字节" + `"}`
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits.Add(1)
 		if r.Host != "example.com" || r.Method != "POST" || r.URL.Path != "/search" ||
-			r.Header.Get("Authorization") != "Bearer "+secret || r.Header.Get("Cookie") != "" ||
+			r.Header.Get("Authorization") != wantBearer || r.Header.Get("X-API-Key") != wantAPIKey || r.Header.Get("Cookie") != "" ||
 			r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("unexpected provider request metadata: %s %s %s", r.Host, r.Method, r.URL.Path)
 		}
@@ -46,7 +55,7 @@ func TestStructuredTransportFixedTLSAndStream(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner := newStructuredTransport(t.Context(), route, secret)
+	owner := newStructuredTransport(t.Context(), route, header, secret)
 	tlsConfig := server.Client().Transport.(*http.Transport).TLSClientConfig.Clone()
 	owner.pool.TLSClientConfig = tlsConfig // httptest's synthetic CA and example.com SAN.
 	owner.pool.DialContext = func(ctx context.Context, family, address string) (net.Conn, error) {
@@ -112,7 +121,7 @@ func TestStructuredTransportRefusesPrivateAddressBeforeAuthentication(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner := newStructuredTransport(t.Context(), route, "synthetic-tavily-key")
+	owner := newStructuredTransport(t.Context(), route, "", "synthetic-tavily-key")
 	defer owner.Dispose()
 	_, err = owner.post(t.Context(), []byte(`{}`))
 	if err == nil || !strings.Contains(err.Error(), "structured_address_not_public") {
@@ -143,7 +152,7 @@ func TestStructuredHTMLGETOnlyUsesTheFixedOrigin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner := newStructuredTransport(t.Context(), endpoint, "synthetic-never-use")
+	owner := newStructuredTransport(t.Context(), endpoint, "", "synthetic-never-use")
 	defer owner.CloseAndWait(t.Context())
 	owner.pool.TLSClientConfig = tls.Client().Transport.(*http.Transport).TLSClientConfig.Clone()
 	owner.pool.DialContext = func(ctx context.Context, network, _ string) (net.Conn, error) {

@@ -1,0 +1,21 @@
+{
+  "description": "deepseek structured API only. Queries go to https://api.deepseek.com/v1/tools/search. This external Go profile has no HTML providers or fallback.",
+  "toolWire": "structured-search-v1",
+  "service": {
+    "provider": "deepseek",
+    "endpoint": "https://api.deepseek.com/v1/tools/search",
+    "credential": "deepseekKey",
+    "clear": "clearDeepseekKey"
+  },
+  "properties": [
+    "provider",
+    "fallbackProvider",
+    "allowExperimentalHtml",
+    "maxResults",
+    "timeoutMs",
+    "maxResponseBytes",
+    "maxConcurrency",
+    "deepseekKey",
+    "clearDeepseekKey"
+  ]
+}

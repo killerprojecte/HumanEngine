@@ -1,0 +1,22 @@
+{
+  "description": "you structured API only. Queries go to https://ydc-index.io/v1/search. This external Go profile has no HTML providers or fallback.",
+  "toolWire": "structured-search-v1",
+  "service": {
+    "provider": "you",
+    "endpoint": "https://ydc-index.io/v1/search",
+    "credential": "youKey",
+    "clear": "clearYouKey",
+    "authHeader": "X-API-Key"
+  },
+  "properties": [
+    "provider",
+    "fallbackProvider",
+    "allowExperimentalHtml",
+    "maxResults",
+    "timeoutMs",
+    "maxResponseBytes",
+    "maxConcurrency",
+    "youKey",
+    "clearYouKey"
+  ]
+}

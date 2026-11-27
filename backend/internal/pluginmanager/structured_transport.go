@@ -33,15 +33,19 @@ func parseStructuredEndpoint(raw string) (structuredEndpoint, error) {
 var structuredResolver = &net.Resolver{PreferGo: true}
 
 type structuredTransport struct {
-	endpoint structuredEndpoint
-	auth     string
-	life     context.Context
-	pool     *http.Transport
-	dials    quiescence.Group
+	endpoint   structuredEndpoint
+	authHeader string
+	auth       string
+	life       context.Context
+	pool       *http.Transport
+	dials      quiescence.Group
 }
 
-func newStructuredTransport(life context.Context, endpoint structuredEndpoint, key string) *structuredTransport {
-	s := &structuredTransport{endpoint: endpoint, auth: "Bearer " + key, life: life}
+func newStructuredTransport(life context.Context, endpoint structuredEndpoint, header, key string) *structuredTransport {
+	if header == "" {
+		header, key = "Authorization", "Bearer "+key
+	}
+	s := &structuredTransport{endpoint: endpoint, authHeader: header, auth: key, life: life}
 	s.pool = &http.Transport{
 		DialContext: s.dial, ForceAttemptHTTP2: true,
 		TLSHandshakeTimeout: 10 * time.Second, IdleConnTimeout: 90 * time.Second,
@@ -94,7 +98,7 @@ func (s *structuredTransport) post(ctx context.Context, body []byte) (*http.Resp
 	}
 	// A consumed, possibly charged POST is not replayable.
 	req.GetBody = nil
-	req.Header.Set("Authorization", s.auth)
+	req.Header.Set(s.authHeader, s.auth)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	// RoundTrip never follows a redirect. The pool's standard gzip handling

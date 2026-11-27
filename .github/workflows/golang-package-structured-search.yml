@@ -35,6 +35,9 @@ jobs:
         run: |
           make -C backend wasm-web-search-structured-package WEB_SEARCH_STRUCTURED_PACKAGE_DIR="$RUNNER_TEMP/independent-search-plugin"
           make -C backend wasm-web-search-bing-package WEB_SEARCH_BING_PACKAGE_DIR="$RUNNER_TEMP/independent-bing-plugin"
+          for provider in deepseek you you_news; do
+            make -C backend wasm-web-search-structured-package WEB_SEARCH_PROFILE="$provider-profile.json" WEB_SEARCH_STRUCTURED_PACKAGE_DIR="$RUNNER_TEMP/independent-$provider-plugin"
+          done
           docker build --platform linux/amd64 --target build -f backend/packaging/runtime-preview/Dockerfile -t humanengine-search-fixture:local .
           mkdir "$RUNNER_TEMP/search-test-build"
           docker run --rm \
@@ -44,7 +47,7 @@ jobs:
               . .native-build/icu/env.sh
               go test -race -tags sqlite_fts5,humanengine_icu -c -o /search-test-build/search-fixture ./internal/app
             '
-      - name: Prove Planner citations, write-only settings, and exact cached bytes with one TLS POST
+      - name: Prove Planner citations, write-only settings, and exact cached bytes against isolated TLS fixtures
         run: |
           set -euo pipefail
           net="he-search-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -53,7 +56,7 @@ jobs:
           cert="$RUNNER_TEMP/search-fixture-cert"
           mkdir "$cert"
           openssl req -x509 -newkey rsa:2048 -noenc -days 1 -subj /CN=api.tavily.com \
-            -addext subjectAltName=DNS:api.tavily.com,DNS:www.bing.com -keyout "$cert/key.pem" -out "$cert/cert.pem" >/dev/null 2>&1
+            -addext subjectAltName=DNS:api.tavily.com,DNS:www.bing.com,DNS:api.deepseek.com,DNS:ydc-index.io -keyout "$cert/key.pem" -out "$cert/cert.pem" >/dev/null 2>&1
           trap 'docker rm -f "$peer" >/dev/null 2>&1 || true; docker network rm "$net" >/dev/null 2>&1 || true' EXIT
           docker network create --internal --subnet 192.0.1.0/29 "$net"
           docker run -d --name "$peer" --network "$net" --ip 192.0.1.2 \
@@ -78,7 +81,7 @@ jobs:
                   const url = new URL(req.url, "https://www.bing.com");
                   if (req.method !== "GET" || url.pathname !== "/search" ||
                       JSON.stringify([...url.searchParams]) !== JSON.stringify([["q","Go 搜索"]]) ||
-                      req.headers.authorization || req.headers.cookie || req.headers.accept !== "text/html" || chunks.length) {
+                      req.headers.authorization || req.headers["x-api-key"] || req.headers.cookie || req.headers.accept !== "text/html" || chunks.length) {
                     throw Error("wrong Bing fixture request");
                   }
                   console.log("bing-get");
@@ -86,8 +89,28 @@ jobs:
                   return;
                 }
                 const input = JSON.parse(Buffer.concat(chunks));
+                const host = req.headers.host;
+                if (host === "api.deepseek.com" || host === "ydc-index.io") {
+                  const deepseek = host === "api.deepseek.com";
+                  if (req.method !== "POST" || req.url !== (deepseek ? "/v1/tools/search" : "/v1/search") ||
+                      req.headers.authorization !== (deepseek ? "Bearer synthetic-deepseek-key" : undefined) ||
+                      req.headers["x-api-key"] !== (deepseek ? undefined : "synthetic-you-key") ||
+                      req.headers.cookie || req.headers["content-type"] !== "application/json" ||
+                      Object.keys(input).length !== (deepseek ? 3 : 2) ||
+                      input.query !== "Go 搜索" || input.count !== 2 || (deepseek && input.need_content !== false)) {
+                    throw Error("wrong JSON provider request");
+                  }
+                  const row = {title:"Fixture result",url:"https://example.com/doc"};
+                  const results = deepseek ? [{...row,snippet:"Fixture snippet"}] : {
+                    web:[{...row,snippets:["Fixture snippet"]}],news:[{...row,description:"Fixture news snippet"}]
+                  };
+                  const entity = zlib.gzipSync(JSON.stringify({results,payload:"x".repeat(9000)+"搜索缓存里的原始字节"}));
+                  console.log(deepseek ? "deepseek-post" : "you-post");
+                  res.writeHead(200, {"content-type":"application/json","content-encoding":"gzip","content-length":entity.length}).end(entity);
+                  return;
+                }
                 if (req.method !== "POST" || req.headers.host !== "api.tavily.com" || req.url !== "/search" ||
-                    req.headers.authorization !== "Bearer synthetic-tavily-key" || req.headers.cookie ||
+                    req.headers.authorization !== "Bearer synthetic-tavily-key" || req.headers["x-api-key"] || req.headers.cookie ||
                     req.headers["content-type"] !== "application/json" ||
                     input.query !== "Go 搜索" || input.max_results !== 2 || input.search_depth !== "basic" ||
                     input.include_answer !== false || input.include_raw_content !== false || input.auto_parameters !== false) {
@@ -139,6 +162,26 @@ jobs:
           test "$(docker logs "$peer" | grep -cx search-post)" = 1
           ! docker logs "$peer" | grep -q unexpected-request
           printf '%s\n' 'one-bing-get-no-credentials-or-fallback-exact-cached-range' | tee -a "$proof"
+          for provider in deepseek you you_news; do
+            if [ "$provider" = deepseek ]; then host=api.deepseek.com; else host=ydc-index.io; fi
+            docker run --rm --network "$net" --add-host "$host:192.0.1.2" \
+              --mount "type=bind,source=$cert/cert.pem,target=/fixture-cert.pem,readonly" \
+              --mount "type=bind,source=$RUNNER_TEMP/independent-$provider-plugin,target=/independent-search-plugin,readonly" \
+              --mount "type=bind,source=$RUNNER_TEMP/search-test-build,target=/search-test-build,readonly" \
+              -e SSL_CERT_FILE=/fixture-cert.pem \
+              -e HE_SEARCH_PACKAGE=/independent-search-plugin -e HE_SEARCH_MODE="$provider-fixture" \
+              -e HE_SOURCE_ROOT=/src \
+              -e HE_IMAGE_LIBRARY=/src/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7 \
+              --entrypoint sh humanengine-search-fixture:local -ec '
+                cd /src/backend/internal/app
+                /search-test-build/search-fixture -test.v -test.run "^TestInstalledStructuredSearchAndByteRange$"
+              ' | tee -a "$proof"
+            grep -Fq "$provider-structured-search-and-range" "$proof"
+          done
+          test "$(docker logs "$peer" | grep -cx deepseek-post)" = 1
+          test "$(docker logs "$peer" | grep -cx you-post)" = 2
+          ! docker logs "$peer" | grep -q unexpected-request
+          printf '%s\n' 'three-json-provider-routes-with-exact-credential-headers' | tee -a "$proof"
       - name: Prove existing TypeScript search settings and enablement survive Go and rollback
         run: |
           set -euo pipefail

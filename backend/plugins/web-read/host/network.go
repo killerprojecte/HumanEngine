@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/httpwire"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 )
 
@@ -166,13 +167,6 @@ func (n Network) resolve(ctx context.Context, h hop) (wireAddress, error) {
 	}
 	return chosen.Address, e
 }
-func latin1(s string) string {
-	var out strings.Builder
-	for _, b := range []byte(s) {
-		out.WriteRune(rune(b))
-	}
-	return out.String()
-}
 func wireLatin1(s string) []byte {
 	out := make([]byte, 0, len(s))
 	for _, r := range s {
@@ -235,7 +229,7 @@ func (n Network) open(ctx context.Context, h hop, address wireAddress) (Resource
 	finish = func() { baseFinish(); <-writeDone }
 	reader := bufio.NewReader(conn)
 	for {
-		response, remaining, fields, err := readResponse(reader, state.Method)
+		response, remaining, rawHeaders, err := httpwire.ReadResponse(reader, state.Method)
 		if err != nil {
 			return fail(networkIOError(ctx))
 		}
@@ -249,10 +243,6 @@ func (n Network) open(ctx context.Context, h hop, address wireAddress) (Resource
 		if response.StatusCode >= 100 && response.StatusCode < 200 {
 			reader = remaining
 			continue
-		}
-		rawHeaders := []string{}
-		for _, f := range fields {
-			rawHeaders = append(rawHeaders, latin1(f.name), latin1(strings.TrimRight(f.value, " \t")))
 		}
 		var normalized struct {
 			Headers     map[string]any `json:"headers"`

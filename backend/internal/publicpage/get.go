@@ -3,9 +3,11 @@ package publicpage
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"net"
@@ -16,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/httpwire"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 	"github.com/killerprojecte/HumanEngine/backend/internal/publicip"
@@ -46,10 +49,11 @@ type Fetcher struct {
 // Response streams the HTTP entity bytes without decoding Content-Encoding.
 // A caller must call Finish even if it does not consume the stream.
 type Response struct {
-	URL    string
-	Status int
-	Header http.Header
-	Body   *Body
+	URL        string
+	Status     int
+	Header     http.Header
+	RawHeaders []string
+	Body       *Body
 }
 
 func (f Fetcher) Get(ctx context.Context, locator string) (Response, error) {
@@ -58,7 +62,7 @@ func (f Fetcher) Get(ctx context.Context, locator string) (Response, error) {
 		return Response{}, ErrURL
 	}
 	for redirects := 0; ; redirects++ {
-		response, err := f.open(ctx, u)
+		response, err := f.open(ctx, u, requestPlan{method: http.MethodGet, headers: http.Header{"User-Agent": {""}}})
 		if err != nil {
 			return Response{}, err
 		}
@@ -114,7 +118,7 @@ func (f Fetcher) address(ctx context.Context, host string) (netip.Addr, error) {
 	return chosen, nil
 }
 
-func (f Fetcher) open(ctx context.Context, u *whatwg.Url) (Response, error) {
+func (f Fetcher) open(ctx context.Context, u *whatwg.Url, plan requestPlan) (Response, error) {
 	rawPath := u.Pathname()
 	path, err := url.PathUnescape(rawPath)
 	if err != nil {
@@ -146,15 +150,58 @@ func (f Fetcher) open(ctx context.Context, u *whatwg.Url) (Response, error) {
 	if err != nil {
 		return Response{}, requestError(ctx)
 	}
+	req := &http.Request{Method: plan.method, Host: u.Host(), URL: reqURL, Header: plan.headers, Close: true}
+	if len(plan.body) != 0 {
+		req.Body, req.ContentLength = io.NopCloser(bytes.NewReader(plan.body)), int64(len(plan.body))
+		writeDone := make(chan struct{})
+		go func() {
+			defer close(writeDone)
+			if err := req.Write(conn); err != nil {
+				stop()
+			}
+		}()
+		joinSocket := finish
+		finish = func() { joinSocket(); <-writeDone }
+	} else {
+		write := req.Write
+		if plan.hasBody {
+			write = func(w io.Writer) error {
+				// net/http omits Content-Length for GET with an empty body.
+				// Preserve the explicit zero-length envelope instead.
+				out := bufio.NewWriter(w)
+				fmt.Fprintf(out, "%s %s HTTP/1.1\r\nHost: %s\r\nContent-Length: 0\r\nConnection: close\r\n", req.Method, req.URL.RequestURI(), req.Host)
+				headers := req.Header
+				if headers.Get("User-Agent") == "" {
+					headers = headers.Clone()
+					headers.Del("User-Agent")
+				}
+				_ = headers.Write(out)
+				_, _ = out.WriteString("\r\n")
+				return out.Flush()
+			}
+		}
+		if ctx.Err() != nil || write(conn) != nil {
+			finish()
+			return Response{}, requestError(ctx)
+		}
+	}
+
+	if plan.ordered {
+		reader := bufio.NewReader(conn)
+		for {
+			response, next, raw, err := httpwire.ReadResponse(reader, plan.method)
+			if err != nil || response.StatusCode == http.StatusSwitchingProtocols {
+				finish()
+				return Response{}, requestError(ctx)
+			}
+			if response.StatusCode >= 200 {
+				return Response{URL: u.Href(false), Status: response.StatusCode, Header: response.Header,
+					RawHeaders: raw, Body: &Body{reader: response.Body, stop: stop, join: finish}}, nil
+			}
+			reader = next
+		}
+	}
 	fail := func(err error) (Response, error) { finish(); return Response{}, err }
-	if err := ctx.Err(); err != nil {
-		return fail(err)
-	}
-	req := &http.Request{Method: http.MethodGet, Host: u.Host(), URL: reqURL,
-		Header: http.Header{"User-Agent": {""}}, Close: true}
-	if err := req.Write(conn); err != nil {
-		return fail(requestError(ctx))
-	}
 	limit := &io.LimitedReader{R: conn, N: headerBytes}
 	reader := bufio.NewReader(limit)
 	for {
@@ -188,6 +235,7 @@ type Body struct {
 	mu         sync.Mutex
 	reader     io.ReadCloser
 	pending    error
+	chunk      [32768]byte
 	stop, join func()
 	once       sync.Once
 }
@@ -201,11 +249,10 @@ func (b *Body) Next(ctx context.Context) ([]byte, error) {
 	if b.pending != nil {
 		return nil, b.pending
 	}
-	buf := make([]byte, 32*1024)
-	n, err := b.reader.Read(buf)
+	n, err := b.reader.Read(b.chunk[:])
 	if n > 0 {
 		b.pending = err
-		return buf[:n], nil
+		return b.chunk[:n], nil
 	}
 	return nil, err
 }

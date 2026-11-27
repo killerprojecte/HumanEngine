@@ -112,7 +112,7 @@ func Invoke(input []byte) any {
 	switch in.Operation {
 	case "networkHeaders", "networkPrepare", "networkChoose", "networkRedirect":
 		return runtimeInvoke(input, in.Operation)
-	case "registrations", "plan", "cachePolicy", "response", "error", "configurationValidate", "toolValidate", "publicGetRegistrations", "publicGetResponse":
+	case "registrations", "plan", "cachePolicy", "response", "error", "configurationValidate", "toolValidate", "publicGetRegistrations", "publicGetResponse", "publicRequestRegistrations", "publicRequestResponse":
 		return runtimeInvoke(input, in.Operation)
 	case "manifest":
 		return resources.Manifest()

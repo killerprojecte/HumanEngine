@@ -356,3 +356,10 @@ wasm-web-search-structured-package:
 	mkdir -p "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)"
 	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' -o "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)/web-search.wasm" ./plugins/web-search/wasm
 	$(PYTHON) -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); r=pathlib.Path("plugins/web-search"); m=json.loads((r/"manifest.json").read_text()); profile=json.loads((r/"structured-profile.json").read_text()); m["configSchema"]["properties"]={k:m["configSchema"]["properties"][k] for k in profile.pop("properties")}; m.update(profile,artifact="web-search.wasm"); m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"web-search.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)"
+
+# The structured public-request wire exposes GET/HEAD/OPTIONS, never staged sends.
+WEB_READ_REQUEST_PACKAGE_DIR ?= plugins/web-read/dist/public-request
+.PHONY: wasm-web-read-request-package
+wasm-web-read-request-package:
+	$(MAKE) wasm-web-read-get-package WEB_READ_GET_PACKAGE_DIR="$(WEB_READ_REQUEST_PACKAGE_DIR)"
+	$(PYTHON) -c 'import json,pathlib,sys; p=pathlib.Path(sys.argv[1])/"web-read.v2.json"; m=json.loads(p.read_text()); m.update(toolWire="public-request-v1", description="Public structured GET, HEAD and OPTIONS plus readable webpages. Stream encoded responses to the turn cache."); p.write_text(json.dumps(m,indent=2)+"\n")' "$(WEB_READ_REQUEST_PACKAGE_DIR)"

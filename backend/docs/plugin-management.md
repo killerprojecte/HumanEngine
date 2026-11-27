@@ -141,3 +141,22 @@ extracted text and a cache reference, not a duplicate of the raw preview.
 `tool-results.read` can read the complete original entity by byte range without
 another GET. Structured requests, sends, and search providers are not part of
 this package. The default compatibility distribution is unchanged.
+
+### External public structured HTTP preview
+
+Build the opt-in package with
+`make -C backend wasm-web-read-request-package WEB_READ_REQUEST_PACKAGE_DIR=/tmp/web-request`.
+Install its manifest and guest together and name the manifest in
+`HUMANENGINE_PLUGINS`. This is an alternative manifest for the same
+`web-read` plugin ID, not a second copy to install alongside the GET-only
+profile. It stays off until enabled, and does not change distro defaults.
+
+This profile adds the read-only `web-read.request` for public GET, HEAD and
+OPTIONS, including explicit request headers, redirect settings, and optional
+UTF-8 or base64 bodies on GET and OPTIONS. The host owns address and framing
+policy and does not allow a method capable of sending a planned action.
+Responses retain the HTTP status, raw header order and duplicate names, and
+exact entity bytes without content decoding. The model sees a bounded preview;
+`tool-results.read` reads later byte ranges of the same complete cache without
+refetching. HEAD returns an empty entity. The separate staged
+`web-read.send` remains outside this profile.

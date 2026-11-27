@@ -6,17 +6,25 @@ import "encoding/json"
 
 func runtimeInvoke(input []byte, operation string) any {
 	switch operation {
-	case "publicGetRegistrations":
+	case "publicGetRegistrations", "publicRequestRegistrations":
 		var definitions []json.RawMessage
-		if err := json.Unmarshal(registrations, &definitions); err != nil || len(definitions) == 0 {
+		if err := json.Unmarshal(registrations, &definitions); err != nil || len(definitions) < 2 {
 			return map[string]any{"error": "invalid_plugin_registrations"}
 		}
-		// Only webpage GET, never the structured request and planned send.
+		if operation == "publicRequestRegistrations" {
+			return map[string]any{"tools": definitions[:2], "structured": "web-read.request"} // No staged send.
+		}
 		return definitions[:1]
-	case "publicGetResponse":
+	case "publicGetResponse", "publicRequestResponse":
 		var observations map[string]any
 		if err := json.Unmarshal(input, &observations); err != nil {
 			return map[string]any{"error": "invalid_plugin_input"}
+		}
+		if operation == "publicRequestResponse" {
+			observations["tool"] = "web-read.request"
+			normalized := networkHeaders(observations).(map[string]any)
+			observations["headers"], observations["rawHeaders"] = normalized["headers"], normalized["rawHeaders"]
+			return ResponseResult(observations)
 		}
 		observations["tool"] = "web-read.read"
 		response := ResponseResult(observations).(map[string]any)

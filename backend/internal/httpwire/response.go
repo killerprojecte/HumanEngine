@@ -1,6 +1,5 @@
-//go:build web_read_candidate
-
-package host
+// Package httpwire parses HTTP/1.1 framing while preserving source headers.
+package httpwire
 
 import (
 	"bufio"
@@ -163,7 +162,9 @@ func readFields(r *bufio.Reader, size int) ([]headerField, error) {
 		fields = append(fields, headerField{name.String(), value.String()})
 	}
 }
-func readResponse(reader *bufio.Reader, method string) (*http.Response, *bufio.Reader, []headerField, error) {
+
+// ReadResponse preserves arrival order and original names in its raw header pairs.
+func ReadResponse(reader *bufio.Reader, method string) (*http.Response, *bufio.Reader, []string, error) {
 	status, size, err := readStatus(reader)
 	if err != nil {
 		return nil, reader, nil, err
@@ -219,7 +220,7 @@ func readResponse(reader *bufio.Reader, method string) (*http.Response, *bufio.R
 	if response.StatusCode >= 100 && response.StatusCode < 200 {
 		// Informational responses have no body. Continue directly on the
 		// original reader instead of accumulating nested prefix readers.
-		return response, reader, fields, nil
+		return response, reader, nil, nil
 	}
 	if chunked && method != http.MethodHead && response.StatusCode != 204 && response.StatusCode != 304 {
 		// No body bytes have been consumed. Own chunk framing from that exact
@@ -228,7 +229,11 @@ func readResponse(reader *bufio.Reader, method string) (*http.Response, *bufio.R
 		// that do not exist in the pinned source.
 		response.Body = io.NopCloser(&chunkBody{reader: combined})
 	}
-	return response, combined, fields, nil
+	raw := make([]string, 0, len(fields)*2)
+	for _, field := range fields {
+		raw = append(raw, latin1(field.name), latin1(strings.TrimRight(field.value, " \t")))
+	}
+	return response, combined, raw, nil
 }
 
 type chunkBody struct {
@@ -414,4 +419,19 @@ func readChunkSize(r *bufio.Reader) (uint64, error) {
 			}
 		}
 	}
+}
+
+func latin1(s string) string {
+	var out strings.Builder
+	for i := 0; i < len(s); i++ {
+		if s[i] >= 128 {
+			out.Grow(len(s))
+			out.WriteString(s[:i])
+			for ; i < len(s); i++ {
+				out.WriteRune(rune(s[i]))
+			}
+			return out.String()
+		}
+	}
+	return s
 }

@@ -55,7 +55,7 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 	sendDelay := len(capabilities) == 2 && slices.Contains(capabilities, "send-delay") && slices.Contains(capabilities, "schema-form")
 	toolForm := len(capabilities) == 2 && slices.Contains(capabilities, "tool") && slices.Contains(capabilities, "schema-form")
 	toolWire := text(manifest, "toolWire")
-	publicGET := toolForm && toolWire == "public-get-v1"
+	publicGET := toolForm && (toolWire == "public-get-v1" || toolWire == "public-request-v1")
 	structured := toolForm && toolWire == "structured-search-v1"
 	if !ok || !validID(text(manifest, "id")) || text(manifest, "name") == "" || text(manifest, "version") == "" ||
 		(!sendDelay && !publicGET && !structured && (len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter"))) {
@@ -93,7 +93,10 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 		if text(schema, "type") != "object" || schemaDeclaresSecret(schema) {
 			return errors.New("external_v2_public_get_schema_invalid")
 		}
-		binding.Schema, binding.Start = schema, m.startExternalPublicGET
+		binding.Schema = schema
+		binding.Start = func(ctx context.Context, in BuiltinRuntimeInput) (BuiltinLifetime, error) {
+			return m.startExternalPublicGET(ctx, in, toolWire == "public-request-v1")
+		}
 		manifest.Delete("toolWire")
 	case structured:
 		schema, _ := rawSchema.(*jsjson.Object)

@@ -42,3 +42,24 @@ func TestPublicGetPreviewAndCacheReference(t *testing.T) {
 		}
 	}
 }
+
+func TestStructuredPublicRequestGuestReceipt(t *testing.T) {
+	result := Invoke([]byte(`{"operation":"publicRequestRegistrations"}`)).(map[string]any)
+	var tools []struct{ Name, Effect string }
+	raw, err := json.Marshal(result["tools"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &tools); err != nil || len(tools) != 2 ||
+		tools[0].Name != "web-read.read" || tools[1].Name != "web-read.request" ||
+		tools[0].Effect != "read" || tools[1].Effect != "read" ||
+		result["structured"] != tools[1].Name {
+		t.Fatalf("incorrect guest registration: %s (%v)", raw, err)
+	}
+	input := []byte(`{"operation":"publicRequestResponse","httpStatus":418,"contentEncoding":"gzip","rawHeaders":["X-Fixture","first","Content-Encoding","gzip","x-Fixture","second"],"body":{"resultId":"synthetic","totalBytes":1064960,"encoding":"base64"}}`)
+	out := Invoke(input).(map[string]any)
+	if out["ok"] != false || out["httpStatus"] != float64(418) || out["contentEncoding"] != "gzip" ||
+		obj(out["headers"])["x-fixture"] != "first, second" || obj(out["body"])["resultId"] != "synthetic" {
+		t.Fatal(out)
+	}
+}

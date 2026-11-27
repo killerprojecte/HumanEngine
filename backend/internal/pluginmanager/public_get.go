@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/httpmedia"
 	"github.com/killerprojecte/HumanEngine/backend/internal/publicpage"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	"github.com/killerprojecte/HumanEngine/backend/internal/toolresults"
@@ -22,7 +23,7 @@ func (o *publicGetLifetime) CloseAndWait(ctx context.Context) error {
 	return o.work.Wait(ctx)
 }
 
-func (m *Manager) startExternalPublicGET(ctx context.Context, in BuiltinRuntimeInput) (BuiltinLifetime, error) {
+func (m *Manager) startExternalPublicGET(ctx context.Context, in BuiltinRuntimeInput, request bool) (BuiltinLifetime, error) {
 	var config struct {
 		TimeoutMS      int64 `json:"timeoutMs"`
 		MaxConcurrency int32 `json:"maxConcurrency"`
@@ -33,9 +34,24 @@ func (m *Manager) startExternalPublicGET(ctx context.Context, in BuiltinRuntimeI
 		config.MaxConcurrency < 1 || config.MaxConcurrency > 64 {
 		return nil, errors.New("public_get_configuration_invalid")
 	}
-	definitions, err := in.CallGuest(ctx, []byte(`{"operation":"publicGetRegistrations"}`))
+	registration := []byte(`{"operation":"publicGetRegistrations"}`)
+	if request {
+		registration = []byte(`{"operation":"publicRequestRegistrations"}`)
+	}
+	definitions, err := in.CallGuest(ctx, registration)
 	if err != nil {
 		return nil, err
+	}
+	var structuredTool string
+	if request {
+		var registration struct {
+			Tools      json.RawMessage
+			Structured string
+		}
+		if err := json.Unmarshal(definitions, &registration); err != nil || registration.Structured == "" {
+			return nil, errors.New("invalid_plugin_registrations")
+		}
+		definitions, structuredTool = registration.Tools, registration.Structured
 	}
 	call, err := m.wasm.BindCallWithAdmission(in.ID)
 	if err != nil {
@@ -45,11 +61,12 @@ func (m *Manager) startExternalPublicGET(ctx context.Context, in BuiltinRuntimeI
 	fetch := publicpage.Fetcher{Lookup: publicpage.NativeLookup, BeginWork: owner.work.Start}
 	timeout := time.Duration(config.TimeoutMS) * time.Millisecond
 	var active atomic.Int32
-	_, err = m.InstallBuiltinTools(in, definitions, func(wait context.Context, _ string, raw json.RawMessage, cache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error)) (json.RawMessage, error) {
+	_, err = m.InstallBuiltinTools(in, definitions, func(wait context.Context, tool string, raw json.RawMessage, cache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error)) (json.RawMessage, error) {
 		var input struct {
 			URL string `json:"url"`
 		}
-		if err := json.Unmarshal(raw, &input); err != nil || input.URL == "" {
+		structured := tool == structuredTool
+		if !structured && (json.Unmarshal(raw, &input) != nil || input.URL == "") {
 			return []byte(`{"status":"invalid_input","ok":false}`), nil
 		}
 		for {
@@ -64,18 +81,32 @@ func (m *Manager) startExternalPublicGET(ctx context.Context, in BuiltinRuntimeI
 		defer active.Add(-1)
 		timed, cancel := context.WithTimeout(wait, timeout)
 		defer cancel()
-		response, err := fetch.Get(timed, input.URL)
+		var response publicpage.Response
+		var err error
+		if structured {
+			response, err = fetch.Request(timed, raw)
+		} else {
+			response, err = fetch.Get(timed, input.URL)
+		}
 		if err != nil {
 			return pageError(timed, err), nil
 		}
 		defer response.Body.Finish()
 		contentType := response.Header.Get("Content-Type")
-		contentEncoding := response.Header.Get("Content-Encoding")
+		wireEncoding := response.Header.Get("Content-Encoding")
+		contentEncoding := wireEncoding
 		if contentEncoding == "" {
 			contentEncoding = "identity"
 		}
+		operation, encoding := "publicGetResponse", toolresults.Base64
+		if structured {
+			operation = "publicRequestResponse"
+			if wireEncoding == "" && httpmedia.Textual(contentType) {
+				encoding = toolresults.UTF8
+			}
+		}
 		preview := 8192.0 // Existing raw body window, not a response size limit.
-		result, err := cache(timed, response.Body, toolresults.Options{ContentType: &contentType, Encoding: "base64", PreviewBytes: &preview})
+		result, err := cache(timed, response.Body, toolresults.Options{ContentType: &contentType, Encoding: encoding, PreviewBytes: &preview})
 		if err != nil {
 			if timed.Err() != nil {
 				return pageError(timed, err), nil
@@ -83,13 +114,14 @@ func (m *Manager) startExternalPublicGET(ctx context.Context, in BuiltinRuntimeI
 			return []byte(`{"status":"cache_failed","ok":false}`), nil
 		}
 		request, err := json.Marshal(struct {
-			Operation string             `json:"operation"`
-			Config    json.RawMessage    `json:"config"`
-			Status    int                `json:"httpStatus"`
-			URL       string             `json:"sourceUrl"`
-			Encoding  string             `json:"contentEncoding"`
-			Body      toolresults.Result `json:"body"`
-		}{"publicGetResponse", in.Config, response.Status, response.URL, contentEncoding, result})
+			Operation  string             `json:"operation"`
+			Config     json.RawMessage    `json:"config"`
+			Status     int                `json:"httpStatus"`
+			URL        string             `json:"sourceUrl"`
+			Encoding   string             `json:"contentEncoding"`
+			Body       toolresults.Result `json:"body"`
+			RawHeaders []string           `json:"rawHeaders,omitempty"`
+		}{operation, in.Config, response.Status, response.URL, contentEncoding, result, response.RawHeaders})
 		if err != nil {
 			return nil, err
 		}
@@ -108,6 +140,10 @@ func pageError(ctx context.Context, err error) json.RawMessage {
 		return []byte(`{"status":"address_not_public","ok":false}`)
 	case errors.Is(err, publicpage.ErrRedirect):
 		return []byte(`{"status":"redirect_not_supported","ok":false}`)
+	case errors.Is(err, publicpage.ErrHeader):
+		return []byte(`{"status":"invalid_header","ok":false}`)
+	case errors.Is(err, publicpage.ErrInput):
+		return []byte(`{"status":"invalid_input","ok":false}`)
 	case errors.Is(err, publicpage.ErrURL):
 		return []byte(`{"status":"invalid_url","ok":false}`)
 	default:

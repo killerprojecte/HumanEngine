@@ -38,7 +38,7 @@ jobs:
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Verify opt-in host excludes SnowLuma (no push)
         id: external-host
-        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true'
+        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.bind == 'true'
         run: |
           set -o pipefail
           docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
@@ -47,13 +47,13 @@ jobs:
           docker run --rm --network none humanengine-go-external:local --inspect-builtins |
             python3 -c 'import json, sys; rows = json.load(sys.stdin); assert [(p["id"], p["apiVersion"]) for p in rows] == [("typing-delay", 2), ("web-read", 2), ("web-search", 2)]'
       - uses: actions/setup-go@v6
-        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.browser == 'true'
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.bind == 'true' || steps.proofs.outputs.browser == 'true'
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: Build the separate SnowLuma test package
         id: snow-package
-        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true'
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.bind == 'true'
         run: make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$RUNNER_TEMP/snowluma-preview"
       - name: Select Python for the opt-in browser smoke
         if: steps.proofs.outputs.browser == 'true'
@@ -77,19 +77,24 @@ jobs:
           else
             python3 backend/packaging/runtime-preview/acceptance.py --evidence "$RUNNER_TEMP/package-evidence"
           fi
-      - name: Check out exact TypeScript origin for the optional restore proof
-        if: steps.proofs.outputs.restore == 'true'
+      - name: Check out exact TypeScript origin
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.bind == 'true'
         uses: actions/checkout@v7.0.1
         with:
           ref: 39d8deb8922684298bab8ecb139be04555e8474a
           path: .migration-legacy
           persist-credentials: false
+      - name: Build the pinned TypeScript rollback image (no push)
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.bind == 'true'
+        run: |
+          legacy=.migration-legacy
+          revision=$(git -C "$legacy" rev-parse HEAD)
+          docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts:local "$legacy"
       - name: Verify packaged migration and restore (no push)
         if: steps.proofs.outputs.restore == 'true'
         run: |
           legacy=.migration-legacy
           revision=$(git -C "$legacy" rev-parse HEAD)
-          docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts:local "$legacy"
           docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts-tools:local "$legacy"
           python3 backend/packaging/runtime-preview/migration_drill.py \
             --ts-image humanengine-drill-ts:local \
@@ -106,6 +111,13 @@ jobs:
             --image humanengine-go-external:local --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
             --snow-fixture "$RUNNER_TEMP/snow-stop-fixture" \
             --evidence "$RUNNER_TEMP/package-evidence/compose-rehearsal.json"
+      - name: Rehearse operator-shaped data bind with Go and TypeScript rollback
+        if: steps.proofs.outputs.bind == 'true'
+        run: |
+          python3 backend/packaging/runtime-preview/bind_compose_drill.py \
+            --ts-image humanengine-drill-ts:local --go-image humanengine-go-external:local \
+            --go-revision "$GITHUB_SHA" --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
+            --evidence "$RUNNER_TEMP/package-evidence/bind-compose-drill.json"
       - name: Preserve synthetic acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -360,13 +360,18 @@ class MigrationDrillTests(unittest.TestCase):
                 )
                 return dict(line.split("=") for line in output.splitlines())
 
+            def expected(*active):
+                return {key: str(key in active).lower()
+                        for key in ("browser", "restore", "compose", "standalone", "bind")}
+
             files = {
                 "browser_smoke.py": "browser", "browser-requirements.txt": "browser",
                 "browser_chat_fixture.cjs": "browser", "browser_chat_fixture.py": "browser",
                 "migration_drill.py": "restore", "test_migration_drill.py": "restore",
                 "recall_fixture.cjs": "restore",
-                "compose-rehearsal.yaml": "compose", "compose_rehearsal.py": "compose",
+                "compose-rehearsal.yaml": ("compose", "bind"), "compose_rehearsal.py": "compose",
                 "test_compose_rehearsal.py": "compose", "ordinary.py": None,
+                "bind_compose_drill.py": "bind", "compose-bind-mount.yaml": "bind",
                 "Dockerfile": "standalone", "build-host.sh": "standalone",
             }
             for file, proof in files.items():
@@ -376,23 +381,23 @@ class MigrationDrillTests(unittest.TestCase):
                     path.touch()
                     git("add", str(path))
                     git("commit", "-qm", file)
-                    self.assertEqual(select(base), {key: str(key == proof).lower()
-                                                    for key in ("browser", "restore", "compose", "standalone")})
+                    active = proof if isinstance(proof, tuple) else (proof,)
+                    self.assertEqual(select(base), expected(*active))
                     base = git("rev-parse", "HEAD")
             path = Path(temp) / ".github/workflows/golang-package-preview.yml"
             path.parent.mkdir(parents=True)
             path.touch()
             git("add", str(path))
             git("commit", "-qm", "workflow alone")
-            self.assertEqual(select(base), {"browser": "false", "restore": "false", "compose": "false", "standalone": "true"})
+            self.assertEqual(select(base), expected("standalone"))
             base = git("rev-parse", "HEAD")
             for file in ("browser_smoke.py", "migration_drill.py"):
                 path = Path(temp) / "backend/packaging/runtime-preview" / file
                 path.write_text("changed")
                 git("add", str(path))
             git("commit", "-qm", "both proofs")
-            self.assertEqual(select(base), {"browser": "true", "restore": "true", "compose": "false", "standalone": "false"})
-            self.assertEqual(select("0" * 40), {"browser": "false", "restore": "false", "compose": "false", "standalone": "false"})
+            self.assertEqual(select(base), expected("browser", "restore"))
+            self.assertEqual(select("0" * 40), expected())
 
             base = git("rev-parse", "HEAD")
             source = Path(temp) / "backend/internal/externaladapter/onebot_websocket.go"
@@ -400,7 +405,7 @@ class MigrationDrillTests(unittest.TestCase):
             source.touch()
             git("add", str(source))
             git("commit", "-qm", "standalone adapter changed")
-            self.assertEqual(select(base), {"browser": "false", "restore": "true", "compose": "false", "standalone": "false"})
+            self.assertEqual(select(base), expected("restore"))
             base = git("rev-parse", "HEAD")
             git("commit", "--allow-empty", "-qm",
                 "Candidate\n\nHumanEngine-Package-Proofs: all")
@@ -408,8 +413,8 @@ class MigrationDrillTests(unittest.TestCase):
             git("commit", "--allow-empty", "-qm",
                 "Ordinary commit\n\nHumanEngine-Package-Proofs: all\n"
                 "This is an example, not an opt-in.\n\nAnother paragraph.")
-            off = {"browser": "false", "restore": "false", "compose": "false", "standalone": "false"}
-            self.assertEqual(select(base, sha=selected), {"browser": "true", "restore": "true", "compose": "true", "standalone": "true"})
+            off = expected()
+            self.assertEqual(select(base, sha=selected), expected("browser", "restore", "compose", "standalone", "bind"))
             self.assertEqual(select(base), off)
             for event, ref, before in [
                 ("pull_request", branch, ""),

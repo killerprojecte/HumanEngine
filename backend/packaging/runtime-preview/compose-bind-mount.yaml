@@ -1,0 +1,17 @@
+# Overlay for the opt-in compose-rehearsal.yaml, not production Compose.
+services:
+  humanengine:
+    environment:
+      HUMANENGINE_PLUGINS: ${HE_COMPOSE_PLUGIN_ENTRIES:-}
+    volumes:
+      - type: bind
+        source: ${HE_COMPOSE_DATA_DIR:?Set an absolute path to the existing data directory}
+        target: /app/data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HE_COMPOSE_PLUGIN_DIR:?Set an absolute path to the independent plugin directory}
+        target: /app/plugins
+        read_only: true
+        bind:
+          create_host_path: false

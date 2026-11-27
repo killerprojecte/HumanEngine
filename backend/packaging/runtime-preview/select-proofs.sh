@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $GITHUB_EVENT_NAME != push || $GITHUB_REF != refs/heads/feat/refactor-golang ]]; then
-  printf 'browser=false\nrestore=false\ncompose=false\nstandalone=false\n'
+  printf 'browser=false\nrestore=false\ncompose=false\nstandalone=false\nbind=false\n'
   exit
 fi
 
@@ -11,13 +11,13 @@ if [[ ! $BEFORE =~ ^[0-9a-f]{40}$ ]]; then
   exit 1
 fi
 if [[ $BEFORE == 0000000000000000000000000000000000000000 ]]; then
-  printf 'browser=false\nrestore=false\ncompose=false\nstandalone=false\n'
+  printf 'browser=false\nrestore=false\ncompose=false\nstandalone=false\nbind=false\n'
   exit
 fi
 
 trailers=$(git show -s --format='%(trailers:only)' "$GITHUB_SHA")
 if grep -Fx 'HumanEngine-Package-Proofs: all' <<< "$trailers" > /dev/null; then
-  printf 'browser=true\nrestore=true\ncompose=true\nstandalone=true\n'
+  printf 'browser=true\nrestore=true\ncompose=true\nstandalone=true\nbind=true\n'
   exit
 fi
 
@@ -46,3 +46,5 @@ detect compose "$root/compose-rehearsal.yaml" "$root/compose_rehearsal.py" "$roo
 detect standalone "$root/Dockerfile" "$root/build-host.sh" "$root/select-proofs.sh" \
   .github/workflows/golang-package-preview.yml backend/Makefile backend/cmd/humanengine/runtime_preview_bundled.go \
   backend/internal/app/distribution_without_snowluma.go backend/internal/app/snowluma_bundled.go backend/plugins/metadata
+
+detect bind "$root/bind_compose_drill.py" "$root/compose-bind-mount.yaml" "$root/compose-rehearsal.yaml"

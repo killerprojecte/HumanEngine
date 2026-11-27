@@ -100,6 +100,14 @@ to pull the selected image, stop every writer, privately cold-back up the actual
 live data, check permissions, enroll once and restart. Never run
 `docker compose down --volumes` as part of this procedure.
 
+## Go candidate rehearsal for an existing data bind
+
+Do not switch the backend by changing only the image in the TypeScript Compose file. The Go preview image default is `/app/data/main.sqlite` on port 3001. It does not inherit the TypeScript database and port environment variables. The opt-in [rehearsal Compose](../backend/packaging/runtime-preview/compose-rehearsal.yaml) sets the Go command explicitly to `/app/data/humanengine.sqlite`, `/app/authority`, and `0.0.0.0:3000`. The [bind overlay](../backend/packaging/runtime-preview/compose-bind-mount.yaml) uses an existing data directory and a read-only independent plugin directory without creating either host path.
+
+Use this pair for a **disposable, already-enrolled copy** and its corresponding authority. The example project uses its own named authority. Never substitute that empty volume for an existing enrolled installation's current authority. For a separate, approved cutover, first verify the active project's actual data path, database name, authority volume, host port and current image. Preserve all of them, stop all writers before moving between runtimes, and retain the exact prior image for rollback. Do not expose a backup, credential, or filesystem path in an acceptance receipt.
+
+The hosted bind rehearsal uses the same explicit Go command, the same host data bind, the same named authority, and a read-only external package across TypeScript → Go → TypeScript. It checks durable data identity, the stored credential using an isolated loopback provider, clean exit and the absence of a parallel `main.sqlite`. It does not change any production Compose file, publish an image, or modify a deployed installation.
+
 ## Verification and limits
 
 `node scripts/container-smoke.mjs <locally-loaded-image>` creates a uniquely named disposable Compose project. It verifies authenticated health, unauthenticated rejection, nonroot native SQLite/vector/image processing, settings and media persistence through restart **and recreation**, and graceful shutdown. Cleanup removes only that test project's volume. The workflow publishes the exact tested image, pulls its registry digest back, and checks its image identity before advancing `latest`.

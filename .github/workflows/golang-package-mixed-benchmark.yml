@@ -1,0 +1,59 @@
+name: Paired packaged mixed-load benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/refactor-golang]
+    paths:
+      - 'backend/packaging/runtime-preview/mixed_load_fixture.py'
+      - 'backend/packaging/runtime-preview/packaged_mixed_benchmark.py'
+      - '.github/workflows/golang-package-mixed-benchmark.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  paired-mixed:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build the exact Go preview without SnowLuma and its separate plugin
+        run: |
+          make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$RUNNER_TEMP/snowluma-preview"
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+            --build-arg PREVIEW_PLUGIN_PROFILE=without-snowluma \
+            -f backend/packaging/runtime-preview/Dockerfile -t humanengine-mixed-go:local .
+      - name: Check out the exact TypeScript behavioral reference
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: 39d8deb8922684298bab8ecb139be04555e8474a
+          path: .benchmark-typescript
+          persist-credentials: false
+      - name: Build the exact TypeScript runtime and fixture tools
+        run: |
+          legacy=.benchmark-typescript
+          revision=$(git -C "$legacy" rev-parse HEAD)
+          test "$revision" = 39d8deb8922684298bab8ecb139be04555e8474a
+          docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-mixed-ts:local "$legacy"
+          docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-mixed-tools:local "$legacy"
+      - name: Measure identical mixed traffic with exact output and persistence checks
+        run: |
+          python3 backend/packaging/runtime-preview/packaged_mixed_benchmark.py \
+            --ts-image humanengine-mixed-ts:local --ts-tools-image humanengine-mixed-tools:local \
+            --go-image humanengine-mixed-go:local --go-revision "$GITHUB_SHA" \
+            --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
+            --evidence "$RUNNER_TEMP/humanengine-paired-mixed.json"
+      - name: Preserve aggregate benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paired-packaged-mixed-benchmark
+          path: ${{ runner.temp }}/humanengine-paired-mixed.json
+          if-no-files-found: ignore

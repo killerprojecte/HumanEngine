@@ -92,3 +92,29 @@ it is not process RSS and excludes the separate fixture peer. These
 are not allocation or lock counters. The two GETs, row parity, cgroup and timing
 evidence do not qualify the broader mixed-load, recovery or cutover gates.
 This runner is explicit opt-in; the package workflow does not call it.
+
+## Mixed traffic in packaged containers
+
+The separate **Paired packaged mixed-load benchmark** workflow compares one exact,
+locally built TypeScript image and the current Go preview built without SnowLuma.
+Go loads the separately built external plugin from a read-only mount. The driver seeds
+one TypeScript installation and verifies independent, identical database and authority
+copies before running TS → Go and Go → TS. No production service, model, credentials or
+data are used. The peer and each owner share an isolated loopback network, but run in
+separate cgroups pinned to distinct logical CPUs. Every owner has one CPU bandwidth
+quota, 1536 MiB RAM and no swap. Docker health checks are disabled for both runtimes.
+
+Each leg drives 32 signed group events at 4/s and 56 authenticated admin reads in
+a 14-second window. Sixteen events carry a synthetic image, and sixteen others exercise
+learning. The run requires the same completed model stages, exact pixels at the vision
+provider, 32 correctly quoted physical send acknowledgments, exact local history,
+and sixteen durable facts with the correct source identities. Only a four-leg pass is
+evidence of equal work. Out-of-window verification is excluded from CPU counters.
+
+Read the four individual legs in the aggregate JSON artifact. ACK latency is measured
+from actual signed HTTP input dispatch to completion of the OneBot response write.
+The two latency percentiles use nearest rank. CPU counters are the window driver
+invocation deltas, including the launch overhead and 250 ms lead-in. The raw
+boot-inclusive cgroup memory high-water includes charged cache and is not process RSS
+or the cache-adjusted memory displayed by Docker CLI. These are controlled synthetic
+comparisons, not predictions of production model or network latency.

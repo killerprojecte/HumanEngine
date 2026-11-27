@@ -1,6 +1,7 @@
 package externaladapter
 
 import (
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"testing"
 	"time"
 )
@@ -11,7 +12,7 @@ func TestHostDerivesPortableIdentityAndOwnsOrigin(t *testing.T) {
 		"message":"8", "sender":"bot", "replyTo":"7", "sentAt":"2026-11-25T06:03:45Z", "text":"ordinary text",
 		"sceneId":"sim:foreign", "id":"ob:spoof", "origin":"history", "receivedAt":"1900-01-01T00:00:00Z"
 	}`)
-	ev, err := projectEvent(raw, false)
+	ev, err := (scope{}).projectEvent(raw, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,11 +56,11 @@ func TestHostDerivesPortableIdentityAndOwnsOrigin(t *testing.T) {
 
 func TestPortableIdentityDoesNotCollapseInvalidUnicode(t *testing.T) {
 	raw := []byte(`{"type":"recall","peer":{"kind":"group","id":"新聊天室"},"message":"\ud800"}`)
-	if _, err := projectEvent(raw, false); err == nil {
+	if _, err := (scope{}).projectEvent(raw, false); err == nil {
 		t.Fatal("accepted a surrogate in a platform identity")
 	}
 	raw = []byte(`{"type":"recall","peer":{"kind":"group","id":"新聊天室"},"message":"源消息"}`)
-	ev, err := projectEvent(raw, false)
+	ev, err := (scope{}).projectEvent(raw, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,5 +70,23 @@ func TestPortableIdentityDoesNotCollapseInvalidUnicode(t *testing.T) {
 	}
 	if got, err := platformMessage(scene, messageID(scene, ev.Message)); err != nil || got != "源消息" {
 		t.Fatal(got, err)
+	}
+}
+
+func TestHostProjectsOneBotMentionInInstalledAccountScope(t *testing.T) {
+	s := scope{adapter: "snowluma", account: "42", onebot: true}
+	const prefix = `{"type":"message","peer":{"kind":"group","id":"900"},"message":"8","sender":"7","sentAt":"2026-11-25T06:03:45Z","parts":[`
+	ev, err := s.projectEvent([]byte(prefix+`{"type":"mention","platformUserId":"777","userId":"ob:u:foreign"},{"type":"mention","platformUserId":"all"}]}`), true)
+	if err != nil || len(ev.Parts) != 2 {
+		t.Fatal(ev, err)
+	}
+	for i, want := range []string{s.sender("777"), "all"} {
+		part, ok := ev.Parts[i].(*jsjson.Object)
+		if !ok || text(part, "type") != "mention" || text(part, "userId") != want || text(part, "platformUserId") != "" {
+			t.Fatalf("wrong projected mention: %v", ev.Parts[i])
+		}
+	}
+	if _, err := s.projectEvent([]byte(prefix+`{"type":"mention","userId":"ob:u:foreign"}]}`), true); err == nil {
+		t.Fatal("accepted a canonical mention supplied by the guest")
 	}
 }

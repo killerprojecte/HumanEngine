@@ -95,7 +95,7 @@ func (s *httpSession) readOneBotHistory(ctx context.Context, scene dispatch.Scen
 		if object == nil {
 			return nil, errors.New("external_adapter_history_row_invalid")
 		}
-		event, err := projectParsedEvent(object, true)
+		event, err := s.profile.projectParsedEvent(object, true)
 		if err != nil || event.Type != "message" || event.Peer != p || (id != "" && input.Message != event.Message) {
 			return historyPage("unavailable", "history_scope_mismatch", "", []any{}), nil
 		}

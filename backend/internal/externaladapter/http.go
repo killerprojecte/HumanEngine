@@ -312,7 +312,7 @@ func (s *httpSession) receiveEvent(ctx context.Context, raw []byte) int {
 	if err != nil {
 		return http.StatusUnprocessableEntity
 	}
-	ev, err := projectEvent(output, p != nil && p.media)
+	ev, err := s.profile.projectEvent(output, p != nil && p.media)
 	if err != nil {
 		return http.StatusUnprocessableEntity
 	}
@@ -391,11 +391,17 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 			return dispatch.Receipt{}, err
 		}
 	}
+	var adapter, account string
+	if s.profile.onebot {
+		adapter, account = known.AdapterID, known.AccountID
+	}
 	body, err := s.invoke(ctx, "adapterSend", struct {
 		Peer    peer              `json:"peer"`
 		Parts   []json.RawMessage `json:"parts"`
 		ReplyTo string            `json:"replyTo,omitempty"`
-	}{peer{Kind: known.Kind, ID: known.PlatformSceneID}, segment.Parts, reply})
+		Adapter string            `json:"adapter,omitempty"`
+		Account string            `json:"account,omitempty"`
+	}{peer{Kind: known.Kind, ID: known.PlatformSceneID}, segment.Parts, reply, adapter, account})
 	if err != nil {
 		return dispatch.Receipt{}, err
 	}

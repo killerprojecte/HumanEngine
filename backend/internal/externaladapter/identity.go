@@ -123,15 +123,15 @@ func guestObject(raw []byte) (*jsjson.Object, error) {
 	return o, nil
 }
 
-func projectEvent(raw []byte, structured bool) (event, error) {
+func (s scope) projectEvent(raw []byte, structured bool) (event, error) {
 	o, err := guestObject(raw)
 	if err != nil {
 		return event{}, err
 	}
-	return projectParsedEvent(o, structured)
+	return s.projectParsedEvent(o, structured)
 }
 
-func projectParsedEvent(o *jsjson.Object, structured bool) (event, error) {
+func (s scope) projectParsedEvent(o *jsjson.Object, structured bool) (event, error) {
 	var err error
 	p := fieldObject(o, "peer")
 	ev := event{Type: text(o, "type"), Message: text(o, "message")}
@@ -149,7 +149,7 @@ func projectParsedEvent(o *jsjson.Object, structured bool) (event, error) {
 			}
 			if structured {
 				value, _ := o.Get("parts")
-				ev.Parts, err = projectParts(value)
+				ev.Parts, err = s.projectParts(value)
 				if err != nil {
 					return event{}, err
 				}
@@ -191,7 +191,7 @@ func (s scope) messageWithOrigin(scene dispatch.SceneRef, in event, now time.Tim
 
 // projectParts copies only the supported wire fields into the live row. In
 // particular guests cannot manufacture a managed asset or a browser URL.
-func projectParts(value any) ([]any, error) {
+func (s scope) projectParts(value any) ([]any, error) {
 	rows, _ := value.([]any)
 	if len(rows) == 0 {
 		return nil, errors.New("external_adapter_parts_invalid")
@@ -207,6 +207,15 @@ func projectParts(value any) ([]any, error) {
 			parts = append(parts, messagePart("text", jsjson.Member{Key: "text", Value: text(o, "text")}))
 		case "unsupported":
 			parts = append(parts, messagePart("unsupported", jsjson.Member{Key: "description", Value: text(o, "description")}))
+		case "mention":
+			target := text(o, "platformUserId")
+			if !validWireIdentity(target) {
+				return nil, errors.New("external_adapter_parts_invalid")
+			}
+			if target != "all" {
+				target = s.sender(target)
+			}
+			parts = append(parts, messagePart("mention", jsjson.Member{Key: "userId", Value: target}))
 		case "media":
 			asset, media := text(o, "assetId"), text(o, "mediaType")
 			if !strings.HasPrefix(asset, "ob:media:") || media != "image/unknown" {

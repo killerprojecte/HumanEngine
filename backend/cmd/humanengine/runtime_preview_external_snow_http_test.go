@@ -61,7 +61,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	if err := png.Encode(&original, pixels); err != nil {
 		t.Fatal(err)
 	}
-	const groupRemote = `{"message_type":"group","self_id":42,"group_id":900,"user_id":900,"message_id":21,"time":1700000001,"message":[{"type":"text","data":{"text":"Group history witness"}}]}`
+	const groupRemote = `{"message_type":"group","self_id":42,"group_id":900,"user_id":900,"message_id":21,"time":1700000001,"message":[{"type":"text","data":{"text":"Group history witness"}},{"type":"at","data":{"qq":777}},{"type":"at","data":{"qq":"all"}}]}`
 	const friendRemote = `{"message_type":"private","self_id":42,"target_id":900,"user_id":42,"message_id":21,"time":1700000002,"message":[{"type":"text","data":{"text":"Private history witness"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`
 	const friendWrongScope = `{"message_type":"private","self_id":42,"target_id":900,"user_id":42,"message_id":22,"time":1700000003,"message":[{"type":"image","data":{"file":"fixture-image-token"}}]}`
 	const recalledRemote = `{"message_type":"private","self_id":42,"user_id":900,"message_id":7,"time":1700000000,"message":[{"type":"text","data":{"text":"Do not show recalled history"}}]}`
@@ -155,9 +155,9 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 				return
 			}
 			if r.URL.Path == "/send_group_msg" {
-				if len(action.Message) != 3 || action.Message[2].Type != "image" ||
-					action.Message[2].Data["file"] != "base64://"+base64.StdEncoding.EncodeToString(original.Bytes()) {
-					t.Error("physical group outbound image is not the exact imported original")
+				if len(action.Message) != 4 || action.Message[2].Type != "at" || action.Message[2].Data["qq"] != "901" ||
+					action.Message[3].Type != "image" || action.Message[3].Data["file"] != "base64://"+base64.StdEncoding.EncodeToString(original.Bytes()) {
+					t.Error("physical group reply did not preserve ordered @ and exact original image")
 					w.WriteHeader(400)
 					return
 				}
@@ -399,6 +399,9 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		config := fmt.Sprintf(`{"id":%q,"adapterId":"snowluma","accountId":"42","platformSceneId":"901","kind":%q,"name":"Reply witness","participationEnabled":true,"learningEnabled":false,"proactiveEnabled":false}`, scene, kind)
 		commandRequest(t, addr, "PUT", "/api/scenes/"+url.PathEscape(scene), []byte(config), 200)
 		raw := fmt.Sprintf(`{"post_type":"message","message_type":%q,"sub_type":"normal","self_id":42,"group_id":901,"user_id":901,"message_id":9,"time":%d,"message":[{"type":"text","data":{"text":"reply using installed artifact"}}]}`, kind, time.Now().Unix())
+		if kind == "group" {
+			raw = snowMentionEvent(raw)
+		}
 		post(raw, eventToken, 204)
 		select {
 		case <-replies:
@@ -430,7 +433,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	history(direct, "")
 	type remoteRow struct {
 		ID, SceneID, Origin, SenderID string
-		Parts                         []struct{ Type, Text, MediaURL string }
+		Parts                         []struct{ Type, Text, MediaURL, UserID string }
 	}
 	type remoteWindow struct {
 		Items                []remoteRow
@@ -447,8 +450,10 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	g := remote(group)
 	if len(g.Items) != 1 || g.Items[0].ID != group+":m:"+encode(`"21"`) ||
-		g.Items[0].Origin != "history" || g.Items[0].Parts[0].Text != "Group history witness" || g.Coverage != "partial" {
-		t.Fatalf("remote group deduplication: %+v", g)
+		g.Items[0].Origin != "history" || len(g.Items[0].Parts) != 3 || g.Items[0].Parts[0].Text != "Group history witness" ||
+		g.Items[0].Parts[1].Type != "mention" || g.Items[0].Parts[1].UserID != "ob:u:"+encode(`["snowluma","42","777"]`) ||
+		g.Items[0].Parts[2].Type != "mention" || g.Items[0].Parts[2].UserID != "all" || g.Coverage != "partial" {
+		t.Fatalf("remote group deduplication and mentions: %+v", g)
 	}
 	d := remote(direct)
 	if len(d.Items) != 2 || d.Items[0].ID != direct+":m:"+encode(`"21"`) || d.Items[1].ID != direct+":m:"+encode(`"22"`) ||
@@ -535,6 +540,11 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			t.Fatalf("persisted %s: got %d want %d (%v)", check.table, got, check.want, err)
 		}
 	}
+	t.Log("installed-snowluma-http-and-websocket-mention-quoted-order-and-history")
+}
+
+func snowMentionEvent(event string) string {
+	return strings.TrimSuffix(event, "]}") + `,{"type":"at","data":{"qq":777}}]}`
 }
 
 func snowSocketEvent(kind string, peer, id int) string {
@@ -625,8 +635,10 @@ func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token,
 					// A physical send was accepted but no echo comes back.
 					return
 				}
-				if count != 2 || action.Group != "901" || len(action.Message) != 3 || action.Message[0].Data["id"] != "25" ||
-					action.Message[2].Type != "image" || action.Message[2].Data["file"] != "base64://"+base64.StdEncoding.EncodeToString(original) {
+				if count != 2 || action.Group != "901" || len(action.Message) != 4 ||
+					action.Message[0].Type != "reply" || action.Message[0].Data["id"] != "25" || action.Message[1].Type != "text" ||
+					action.Message[2].Type != "at" || action.Message[2].Data["qq"] != "901" ||
+					action.Message[3].Type != "image" || action.Message[3].Data["file"] != "base64://"+base64.StdEncoding.EncodeToString(original) {
 					t.Errorf("scope, replay or managed-original mismatch: %+v", action)
 					return
 				}
@@ -713,7 +725,7 @@ func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token,
 	send(second, snowSocketEvent("private", 904, 83))
 	snowSocketHistory(t, addr, "private", 904, 83, 81, 82)
 	send(second, fmt.Sprintf(`{"post_type":"notice","notice_type":"friend_recall","self_id":42,"user_id":904,"message_id":83,"time":%d}`, time.Now().Unix()))
-	send(second, snowSocketEvent("group", 901, 25))
+	send(second, snowMentionEvent(snowSocketEvent("group", 901, 25)))
 	snowSocketHistory(t, addr, "group", 901, 29)
 	private = "/api/scenes/" + url.PathEscape("ob:s:"+base64.RawURLEncoding.EncodeToString([]byte(`["snowluma","42","private","904"]`)))
 	recalled := commandRequest(t, addr, "GET", private+"/history?source=local", nil, 200)
@@ -743,9 +755,19 @@ func portableSnowHTTPModel(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+	type message struct {
+		ID    string
+		Parts []struct{ Type, UserID string }
+	}
+	mentioned := func(row message, id string) bool {
+		return row.ID == id && slices.ContainsFunc(row.Parts, func(p struct{ Type, UserID string }) bool {
+			return p.Type == "mention" && p.UserID == "777"
+		})
+	}
 	var in struct {
 		SceneKind    string
-		Messages     []struct{ ID string }
+		Messages     []message
+		Evidence     []struct{ Value message }
 		PlanContract struct{ TargetMessageIDs []string }
 		Plan         struct {
 			TargetMessageIDs []string
@@ -778,6 +800,12 @@ func portableSnowHTTPModel(w http.ResponseWriter, r *http.Request) {
 	case slices.Contains(names, "reply__plan") && len(in.PlanContract.TargetMessageIDs) == 1:
 		var chosen = []any{}
 		if in.SceneKind == "group" {
+			if !slices.ContainsFunc(in.Evidence, func(row struct{ Value message }) bool {
+				return mentioned(row.Value, in.PlanContract.TargetMessageIDs[0])
+			}) {
+				http.Error(w, "expected incoming scoped mention in Planner evidence", 400)
+				return
+			}
 			if receipt.ID == "" {
 				name = "memes__search"
 				input = map[string]any{"query": "celebrate"}
@@ -795,7 +823,11 @@ func portableSnowHTTPModel(w http.ResponseWriter, r *http.Request) {
 		name = "messages__send"
 		parts := []any{map[string]any{"type": "text", "text": "Independent reply."}}
 		if len(in.Plan.Assets) == 1 {
-			parts = append(parts, map[string]any{"type": "media", "mediaType": "image", "assetId": in.Plan.Assets[0].AssetID})
+			if !slices.ContainsFunc(in.Messages, func(row message) bool { return mentioned(row, in.Plan.TargetMessageIDs[0]) }) {
+				http.Error(w, "expected scoped mention in Replyer messages", 400)
+				return
+			}
+			parts = append(parts, map[string]any{"type": "mention", "userId": "901"}, map[string]any{"type": "media", "mediaType": "image", "assetId": in.Plan.Assets[0].AssetID})
 		}
 		input = map[string]any{"operationId": "portable-reply", "segments": []any{map[string]any{"replyToId": in.Plan.TargetMessageIDs[0], "parts": parts}}}
 	default:

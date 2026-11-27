@@ -159,7 +159,7 @@ func continueSend(state *jsjson.Object, aborted bool) any {
 			}
 			message = append(message, makeObject("type", "text", "data", data))
 		case sameString(property(part, "type"), "mention"):
-			user, err := platformUser(textProperty(state, "adapter"), textProperty(state, "account"), property(part, "userId"))
+			user, err := PlatformUser(textProperty(state, "adapter"), textProperty(state, "account"), property(part, "userId"))
 			if err != nil {
 				return sendFailure(err, false, aborted)
 			}
@@ -209,7 +209,9 @@ func platformMessage(scene *jsjson.Object, value any) (string, error) {
 	}
 	return id(value)
 }
-func platformUser(adapter, account string, value any) (string, error) {
+
+// PlatformUser translates an account-scoped canonical mention to a OneBot target.
+func PlatformUser(adapter, account string, value any) (string, error) {
 	text, ok := value.(string)
 	if !ok {
 		return "", errors.New("invalid user identifier")

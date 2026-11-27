@@ -129,6 +129,14 @@ func normalizedMessage(adapter, account string, event *jsjson.Object, origin, me
 		switch str(part, "type") {
 		case "text", "unsupported":
 			continue
+		case "mention":
+			target, err := snow.PlatformUser(adapter, account, get(part, "userId"))
+			if err != nil {
+				return nil
+			}
+			wirePart, _ := jsjson.NewObject(jsjson.Member{Key: "type", Value: "mention"}, jsjson.Member{Key: "platformUserId", Value: target})
+			parts[i] = wirePart
+			continue
 		case "media":
 			if str(part, "mediaType") == "image/unknown" {
 				continue
@@ -187,12 +195,19 @@ func send(in *jsjson.Object) any {
 	if reply := str(in, "replyTo"); reply != "" {
 		segments = append(segments, segment("reply", "id", reply))
 	}
+	adapter, account := str(in, "adapter"), str(in, "account")
 	var originals []map[string]int
 	for i, row := range parts {
 		part := obj(row)
 		switch str(part, "type") {
 		case "text":
 			segments = append(segments, segment("text", "text", str(part, "text")))
+		case "mention":
+			target, err := snow.PlatformUser(adapter, account, get(part, "userId"))
+			if err != nil {
+				return nil
+			}
+			segments = append(segments, segment("at", "qq", target))
 		case "media":
 			originals = append(originals, map[string]int{"part": i, "index": len(segments)})
 			segments = append(segments, segment("image", "file", ""))

@@ -19,7 +19,9 @@ sticker library. The guest chooses the wire segment; the host resolves and
 encodes the original, then rechecks it at transmission. Raw image paths and
 bytes never cross into the guest.
 
-Incoming text and still images keep their order. An image may be inline or
+Incoming text, account-scoped mentions (including `@all`) and still images keep
+their order in live messages and remote history. Outbound quoted replies
+preserve the order of text, mentions and resolved images. An image may be inline or
 resolved from an opaque token with an authenticated OneBot `get_image` call.
 This preview reads inline bytes from that response; it does not download a
 returned URL or open a local path. The browser uses the host's authenticated

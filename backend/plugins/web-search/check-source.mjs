@@ -31,3 +31,34 @@ verify('node-api.json', {
     ...input, expected: publicResultUrl(input.url) ?? '',
   })),
 }, data)
+
+const { WebSearchService } = await import('../../../src/plugins/builtin/web-search/service.ts')
+const runtime = fixture('node-runtime.json')
+const actual = []
+for (const input of runtime.cases) {
+  const { query, queryRepeat, limit, maxResults, rawBody, repeat, httpStatus } = input
+  const body = repeat ? 'x'.repeat(repeat) : rawBody
+  let plan
+  let response
+  let error
+  const search = new WebSearchService({
+    provider: 'tavily', fallbackProvider: 'none', maxResults, timeoutMs: 10000,
+    maxConcurrency: 2, maxResponseBytes: 4096,
+  }, () => 'synthetic-secret', () => {}, async (_url, init) => {
+    const request = JSON.parse(init.body)
+    plan = { limit: request.max_results, body: request }
+    return new Response(body, { status: httpStatus, headers: {'Content-Type': 'application/json'} })
+  })
+  try {
+    response = await search.search(query.repeat(queryRepeat ?? 1), limit, new AbortController().signal, async (source) => {
+      const chunks = []
+      for await (const bytes of source) chunks.push(bytes)
+      deepStrictEqual(Buffer.concat(chunks), Buffer.from(body))
+      return { resultId: 'fixture-result' }
+    })
+  } catch (err) {
+    error = err.code
+  }
+  actual.push({ name: input.name, ...(plan && { plan }), ...(response && { response }), ...(error && { error }) })
+}
+verify('node-runtime.json', { cases: runtime.cases, expected: actual }, runtime)

@@ -36,27 +36,38 @@ func BuildAPI(provider, query string, limit int, key string) (Request, error) {
 		return Request{}, errors.New("credentials_missing")
 	}
 	request := Request{Format: "json", Init: Init{Method: "POST", Headers: map[string]string{"Content-Type": "application/json"}}}
-	var body any
 	switch provider {
 	case "tavily":
 		request.URL = "https://api.tavily.com/search"
 		request.Init.Headers["Authorization"] = "Bearer " + key
-		body = map[string]any{"query": query, "max_results": limit, "search_depth": "basic", "include_answer": false, "include_raw_content": false, "auto_parameters": false}
 	case "deepseek":
 		request.URL = "https://api.deepseek.com/v1/tools/search"
 		request.Init.Headers["Authorization"] = "Bearer " + key
-		body = map[string]any{"query": query, "count": limit, "need_content": false}
 	case "you", "you_news":
 		request.URL = "https://ydc-index.io/v1/search"
 		request.Init.Headers["X-API-Key"] = key
-		body = map[string]any{"query": query, "count": limit}
 	default:
 		return Request{}, errors.New("provider_disabled")
 	}
-	encoded, err := json.Marshal(body)
+	encoded, err := apiBody(provider, query, limit)
 	request.Init.Body = string(encoded)
 	return request, err
 }
+func apiBody(provider, query string, limit int) ([]byte, error) {
+	var body any
+	switch provider {
+	case "tavily":
+		body = map[string]any{"query": query, "max_results": limit, "search_depth": "basic", "include_answer": false, "include_raw_content": false, "auto_parameters": false}
+	case "deepseek":
+		body = map[string]any{"query": query, "count": limit, "need_content": false}
+	case "you", "you_news":
+		body = map[string]any{"query": query, "count": limit}
+	default:
+		return nil, errors.New("provider_disabled")
+	}
+	return json.Marshal(body)
+}
+
 func BuildHTML(provider, query string) (Request, error) {
 	endpoints := map[string]string{"bing": "https://www.bing.com/search", "google": "https://www.google.com/search", "sogou": "https://www.sogou.com/web", "duckduckgo": "https://html.duckduckgo.com/html/"}
 	endpoint := endpoints[provider]
@@ -205,6 +216,12 @@ func Invoke(input []byte) any {
 	var in struct {
 		Operation, Provider, Query, Key, Body string
 		Limit                                 int
+		MaxResults                            int
+		Input                                 struct {
+			Query string
+			Limit *int
+		}
+		Observation SearchObservation
 	}
 	if json.Unmarshal(input, &in) != nil {
 		return map[string]any{"error": "invalid_plugin_input"}
@@ -214,6 +231,10 @@ func Invoke(input []byte) any {
 	switch in.Operation {
 	case "manifest":
 		return resources.Manifest()
+	case "search_plan":
+		value, err = PlanSearch(in.Provider, in.Input.Query, in.Input.Limit, in.MaxResults)
+	case "search_response":
+		return FinishSearch(in.Observation)
 	case "build_api":
 		value, err = BuildAPI(in.Provider, in.Query, in.Limit, in.Key)
 	case "build_html":

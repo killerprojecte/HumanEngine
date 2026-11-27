@@ -138,7 +138,7 @@ def browser_request_guard(origin, fixture_avatars, blocked):
     return intercept
 
 
-def run(port, token, evidence, usage_start, chat_history=None):
+def run(port, token, evidence, usage_start, chat_history=None, chat_image=False):
     # Kept out of normal package runs and out of both runtime images.
     from playwright.sync_api import expect, sync_playwright
 
@@ -261,7 +261,10 @@ def run(port, token, evidence, usage_start, chat_history=None):
 
                 if chat_history is not None:
                     phase = "dense-chat-local-before-platform"
-                    browser_chat_fixture.assert_history(page, origin, expect, chat_history)
+                    browser_chat_fixture.assert_history(page, origin, expect, chat_history, with_image=chat_image)
+                    if chat_image:
+                        outcomes.append({"action": "standalone-expired-sticker-rendered", "status": 200,
+                                         "width": 3, "height": 2})
                     outcomes.append({"action": "dense-chat-local-before-platform", "status": 200})
 
                 phase = "logout-submit"

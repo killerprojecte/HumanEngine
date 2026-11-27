@@ -37,7 +37,7 @@ jobs:
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Verify opt-in host excludes SnowLuma (no push)
-        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true'
+        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true'
         run: |
           set -o pipefail
           docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
@@ -45,6 +45,14 @@ jobs:
             -t humanengine-go-external:local .
           docker run --rm --network none humanengine-go-external:local --inspect-builtins |
             python3 -c 'import json, sys; rows = json.load(sys.stdin); assert [(p["id"], p["apiVersion"]) for p in rows] == [("typing-delay", 2), ("web-read", 2), ("web-search", 2)]'
+      - uses: actions/setup-go@v6
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.browser == 'true'
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build the separate SnowLuma test package
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true'
+        run: make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$RUNNER_TEMP/snowluma-preview"
       - name: Select Python for the opt-in browser smoke
         if: steps.proofs.outputs.browser == 'true'
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -61,7 +69,9 @@ jobs:
           RUN_BROWSER_SMOKE: ${{ steps.proofs.outputs.browser == 'true' }}
         run: |
           if [ "$RUN_BROWSER_SMOKE" = true ]; then
-            "$RUNNER_TEMP/humanengine-browser-venv/bin/python" backend/packaging/runtime-preview/acceptance.py --browser-smoke --evidence "$RUNNER_TEMP/package-evidence"
+            "$RUNNER_TEMP/humanengine-browser-venv/bin/python" backend/packaging/runtime-preview/acceptance.py \
+              --image humanengine-go-external:local --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
+              --browser-smoke --evidence "$RUNNER_TEMP/package-evidence"
           else
             python3 backend/packaging/runtime-preview/acceptance.py --evidence "$RUNNER_TEMP/package-evidence"
           fi
@@ -72,11 +82,6 @@ jobs:
           ref: 39d8deb8922684298bab8ecb139be04555e8474a
           path: .migration-legacy
           persist-credentials: false
-      - uses: actions/setup-go@v6
-        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.compose == 'true'
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
       - name: Verify packaged migration and restore (no push)
         if: steps.proofs.outputs.restore == 'true'
         run: |
@@ -84,15 +89,11 @@ jobs:
           revision=$(git -C "$legacy" rev-parse HEAD)
           docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts:local "$legacy"
           docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts-tools:local "$legacy"
-          package=$(mktemp -d "$RUNNER_TEMP/snowluma-http.XXXXXX")
-          trap 'rm -rf "$package"' EXIT
-          chmod 755 "$package"
-          make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$package"
           python3 backend/packaging/runtime-preview/migration_drill.py \
             --ts-image humanengine-drill-ts:local \
             --ts-tools-image humanengine-drill-ts-tools:local \
             --go-image humanengine-go-preview:local --go-revision "$GITHUB_SHA" \
-            --external-snow-image humanengine-go-external:local --external-snow-package "$package" \
+            --external-snow-image humanengine-go-external:local --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
             --evidence "$RUNNER_TEMP/package-evidence/migration-drill.json"
       - name: Rehearse actual Compose stop and cold reopen
         if: steps.proofs.outputs.compose == 'true'

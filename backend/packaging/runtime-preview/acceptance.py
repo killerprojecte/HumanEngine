@@ -144,7 +144,14 @@ def main():
     parser.add_argument("--image", default="humanengine-go-preview:local")
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--browser-smoke", action="store_true", help="run real host Chromium against this package")
+    parser.add_argument("--external-snow-package", type=Path, help="mount the standalone package for the browser proof")
     args = parser.parse_args()
+    standalone_version = None
+    if args.external_snow_package is not None:
+        if not args.browser_smoke:
+            parser.error("--external-snow-package requires --browser-smoke")
+        args.external_snow_package = args.external_snow_package.resolve(strict=True)
+        standalone_version = json.loads((args.external_snow_package / "snowluma-http.v2.json").read_text())["version"]
     if args.browser_smoke:
         TOKEN = "synthetic-package-" + uuid.uuid4().hex
     args.evidence.mkdir(parents=True, exist_ok=True)
@@ -177,7 +184,13 @@ def main():
             fixture = Path(__file__).with_name("fixture.mjs").resolve()
             for plugin_id in ("package-fixture-a", "package-fixture-b"):
                 command += ["--mount", f"type=bind,source={fixture},target=/app/plugins/{plugin_id}.mjs,readonly"]
-            command += ["-e", "HUMANENGINE_PLUGINS=package-fixture-a.mjs,package-fixture-b.mjs"]
+            entries = ["package-fixture-a.mjs", "package-fixture-b.mjs"]
+            if args.external_snow_package is not None:
+                for artifact in ("snowluma-http.v2.json", "snowluma-http.wasm"):
+                    package = args.external_snow_package / artifact
+                    command += ["--mount", f"type=bind,source={package},target=/app/plugins/{artifact},readonly"]
+                entries.append("snowluma-http.v2.json")
+            command += ["-e", "HUMANENGINE_PLUGINS=" + ",".join(entries)]
         docker(*command, args.image, env={**os.environ, "HUMANENGINE_ADMIN_TOKEN": TOKEN})
         return name
 
@@ -248,9 +261,12 @@ def main():
             import browser_chat_fixture
             import browser_smoke
             report["browser"] = {"status": "failed", "failed_phase": "dense-chat-fixture"}
-            with browser_chat_fixture.peer(restarted, image["Id"], port, request) as chat_history:
+            with browser_chat_fixture.peer(restarted, image["Id"], port, request, standalone_version) as chat_history:
                 report["browser"].pop("failed_phase")
-                browser_smoke.run(port, TOKEN, report["browser"], usage_start, chat_history)
+                browser_smoke.run(port, TOKEN, report["browser"], usage_start, chat_history,
+                                  chat_image=standalone_version is not None)
+            if standalone_version is not None:
+                report["external_snow_version"] = standalone_version
             assert not node_pids(restarted), "browser caused a Node runtime inside the image"
             report["checks"].append("hosted-chromium-real-ui")
         a, b = "package-fixture-a", "package-fixture-b"

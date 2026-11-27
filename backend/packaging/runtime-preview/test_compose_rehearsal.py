@@ -5,7 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from compose_rehearsal import assert_envelope, bridge_gateway, run, run_snow_fixture
+from compose_rehearsal import (assert_envelope, assert_standalone_catalog, assert_standalone_mount,
+                               bridge_gateway, run, run_snow_fixture, standalone_override)
 
 
 class ComposeRehearsalTests(unittest.TestCase):
@@ -88,6 +89,25 @@ print("PASS")
                                               lambda: next(addresses), lambda: next(logs), lambda: next(logs)),
                              "remote-history-stop-503")
 
+    def test_standalone_proof_requires_read_only_bind_and_exact_external_catalog(self):
+        package = Path("/tmp/synthetic-snow")
+        service = standalone_override(package)["services"]["humanengine"]
+        self.assertEqual(service["environment"]["HUMANENGINE_PLUGINS"], "snowluma-http.v2.json")
+        bind, = service["volumes"]
+        self.assertEqual((bind["source"], bind["target"], bind["read_only"]),
+                         (str(package), "/app/plugins", True))
+        inspected = {"Mounts": [{"Destination": bind["target"], "Source": bind["source"],
+                                 "Type": "bind", "RW": False}]}
+        assert_standalone_mount(inspected, package)
+        inspected["Mounts"][0]["RW"] = True
+        with self.assertRaises(AssertionError):
+            assert_standalone_mount(inspected, package)
+        exact = {"id": "snowluma", "builtin": False, "enabled": True, "version": "synthetic"}
+        assert_standalone_catalog([exact], "synthetic", True)
+        for key, value in (("builtin", True), ("enabled", False), ("version", "another")):
+            with self.subTest(key=key), self.assertRaises(AssertionError):
+                assert_standalone_catalog([dict(exact, **{key: value})], "synthetic", True)
+
     def test_workflow_keeps_compose_opt_in_after_ordinary_package_acceptance(self):
         workflow = (Path(__file__).resolve().parents[3] /
                     ".github/workflows/golang-package-preview.yml").read_text()
@@ -98,6 +118,11 @@ print("PASS")
         self.assertIn("compose_rehearsal.py", step)
         self.assertNotIn("docker build", step)
         self.assertIn("--snow-fixture", step)
+        self.assertIn("--image humanengine-go-external:local", step)
+        self.assertIn("--external-snow-package", step)
+        for prerequisite in ("Verify opt-in host excludes SnowLuma", "Build the separate SnowLuma test package"):
+            definition = workflow.split(prerequisite, 1)[1].split("- name:", 1)[0]
+            self.assertIn("steps.proofs.outputs.compose == 'true'", definition)
 
 
 if __name__ == "__main__":

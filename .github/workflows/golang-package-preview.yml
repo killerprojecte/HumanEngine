@@ -37,7 +37,8 @@ jobs:
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Verify opt-in host excludes SnowLuma (no push)
-        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true'
+        id: external-host
+        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true'
         run: |
           set -o pipefail
           docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
@@ -51,7 +52,8 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: Build the separate SnowLuma test package
-        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true'
+        id: snow-package
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true'
         run: make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$RUNNER_TEMP/snowluma-preview"
       - name: Select Python for the opt-in browser smoke
         if: steps.proofs.outputs.browser == 'true'
@@ -96,11 +98,12 @@ jobs:
             --external-snow-image humanengine-go-external:local --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
             --evidence "$RUNNER_TEMP/package-evidence/migration-drill.json"
       - name: Rehearse actual Compose stop and cold reopen
-        if: steps.proofs.outputs.compose == 'true'
+        if: steps.proofs.outputs.compose == 'true' && !cancelled() && steps.external-host.outcome == 'success' && steps.snow-package.outcome == 'success'
         run: |
           (cd backend && CGO_ENABLED=0 go test -buildvcs=false -c \
             -o "$RUNNER_TEMP/snow-stop-fixture" ./internal/testsupport/snowstop)
           python3 backend/packaging/runtime-preview/compose_rehearsal.py \
+            --image humanengine-go-external:local --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
             --snow-fixture "$RUNNER_TEMP/snow-stop-fixture" \
             --evidence "$RUNNER_TEMP/package-evidence/compose-rehearsal.json"
       - name: Preserve synthetic acceptance evidence

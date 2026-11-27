@@ -57,10 +57,12 @@ def peer(name, image, port, request, standalone_version=None):
             # Keep the CDN test address isolated; never alter the hosted
             # browser/runner resolver or the product's public URL policy.
             docker("network", "create", "--internal", "--subnet", "192.0.1.0/29", network)
-            docker("network", "connect", network, name)
             docker("run", "-d", "--name", cdn, "--network", network, "--ip", CDN_IP,
                    "--entrypoint", "node", "-e", "HE_BROWSER_CHAT", image,
                    "-e", script, "cdn", env=env)
+            # Reserve the CDN's explicit address before the runtime joins
+            # with a dynamically allocated address on this same bridge.
+            docker("network", "connect", network, name)
             wait_for(lambda: ready(probe, "cdn-ready"), "isolated synthetic CDN", seconds=20)
         docker("run", "-d", "--name", sidecar, "--network", "container:" + name,
                "--entrypoint", "node", "-e", "HE_BROWSER_CHAT", image,

@@ -9,14 +9,30 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from acceptance import wait_for
-from browser_chat_fixture import AVATAR_URLS, GROUP, LOCAL, NAME, REMOTE, SENDER
+from browser_chat_fixture import AVATAR_URLS, CDN_IP, GROUP, LOCAL, NAME, REMOTE, SENDER, peer
 from browser_smoke import browser_request_guard
 
 
 class BrowserRequestGuardTests(unittest.TestCase):
+    def test_fixed_cdn_address_is_reserved_before_dynamic_runtime_join(self):
+        def request(port, method, path, body=None):
+            if method == "GET":
+                return [{"id": "snowluma", "builtin": False, "enabled": True, "version": "preview"}]
+            return {"ok": True}
+        with (patch("browser_chat_fixture.docker", return_value="204") as docker,
+              patch("browser_chat_fixture.configure"),
+              patch("browser_chat_fixture.subprocess.run")):
+            with peer("fixture", "test-image", 3001, request, "preview"):
+                pass
+        commands = [call.args for call in docker.call_args_list]
+        reserved = next(i for i, command in enumerate(commands)
+                        if command[0] == "run" and "--ip" in command and CDN_IP in command)
+        joined = next(i for i, command in enumerate(commands) if command[:2] == ("network", "connect"))
+        self.assertLess(reserved, joined)
+
     def test_fixture_avatar_attempts_are_blocked_without_hiding_other_egress(self):
         origin = "http://127.0.0.1:3001"
         avatars = [f"https://p.qlogo.cn/gh/{GROUP}/{GROUP}/100",

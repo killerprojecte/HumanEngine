@@ -8,6 +8,7 @@ import select
 from pathlib import Path
 import socket
 import subprocess
+from tempfile import TemporaryDirectory
 import time
 from uuid import uuid4
 
@@ -15,6 +16,25 @@ import acceptance
 from acceptance import docker, read_continue, request, wait_for
 
 CONFIG = Path(__file__).with_name("compose-rehearsal.yaml")
+SNOW_ENTRY = "snowluma-http.v2.json"
+
+
+def standalone_override(package):
+    return {"services": {"humanengine": {
+        "environment": {"HUMANENGINE_PLUGINS": SNOW_ENTRY},
+        "volumes": [{"type": "bind", "source": str(package), "target": "/app/plugins",
+                     "read_only": True, "bind": {"create_host_path": False}}],
+    }}}
+
+
+def assert_standalone_mount(inspect, package):
+    mount, = (mount for mount in inspect["Mounts"] if mount["Destination"] == "/app/plugins")
+    assert mount["Type"] == "bind" and mount["Source"] == str(package) and mount["RW"] is False
+
+
+def assert_standalone_catalog(rows, version, enabled):
+    row, = (row for row in rows if row["id"] == "snowluma")
+    assert row["builtin"] is False and row["version"] == version and row["enabled"] is enabled
 
 
 def assert_envelope(inspect):
@@ -103,7 +123,8 @@ def stop_with_admitted_setting(port, command, env, logs, running):
     return settings["debugModelIO"]
 
 
-def run(report, snow_fixture=None):
+def run(report, snow_fixture=None, package=None, override=None):
+    version = json.loads((package / SNOW_ENTRY).read_text())["version"] if package else None
     tag = "he-compose-" + uuid4().hex
     project = "he-rehearsal-" + uuid4().hex
     acceptance.TOKEN = "synthetic-" + uuid4().hex
@@ -115,6 +136,8 @@ def run(report, snow_fixture=None):
                HUMANENGINE_ADMIN_TOKEN=acceptance.TOKEN)
     compose = ["docker", "compose", "--env-file", "/dev/null", "--project-name", project,
                "--file", str(CONFIG)]
+    if package is not None:
+        compose += ["--file", str(override)]
 
     def call(*args):
         return subprocess.check_output([*compose, *args], env=env, text=True,
@@ -123,19 +146,27 @@ def run(report, snow_fixture=None):
     def inspect(container):
         return json.loads(docker("inspect", container))[0]
 
-    def boot(stage):
+    def boot(stage, enabled=False):
         report["phase"] = f"{stage}-up"
         call("up", "--detach", "--no-build", "--pull", "never")
         report["phase"] = f"{stage}-container-image"
         cid = call("ps", "-q", "humanengine")
-        assert cid and inspect(cid)["Image"] == image_id
+        assert cid
+        container = inspect(cid)
+        assert container["Image"] == image_id
+        if package is not None:
+            assert_standalone_mount(container, package)
         report["phase"] = f"{stage}-readiness"
         def ready():
             assert inspect(cid)["State"]["Running"], "Compose runtime stopped before readiness"
             return '"code":"server.listening"' in docker("logs", cid)
         wait_for(ready, "Compose runtime ready")
         report["phase"] = f"{stage}-envelope"
-        return cid, *assert_envelope(inspect(cid))
+        port, mounts = assert_envelope(inspect(cid))
+        if version is not None:
+            report["phase"] = f"{stage}-standalone-catalog"
+            assert_standalone_catalog(request(port, "GET", "/api/plugins"), version, enabled)
+        return cid, port, mounts
 
     def assert_drained(cid):
         state = inspect(cid)["State"]
@@ -178,7 +209,7 @@ def run(report, snow_fixture=None):
                 else:
                     call("rm", "--force", "humanengine")
                     previous = current
-                    current, current_port, reopened = boot("snow-cold-reopen")
+                    current, current_port, reopened = boot("snow-cold-reopen", enabled=True)
                     assert current != previous and reopened == mounts
                     assert request(current_port, "GET", "/api/settings")["debugModelIO"] is overlap_setting
                 report["phase"] = "snow-partial-ack-wire-and-history"
@@ -187,6 +218,8 @@ def run(report, snow_fixture=None):
             def stop_overlap():
                 nonlocal overlap_setting
                 report["phase"] = "snow-compose-overlap"
+                if version is not None:
+                    assert_standalone_catalog(request(current_port, "GET", "/api/plugins"), version, True)
                 overlap_setting = stop_with_admitted_setting(
                     current_port, stop_command, env, lambda: docker("logs", current),
                     lambda: inspect(current)["State"]["Running"])
@@ -208,6 +241,9 @@ def run(report, snow_fixture=None):
                                      "compose-overlap-held-snow-history-and-admitted-setting-drained",
                                      "compose-overlap-native-model-peer-closed-without-replay",
                                      "compose-overlap-contextual-sticker-cancelled-fresh-sticker-learned"))
+            if version is not None:
+                report["external_snow_version"] = version
+                report["checks"].append("compose-separate-read-only-snowluma-package-on-cold-reopen")
     finally:
         try:
             call("down", "--volumes")
@@ -220,12 +256,23 @@ def main():
     parser.add_argument("--image", default="humanengine-go-preview:local")
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--snow-fixture", type=Path)
+    parser.add_argument("--external-snow-package", type=Path)
     args = parser.parse_args()
+    if args.external_snow_package and not args.snow_fixture:
+        parser.error("--external-snow-package requires --snow-fixture")
     report = {"status": "failed", "phase": "resolve-image", "checks": []}
     try:
         image = json.loads(docker("image", "inspect", args.image))[0]
         report.update(image=image["Id"], revision=image["Config"]["Labels"]["org.opencontainers.image.revision"])
-        run(report, args.snow_fixture)
+        if args.external_snow_package:
+            report["phase"] = "resolve-external-package"
+            package = args.external_snow_package.resolve(strict=True)
+            with TemporaryDirectory(prefix="he-compose-config-") as folder:
+                override = Path(folder) / "external.json"
+                override.write_text(json.dumps(standalone_override(package)))
+                run(report, args.snow_fixture, package, override)
+        else:
+            run(report, args.snow_fixture)
         report["status"] = "passed"
         report.pop("phase")
     except (AssertionError, OSError, KeyError, ValueError, subprocess.SubprocessError):

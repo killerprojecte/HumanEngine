@@ -521,8 +521,11 @@ func (m *Manager) failure(i *item, err error, requestID, operation, phase string
 		config.RequestID = requestID
 	} else if !errors.As(err, &failure) {
 		code := "plugin_setup_failed"
-		if errors.Is(err, botruntime.ErrAdapterIDInUse) {
+		switch {
+		case errors.Is(err, botruntime.ErrAdapterIDInUse):
 			code = "adapter_id_in_use"
+		case errors.Is(err, errPluginProfileUnsupported):
+			code = profileUnsupportedCode
 		}
 		failure = NewStartupError(code, nil)
 		failure.RequestID = requestID
@@ -587,7 +590,9 @@ func (m *Manager) startWithSession(ctx context.Context, id string, i *item, revi
 			current := i.revision == revision && i.desired
 			m.mu.Unlock()
 			if current {
-				_ = m.writeEnabled(context.Background(), id, false)
+				if !errors.Is(err, errPluginProfileUnsupported) {
+					_ = m.writeEnabled(context.Background(), id, false)
+				}
 				err = m.failure(i, err, requestID, "plugin.enable", "setup")
 			} else {
 				failure := NewStartupError("plugin_disabled", nil)

@@ -53,7 +53,16 @@ func (m *Manager) bindStructuredSearch(id string, schema, route *jsjson.Object) 
 			}
 			return nil
 		},
-		Prepare: func(_ context.Context, value, _ *jsjson.Object) (*jsjson.Object, []credentials.Change, error) {
+		CheckStart: func(config *jsjson.Object) error {
+			provider, fallback := text(config, "provider"), text(config, "fallbackProvider")
+			// An implicit TypeScript default is Bing, not this endpoint.
+			// Never substitute the preview for an absent or different route.
+			if provider != out.provider || fallback != "" && fallback != "none" && fallback != out.provider {
+				return errPluginProfileUnsupported
+			}
+			return nil
+		},
+		Prepare: func(_ context.Context, value, previous *jsjson.Object) (*jsjson.Object, []credentials.Change, error) {
 			var changes []credentials.Change
 			switch {
 			case prop(value, out.clear) == true:
@@ -64,6 +73,15 @@ func (m *Manager) bindStructuredSearch(id string, schema, route *jsjson.Object) 
 			safe, _ := pluginconfig.Redact(value, schema)
 			config := safe.(*jsjson.Object)
 			config.Delete(out.clear)
+			// An edit without routing fields preserves the existing route,
+			// including an implicit source default, for rollback.
+			for _, name := range []string{"provider", "fallbackProvider", "allowExperimentalHtml"} {
+				if _, found := config.Get(name); !found {
+					if saved, found := previous.Get(name); found {
+						_ = config.Set(name, saved)
+					}
+				}
+			}
 			return config, changes, nil
 		},
 		Secrets: func(ctx context.Context) (*jsjson.Object, error) {
@@ -85,7 +103,7 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 		TimeoutMS      int `json:"timeoutMs"`
 		ParserBudget   int `json:"maxResponseBytes"`
 		MaxConcurrency int `json:"maxConcurrency"`
-	}{5, 10000, 262144, 2}
+	}{MaxResults: 5, TimeoutMS: 10000, ParserBudget: 262144, MaxConcurrency: 2}
 	if err := json.Unmarshal(in.Config, &config); err != nil || config.MaxResults < 1 || config.MaxResults > 10 ||
 		config.TimeoutMS < 500 || config.TimeoutMS > 30000 || config.ParserBudget < 4096 ||
 		config.ParserBudget > 16777216 || config.MaxConcurrency < 1 || config.MaxConcurrency > 4 {

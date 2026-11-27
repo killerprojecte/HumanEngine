@@ -50,7 +50,7 @@ func (m *Manager) registerWASM(descriptor BuiltinDescriptor, builtin bool) error
 		return errors.New("builtin_runtime_not_implemented")
 	}
 	policy := descriptor.Policy
-	if (policy.Configure != nil || policy.CredentialFailure != nil || policy.Validate != nil || policy.Prepare != nil || policy.Secrets != nil) &&
+	if (policy.Configure != nil || policy.CredentialFailure != nil || policy.Validate != nil || policy.CheckStart != nil || policy.Prepare != nil || policy.Secrets != nil) &&
 		(policy.Validate == nil || policy.Prepare == nil || policy.Secrets == nil) {
 		return errors.New("builtin_policy_incomplete")
 	}
@@ -114,6 +114,11 @@ func (m *Manager) startBuiltin(ctx context.Context, id string, i *item, revision
 		}
 		if err = policy.Validate(ctx, object); err != nil {
 			return err
+		}
+		if policy.CheckStart != nil {
+			if err = policy.CheckStart(object); err != nil {
+				return err
+			}
 		}
 	} else if err = pluginconfig.ValidateBuiltin(value, schema(i)); err != nil {
 		return &ConfigurationError{Issues: []Issue{}}

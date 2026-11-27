@@ -2,10 +2,17 @@
 package pluginmanager
 
 import (
+	"errors"
 	"math"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
+
+const profileUnsupportedCode = "plugin_profile_unsupported"
+
+// A partial package cannot execute these saved settings; the operator's
+// existing enablement still belongs to the installation, not the package.
+var errPluginProfileUnsupported = errors.New(profileUnsupportedCode)
 
 type Issue struct {
 	Field  string `json:"field"`
@@ -71,6 +78,7 @@ var startupCodes = map[string]bool{
 	"secret_decryption_failed":         true,
 	"plugin_artifact_digest_mismatch":  true,
 	"plugin_setup_failed":              true,
+	profileUnsupportedCode:             true,
 	"plugin_disabled":                  true,
 	"invalid_plugin_configuration":     true,
 	"credential_not_configured":        true,

@@ -7,5 +7,5 @@
     "credential": "tavilyKey",
     "clear": "clearTavilyKey"
   },
-  "properties": ["maxResults", "timeoutMs", "maxResponseBytes", "maxConcurrency", "tavilyKey", "clearTavilyKey"]
+  "properties": ["provider", "fallbackProvider", "allowExperimentalHtml", "maxResults", "timeoutMs", "maxResponseBytes", "maxConcurrency", "tavilyKey", "clearTavilyKey"]
 }

@@ -7,6 +7,10 @@ on:
     paths:
       - '.github/workflows/golang-package-structured-search.yml'
       - 'backend/internal/app/external_web_search_test.go'
+      - 'backend/internal/app/testdata/web-search-rollback.mjs'
+      - 'backend/internal/pluginmanager/manager.go'
+      - 'backend/internal/pluginmanager/errors.go'
+      - 'backend/internal/pluginmanager/builtin*.go'
       - 'backend/internal/pluginmanager/external_v2.go'
       - 'backend/internal/pluginmanager/structured_*.go'
       - 'backend/plugins/web-search/**'
@@ -102,6 +106,23 @@ jobs:
           test "$(docker logs "$peer" | grep -cx search-post)" = 1
           ! docker logs "$peer" | grep -q unexpected-request
           printf '%s\n' 'one-provider-post-exact-cached-range' | tee -a "$proof"
+      - name: Prove existing TypeScript search settings and enablement survive Go and rollback
+        run: |
+          set -euo pipefail
+          proof="$RUNNER_TEMP/search-receipt.txt"
+          docker run --rm --network none \
+            --mount "type=bind,source=$RUNNER_TEMP/independent-search-plugin,target=/independent-search-plugin,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/search-test-build,target=/search-test-build,readonly" \
+            -e HE_SEARCH_PACKAGE=/independent-search-plugin \
+            -e HE_SOURCE_ROOT=/src \
+            -e HE_IMAGE_LIBRARY=/src/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7 \
+            --entrypoint sh humanengine-search-fixture:local -ec '
+              cd /src/backend/internal/app
+              /search-test-build/search-fixture -test.v -test.run "^TestStructuredSearchPreservesTypeScriptRollback$"
+            ' | tee -a "$proof"
+          for scenario in tavily bing implicit fallback; do
+            grep -Fq "ts-go-ts-search-settings-preserved: $scenario" "$proof"
+          done
       - name: Preserve synthetic search evidence
         if: always()
         uses: actions/upload-artifact@v4

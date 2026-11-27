@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -67,7 +68,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if field(field(catalog[0], "configuredSecrets"), "tavilyKey") != false {
 		t.Fatal("fixture starts without a key")
 	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"tavilyKey": secret})
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"provider": "tavily", "tavilyKey": secret})
 	config := appRequest(t, a, http.MethodGet, "/api/plugins/web-search/config", nil)
 	catalog = appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
 	if field(config, "tavilyKey") != nil || field(field(catalog[0], "configuredSecrets"), "tavilyKey") != true {
@@ -240,5 +241,69 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	catalog = appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
 	if field(field(catalog[0], "configuredSecrets"), "tavilyKey") != false {
 		t.Fatal("disabled plugin could not clear its credential")
+	}
+}
+
+func TestStructuredSearchPreservesTypeScriptRollback(t *testing.T) {
+	pkg := os.Getenv("HE_SEARCH_PACKAGE")
+	if pkg == "" {
+		t.Skip("explicit independent search package required")
+	}
+	for _, tc := range []struct {
+		scenario, provider, fallback string
+		consent, active              bool
+	}{
+		{"tavily", "tavily", "none", false, true},
+		{"bing", "bing", "tavily", true, false},
+		{"implicit", "", "", true, false},
+		{"fallback", "tavily", "bing", true, false},
+	} {
+		t.Run(tc.scenario, func(t *testing.T) {
+			root := t.TempDir()
+			ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
+			defer cancel()
+			source := func(phase string) {
+				t.Helper()
+				cmd := exec.CommandContext(ctx, "node", "--import", "tsx", "testdata/web-search-rollback.mjs", phase, root, tc.scenario)
+				out, err := cmd.CombinedOutput()
+				marker := "search-rollback-source-" + phase + "-" + tc.scenario
+				if err != nil || !strings.Contains(string(out), marker) {
+					t.Fatalf("TypeScript %s failed: %v\n%s", phase, err, out)
+				}
+			}
+			source("seed")
+			a, err := Open(ctx, Options{
+				Installation: installation.Options{
+					Database: filepath.Join(root, "live/main.sqlite"), AuthorityDirectory: filepath.Join(root, "authority"),
+					VectorExtension: filepath.Join(os.Getenv("HE_SOURCE_ROOT"), "node_modules/sqlite-vec-linux-x64/vec0.so"), SourceTimezone: "UTC",
+				},
+				PluginRoot: pkg, ImageLibrary: os.Getenv("HE_IMAGE_LIBRARY"), Node: "node", AdminToken: "synthetic-token", Locale: "en-US",
+				Entries: []string{"web-search.v2.json"}, Builtins: []string{},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer a.Shutdown(context.Background())
+			catalog := appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
+			config := appRequest(t, a, http.MethodGet, "/api/plugins/web-search/config", nil)
+			provider, _ := field(config, "provider").(string)
+			fallback, _ := field(config, "fallbackProvider").(string)
+			item := catalog[0]
+			if provider != tc.provider || fallback != tc.fallback || field(config, "allowExperimentalHtml") != tc.consent ||
+				field(config, "maxResults") != float64(3) || field(config, "timeoutMs") != float64(8500) ||
+				field(config, "maxResponseBytes") != float64(16384) || field(config, "maxConcurrency") != float64(1) ||
+				field(config, "tavilyKey") != nil || field(field(item, "configuredSecrets"), "tavilyKey") != true ||
+				field(item, "enabled") != tc.active || a.WASM.Loaded("web-search") != tc.active || a.Bridge.Host.PID() != 0 {
+				t.Fatal("saved settings, credential presence or active route changed")
+			}
+			if !tc.active && field(item, "error") != "plugin_profile_unsupported" {
+				t.Fatal("missing explicit unsupported route result", field(item, "error"))
+			}
+			if err := a.Shutdown(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			source("rollback")
+			t.Log("ts-go-ts-search-settings-preserved:", tc.scenario)
+		})
 	}
 }

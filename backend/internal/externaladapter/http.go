@@ -21,6 +21,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/onebotwire"
 	"github.com/killerprojecte/HumanEngine/backend/internal/outboundmedia"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 )
 
@@ -47,23 +48,24 @@ type sourcePorts struct {
 }
 
 type httpSession struct {
-	profile  httpProfile
-	call     guestCall
-	source   sourcePorts
-	life     context.Context
-	cancel   context.CancelFunc
-	lease    *botruntime.AdapterRegistration
-	client   *http.Client
-	ws       *onebotwire.WS
-	encoder  *outboundmedia.Encoder
-	server   http.Server
-	listener net.Listener
-	adapter  botruntime.Adapter
-	work     quiescence.Group
-	stop     sync.Once
-	served   chan struct{}
-	done     chan struct{}
-	closeErr error
+	profile     httpProfile
+	call        guestCall
+	source      sourcePorts
+	life        context.Context
+	cancel      context.CancelFunc
+	lease       *botruntime.AdapterRegistration
+	client      *http.Client
+	ws          *onebotwire.WS
+	encoder     *outboundmedia.Encoder
+	publicImage *publicimage.Reader
+	server      http.Server
+	listener    net.Listener
+	adapter     botruntime.Adapter
+	work        quiescence.Group
+	stop        sync.Once
+	served      chan struct{}
+	done        chan struct{}
+	closeErr    error
 }
 
 func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile httpProfile, call guestCall, source sourcePorts) (*httpSession, error) {
@@ -128,8 +130,11 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 		}
 	}
 	if p := profile.onebotHTTP; p != nil && p.media {
+		if p.publicMedia {
+			s.publicImage = publicimage.NewReader(s.work.Start)
+		}
 		s.adapter.InlineImage = &botruntime.InlineImageAdapter{
-			Read: readOneBotInline, Classify: classifyOneBotImage,
+			Read: readOneBotInline, Classify: s.classifyOneBotImage,
 			Current: func() bool { return bound.Err() == nil },
 		}
 		s.adapter.BrowserImage = s.readOneBotImage

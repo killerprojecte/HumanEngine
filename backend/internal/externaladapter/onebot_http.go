@@ -49,13 +49,14 @@ const oneBotHTTPSchema = `{
 }`
 
 type oneBotHTTP struct {
-	eventPath string
-	websocket bool
-	media     bool
-	outbound  bool
-	history   bool
-	token     string
-	eventKey  []byte
+	eventPath   string
+	websocket   bool
+	media       bool
+	publicMedia bool
+	outbound    bool
+	history     bool
+	token       string
+	eventKey    []byte
 }
 
 type oneBotIngress struct {
@@ -129,7 +130,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			p := httpProfile{scope: scope{adapter: desc.AdapterID, account: account, onebot: true},
 				botID: account, listen: listen, action: text(cfg, "url"),
 				onebotHTTP: &oneBotHTTP{eventPath: route, websocket: websocket, token: token, eventKey: []byte(eventToken),
-					media: desc.Wire != oneBotHTTPWire, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history}}
+					media: desc.Wire != oneBotHTTPWire, publicMedia: forward, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history}}
 
 			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original})
 		},

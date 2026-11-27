@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
-	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 )
 
 const publicBrowserImageSupported = true
@@ -24,6 +24,6 @@ func (s *Sender) readPublicBrowserImage(ctx context.Context, locator string, bef
 	if s.current() != nil {
 		return nil, botruntime.ErrDisplayImageUnavailable
 	}
-	reader := publicImageReader{lookup: pinnedhop.LookupChild, beginWork: s.work.Start}
-	return reader.read(ctx, locator, before)
+	reader := publicimage.NewReader(s.work.Start)
+	return reader.Read(ctx, locator, before)
 }

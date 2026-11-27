@@ -12,6 +12,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 )
 
 func TestBrowser403RefreshActualSource(t *testing.T) {
@@ -73,9 +74,9 @@ func TestBrowser403RefreshActualSource(t *testing.T) {
 				case "":
 					return []byte(body), nil
 				case "public_http_403":
-					return nil, publicImageHTTPStatus(http.StatusForbidden)
+					return nil, publicimage.HTTPStatus(http.StatusForbidden)
 				case "public_http_404":
-					return nil, publicImageHTTPStatus(http.StatusNotFound)
+					return nil, publicimage.HTTPStatus(http.StatusNotFound)
 				default:
 					return nil, errors.New(failure)
 				}
@@ -107,7 +108,7 @@ func TestBrowser403RefreshPreservesSourceDenial(t *testing.T) {
 		if url != stale {
 			t.Fatalf("source denial reached returned locator %s", url)
 		}
-		return nil, publicImageHTTPStatus(http.StatusForbidden)
+		return nil, publicimage.HTTPStatus(http.StatusForbidden)
 	})
 	if !errors.Is(err, botruntime.ErrDisplayImageUnavailable) {
 		t.Fatalf("authority denial between phases was not preserved: %v", err)
@@ -123,8 +124,8 @@ func errorString(err error) string {
 
 func TestPublicBrowserLocatorExpiryIsOnlyTypedUpstream403(t *testing.T) {
 	for _, err := range []error{
-		publicImageHTTPStatus(http.StatusNotFound),
-		publicImageHTTPStatus(http.StatusGone),
+		publicimage.HTTPStatus(http.StatusNotFound),
+		publicimage.HTTPStatus(http.StatusGone),
 		errors.New("public_http_403"),
 		botruntime.ErrDisplayImageUnavailable,
 		context.Canceled,
@@ -133,7 +134,7 @@ func TestPublicBrowserLocatorExpiryIsOnlyTypedUpstream403(t *testing.T) {
 			t.Fatalf("unqualified error triggered exact refresh: %v", err)
 		}
 	}
-	err := publicImageHTTPStatus(http.StatusForbidden)
+	err := publicimage.HTTPStatus(http.StatusForbidden)
 	if err.Error() != "public_http_403" || !errors.Is(err, botruntime.ErrBrowserImageLocatorExpired) {
 		t.Fatalf("upstream 403 did not preserve its error and qualify refresh: %v", err)
 	}

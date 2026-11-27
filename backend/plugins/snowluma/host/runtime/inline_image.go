@@ -6,6 +6,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/onebotimage"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/core"
 )
 
@@ -16,7 +17,7 @@ func classifyRetainedImage(scene botruntime.Scene, reference string) botruntime.
 	if payload, inline := onebotimage.InlinePayload(file); inline && len(payload) != 0 && payload[0] != '"' {
 		return botruntime.NativeImageInline
 	}
-	if publicBrowserImageSupported && publicImageLocator(file) {
+	if publicBrowserImageSupported && publicimage.IsLocator(file) {
 		return botruntime.NativeImageBrowserDirect
 	}
 	// Only a non-direct canonical candidate needs the exact token parser.

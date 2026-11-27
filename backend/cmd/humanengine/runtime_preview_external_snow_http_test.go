@@ -321,6 +321,28 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	post(strings.ReplaceAll(strings.Replace(mediaRaw, `"message_id":11`, `"message_id":13`, 1),
 		"fixture-image-token", "fixture-url-token"), eventToken, 204)
 	commandRequest(t, addr, "GET", mediaURL(`"13"`), nil, 404)
+	// A paired locator still renders as a same-origin attachment, but
+	// must not dial private addresses or fall back to a token on a policy denial.
+	publicPair := strings.Replace(strings.Replace(mediaRaw, `"message_id":11`, `"message_id":14`, 1),
+		`"file":"fixture-image-token"`, fmt.Sprintf(`"url":%q,"file_id":"fixture-image-token"`, peer.URL+"/must-not-fetch"), 1)
+	post(publicPair, eventToken, 204)
+	mediaRows = commandRequest(t, addr, "GET", mediaPath+"/history?source=local", nil, 200)
+	if err := json.Unmarshal(mediaRows, &mediaHistory); err != nil {
+		t.Fatal(err)
+	}
+	pairURL := ""
+	for _, row := range mediaHistory.Items {
+		if row.ID == mediaScene+":m:"+encode(`"14"`) && len(row.Parts) == 2 {
+			pairURL = row.Parts[1].MediaURL
+			break
+		}
+	}
+	actual, err := url.PathUnescape(pairURL)
+	expected, _ := url.PathUnescape(mediaURL(`"14"`))
+	if err != nil || actual != expected || bytes.Contains(mediaRows, []byte(peer.URL)) {
+		t.Fatalf("the URL and file ID should project only a same-origin media route: %s", mediaRows)
+	}
+	commandRequest(t, addr, "GET", pairURL, nil, 503)
 	post(fmt.Sprintf(`{"post_type":"notice","notice_type":"group_recall","self_id":42,"group_id":902,"message_id":11,"time":%d}`, time.Now().Unix()), eventToken, 204)
 	commandRequest(t, addr, "GET", mediaURL(`"11"`), nil, 404)
 	if got := imageLookups.Load(); got != 2 || unexpectedDownloads.Load() != 0 {

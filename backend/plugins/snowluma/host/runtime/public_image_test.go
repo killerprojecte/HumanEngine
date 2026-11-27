@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 )
 
 func TestPublicImageActualSource(t *testing.T) {
@@ -45,8 +46,8 @@ func TestPublicImageActualSource(t *testing.T) {
 	if err := json.Unmarshal(raw, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if fixture.MaxHeaderSize != publicImageHeaderBytes {
-		t.Fatalf("Node header limit=%d, Go=%d", fixture.MaxHeaderSize, publicImageHeaderBytes)
+	if fixture.MaxHeaderSize != publicimage.HeaderBytes {
+		t.Fatalf("Node header limit=%d, Go=%d", fixture.MaxHeaderSize, publicimage.HeaderBytes)
 	}
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -82,8 +83,8 @@ func TestPublicImageActualSource(t *testing.T) {
 				fmt.Fprint(w, body)
 			})
 			var server *httptest.Server
-			reader := publicImageReader{
-				lookup: func(_ context.Context, hostname string) pinnedhop.LookupJob {
+			reader := publicimage.Reader{
+				Lookup: func(_ context.Context, hostname string) pinnedhop.LookupJob {
 					lookups = append(lookups, hostname)
 					result := make(chan pinnedhop.DNSResult, 1)
 					drained := make(chan struct{})
@@ -96,8 +97,8 @@ func TestPublicImageActualSource(t *testing.T) {
 					close(drained)
 					return pinnedhop.LookupJob{Result: result, Drained: drained}
 				},
-				beginWork: func() (func(), bool) { return func() {}, true },
-				dial: func(ctx context.Context, family, target string) (net.Conn, error) {
+				BeginWork: func() (func(), bool) { return func() {}, true },
+				Dial: func(ctx context.Context, family, target string) (net.Conn, error) {
 					if len(actual) >= len(tc.Requests) {
 						return nil, fmt.Errorf("unexpected dial to %s", target)
 					}
@@ -116,13 +117,13 @@ func TestPublicImageActualSource(t *testing.T) {
 			if len(tc.Requests) != 0 {
 				if tc.Requests[0].Servername != "" {
 					server = httptest.NewTLSServer(handler)
-					reader.tls = server.Client().Transport.(*http.Transport).TLSClientConfig
+					reader.TLS = server.Client().Transport.(*http.Transport).TLSClientConfig
 				} else {
 					server = httptest.NewServer(handler)
 				}
 				defer server.Close()
 			}
-			bytes, err := reader.read(context.Background(), tc.URL, func(context.Context) error { return nil })
+			bytes, err := reader.Read(context.Background(), tc.URL, func(context.Context) error { return nil })
 			if len(actual) == len(tc.Requests) && len(wire) == len(actual) {
 				for i := range actual {
 					item := <-wire
@@ -153,9 +154,9 @@ func TestPublicImageRequalifiesBeforeIO(t *testing.T) {
 			var lookup, dial int
 			input, output := net.Pipe()
 			defer output.Close()
-			r := publicImageReader{
-				beginWork: func() (func(), bool) { return func() {}, true },
-				lookup: func(context.Context, string) pinnedhop.LookupJob {
+			r := publicimage.Reader{
+				BeginWork: func() (func(), bool) { return func() {}, true },
+				Lookup: func(context.Context, string) pinnedhop.LookupJob {
 					lookup++
 					revoked = stage == "dns"
 					result := make(chan pinnedhop.DNSResult, 1)
@@ -165,7 +166,7 @@ func TestPublicImageRequalifiesBeforeIO(t *testing.T) {
 					close(drained)
 					return pinnedhop.LookupJob{Result: result, Drained: drained}
 				},
-				dial: func(context.Context, string, string) (net.Conn, error) {
+				Dial: func(context.Context, string, string) (net.Conn, error) {
 					dial++
 					revoked = true
 					return output, nil
@@ -173,7 +174,7 @@ func TestPublicImageRequalifiesBeforeIO(t *testing.T) {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			_, err := r.read(ctx, "http://example.com/direct", func(context.Context) error {
+			_, err := r.Read(ctx, "http://example.com/direct", func(context.Context) error {
 				if revoked {
 					return denied
 				}

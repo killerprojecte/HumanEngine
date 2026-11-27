@@ -9,6 +9,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/onebotimage"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 )
 
 type imageTokenLookup func(context.Context, string) (any, error)
@@ -29,7 +30,7 @@ func (s *Sender) readBrowserImage(ctx context.Context, scene botruntime.Scene, r
 	public := func(call context.Context, locator string) ([]byte, error) {
 		return s.readPublicBrowserImage(call, locator, before)
 	}
-	if publicImageLocator(file) {
+	if publicimage.IsLocator(file) {
 		return readPublicImageWithTokenRefresh(ctx, media, file, lookup, public)
 	}
 	return readTokenOrInlineDescriptor(ctx, media, file, lookup, browserTokenContinuation(publicBrowserImageSupported, public))
@@ -39,7 +40,7 @@ func (s *Sender) readBrowserImage(ctx context.Context, scene botruntime.Scene, r
 // retain the original result and cannot authorize a second platform action.
 func readPublicImageWithTokenRefresh(ctx context.Context, media *jsjson.Object, file string, lookup imageTokenLookup, public selectedImageRead) ([]byte, error) {
 	image, err := public(ctx, file)
-	if err != publicImageHTTPStatus(http.StatusForbidden) || ctx.Err() != nil {
+	if err != publicimage.HTTPStatus(http.StatusForbidden) || ctx.Err() != nil {
 		return image, err
 	}
 	token := str(media, "fileId")
@@ -128,7 +129,7 @@ func browserTokenContinuation(supported bool, readPublic selectedImageRead) sele
 		return inlineTokenContinuation
 	}
 	return func(ctx context.Context, source string) ([]byte, error) {
-		if publicImageLocator(source) {
+		if publicimage.IsLocator(source) {
 			return readPublic(ctx, source)
 		}
 		return inlineTokenContinuation(ctx, source)
@@ -149,7 +150,7 @@ func (s *Sender) prepareVisionImage(scene botruntime.Scene, reference string) bo
 		return nil
 	}
 	file := str(media, "file")
-	if publicImageLocator(file) {
+	if publicimage.IsLocator(file) {
 		// URL-only originals share the guarded browser transport, not its
 		// expired-locator refresh. A second locator does not qualify here.
 		id, present := media.Get("fileId")
@@ -171,12 +172,8 @@ func (s *Sender) prepareVisionImage(scene botruntime.Scene, reference string) bo
 	}
 }
 
-func publicImageLocator(value string) bool {
-	return hasFoldPrefix(value, "http:") || hasFoldPrefix(value, "https:")
-}
-
 func directImageLocator(value string) bool {
-	return publicImageLocator(value) || hasFoldPrefix(value, "base64://") || hasFoldPrefix(value, "data:")
+	return publicimage.IsLocator(value) || hasFoldPrefix(value, "base64://") || hasFoldPrefix(value, "data:")
 }
 
 func hasFoldPrefix(value, prefix string) bool {

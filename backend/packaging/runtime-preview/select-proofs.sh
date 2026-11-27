@@ -39,7 +39,7 @@ root=backend/packaging/runtime-preview
 detect browser "$root/browser_smoke.py" "$root/browser_usage_seed.mjs" "$root/browser-requirements.txt" \
   "$root/browser_chat_fixture.py" "$root/browser_chat_fixture.cjs" "$root/test_browser_chat_fixture.py"
 detect restore "$root/migration_drill.py" "$root/test_migration_drill.py" "$root/recall_fixture.cjs" \
-  backend/internal/externaladapter backend/internal/onebotwire backend/plugins/snowluma/portable-http
+  backend/internal/externaladapter backend/internal/onebotwire backend/internal/publicimage backend/plugins/snowluma/portable-http
 detect compose "$root/compose-rehearsal.yaml" "$root/compose_rehearsal.py" "$root/test_compose_rehearsal.py" backend/internal/testsupport/snowstop \
   backend/internal/pluginmanager/configuration_operation.go backend/internal/plugins/wasm.go \
   backend/plugins/snowluma/host/runtime/policy_lifetime.go

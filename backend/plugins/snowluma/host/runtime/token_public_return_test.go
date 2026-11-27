@@ -17,6 +17,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
+	"github.com/killerprojecte/HumanEngine/backend/internal/publicimage"
 )
 
 func TestBrowserTokenPublicReturnActualSource(t *testing.T) {
@@ -109,9 +110,9 @@ func TestBrowserTokenPublicReturnRequalifiesBeforeDNS(t *testing.T) {
 				return nil
 			}
 			wire := make(chan error, 1)
-			reader := publicImageReader{
-				beginWork: func() (func(), bool) { return func() {}, true },
-				lookup: func(_ context.Context, host string) pinnedhop.LookupJob {
+			reader := publicimage.Reader{
+				BeginWork: func() (func(), bool) { return func() {}, true },
+				Lookup: func(_ context.Context, host string) pinnedhop.LookupJob {
 					if host != "fixture.invalid" {
 						t.Fatalf("unexpected DNS host %q", host)
 					}
@@ -123,7 +124,7 @@ func TestBrowserTokenPublicReturnRequalifiesBeforeDNS(t *testing.T) {
 					close(drained)
 					return pinnedhop.LookupJob{Result: result, Drained: drained}
 				},
-				dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 					dials++
 					if network != "tcp4" || address != "8.8.8.8:80" {
 						t.Fatalf("unexpected pinned dial %s %s", network, address)
@@ -159,7 +160,7 @@ func TestBrowserTokenPublicReturnRequalifiesBeforeDNS(t *testing.T) {
 				revoked = deny
 				return obj("url", "http://fixture.invalid/chosen", "file", "base64://YQ=="), nil
 			}, browserTokenContinuation(true, func(call context.Context, locator string) ([]byte, error) {
-				return reader.read(call, locator, guard)
+				return reader.Read(call, locator, guard)
 			}))
 			if deny {
 				if !errors.Is(err, botruntime.ErrDisplayImageUnavailable) || actions != 1 || lookups != 0 || dials != 0 || len(bytes) != 0 {

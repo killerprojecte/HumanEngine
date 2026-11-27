@@ -1,4 +1,5 @@
-package snowlumaruntime
+// Package publicimage reads public image URLs over a pinned, guarded transport.
+package publicimage
 
 import (
 	"bufio"
@@ -23,21 +24,20 @@ import (
 )
 
 const (
-	publicImageMaxBytes    = 64 * 1024 * 1024
-	publicImageHeaderBytes = 16 * 1024 // pinned Node http.maxHeaderSize
+	publicImageMaxBytes = 64 * 1024 * 1024
+	HeaderBytes         = 16 * 1024 // pinned Node http.maxHeaderSize
 )
 
-// publicImageReader is the fixed SnowLuma public-image GET profile. It is
-// called only by the retained native browser-image owner, with its
-// generation/source guard and joinable resolver.
-type publicImageReader struct {
-	lookup    pinnedhop.Lookup
-	beginWork func() (func(), bool)
-	dial      func(context.Context, string, string) (net.Conn, error)
-	tls       *tls.Config
+// Reader is the shared public-image GET profile. A retained-image owner
+// supplies the source/generation guard and owns the joinable resolver.
+type Reader struct {
+	Lookup    pinnedhop.Lookup
+	BeginWork func() (func(), bool)
+	Dial      func(context.Context, string, string) (net.Conn, error)
+	TLS       *tls.Config
 }
 
-func (r publicImageReader) read(ctx context.Context, locator string, before func(context.Context) error) ([]byte, error) {
+func (r Reader) Read(ctx context.Context, locator string, before func(context.Context) error) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	u, err := whatwg.Parse(locator)
@@ -79,20 +79,26 @@ func (r publicImageReader) read(ctx context.Context, locator string, before func
 	}
 }
 
+// IsLocator recognizes the HTTP forms that the reader qualifies before DNS.
+func IsLocator(value string) bool {
+	return len(value) >= 5 && strings.EqualFold(value[:5], "http:") ||
+		len(value) >= 6 && strings.EqualFold(value[:6], "https:")
+}
+
 func publicImageURL(u *whatwg.Url, original string) bool {
 	units, err := jsjson.UTF16Len(original)
 	return err == nil && units <= 16384 && (u.Protocol() == "https:" || u.Protocol() == "http:") &&
 		u.Username() == "" && u.Password() == "" && u.Hash() == ""
 }
 
-func (r publicImageReader) address(ctx context.Context, hostname string, before func(context.Context) error) (netip.Addr, error) {
+func (r Reader) address(ctx context.Context, hostname string, before func(context.Context) error) (netip.Addr, error) {
 	if ip, err := netip.ParseAddr(hostname); err == nil {
 		return publicImageAddress([]netip.Addr{ip})
 	}
 	if err := before(ctx); err != nil {
 		return netip.Addr{}, err
 	}
-	addresses, err := pinnedhop.Resolve(ctx, hostname, 5*time.Second, r.lookup, r.beginWork)
+	addresses, err := pinnedhop.Resolve(ctx, hostname, 5*time.Second, r.Lookup, r.BeginWork)
 	if err != nil {
 		return netip.Addr{}, err
 	}
@@ -115,7 +121,7 @@ func publicImageAddress(addresses []netip.Addr) (netip.Addr, error) {
 	return chosen, nil
 }
 
-func (r publicImageReader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.URL, ip netip.Addr, hostname string, last bool, before func(context.Context) error) ([]byte, string, error) {
+func (r Reader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.URL, ip netip.Addr, hostname string, last bool, before func(context.Context) error) ([]byte, string, error) {
 	secure := u.Protocol() == "https:"
 	family := 6
 	if ip.Is4() {
@@ -128,7 +134,7 @@ func (r publicImageReader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.U
 			port = "443"
 		}
 	}
-	conn, _, finish, err := pinnedhop.Open(ctx, r.dial, r.tls, family, ip.String(), port, hostname, secure)
+	conn, _, finish, err := pinnedhop.Open(ctx, r.Dial, r.TLS, family, ip.String(), port, hostname, secure)
 	if err != nil {
 		return nil, "", publicImageIOError(ctx)
 	}
@@ -146,7 +152,7 @@ func (r publicImageReader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.U
 
 	// Preserve the source Node header budget without a second HTTP parser. After
 	// final headers, the very same buffered reader becomes the body reader.
-	limit := &io.LimitedReader{R: conn, N: publicImageHeaderBytes}
+	limit := &io.LimitedReader{R: conn, N: HeaderBytes}
 	reader := bufio.NewReader(limit)
 	var resp *http.Response
 	for {
@@ -157,7 +163,7 @@ func (r publicImageReader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.U
 		if resp.StatusCode < 100 || resp.StatusCode >= 200 || resp.StatusCode == http.StatusSwitchingProtocols {
 			break
 		}
-		limit.N = publicImageHeaderBytes - int64(reader.Buffered())
+		limit.N = HeaderBytes - int64(reader.Buffered())
 	}
 	switch resp.StatusCode {
 	case 301, 302, 303, 307, 308:
@@ -168,7 +174,7 @@ func (r publicImageReader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.U
 		return nil, location, nil
 	case http.StatusOK:
 	default:
-		return nil, "", publicImageHTTPStatus(resp.StatusCode)
+		return nil, "", HTTPStatus(resp.StatusCode)
 	}
 	if resp.ContentLength > publicImageMaxBytes {
 		return nil, "", errors.New("media_size_limit")
@@ -194,11 +200,11 @@ func publicImageIOError(ctx context.Context) error {
 	return errors.New("media_fetch_failed")
 }
 
-type publicImageHTTPStatus int
+type HTTPStatus int
 
-func (status publicImageHTTPStatus) Error() string { return fmt.Sprintf("public_http_%d", int(status)) }
+func (status HTTPStatus) Error() string { return fmt.Sprintf("public_http_%d", int(status)) }
 
 // Only a typed upstream 403 marks a remote locator eligible for exact refresh.
-func (status publicImageHTTPStatus) Is(target error) bool {
+func (status HTTPStatus) Is(target error) bool {
 	return status == http.StatusForbidden && target == botruntime.ErrBrowserImageLocatorExpired
 }

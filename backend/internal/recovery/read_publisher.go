@@ -93,6 +93,31 @@ func (r *ReadPublisher) PublishWithGate(ctx context.Context, read func(*sql.Conn
 	defer done()
 	return r.authority.publish(ctx, r.main, read, emit)
 }
+
+// AwaitLocalIntent is for an HTTP read that has not published anything. It
+// waits only for this installation's known in-process intent, after the failed
+// read has released its connections and authority lock. A crash, foreign writer,
+// or unknown divergence is not retried. A caller must revalidate on a new read.
+func (r *ReadPublisher) AwaitLocalIntent(ctx context.Context, err error) bool {
+	var ahead *authorityHeadAhead
+	if !errors.As(err, &ahead) {
+		return false
+	}
+	flight := r.originAuthority.intent.Load()
+	if flight == nil {
+		return false
+	}
+	if expected := flight.expected.Load(); expected == nil || *expected != ahead.head {
+		return false
+	}
+	select {
+	case <-flight.done:
+		return flight.committed && ctx.Err() == nil
+	case <-ctx.Done():
+		return false
+	}
+}
+
 func (r *ReadPublisher) CloseAndWait(ctx context.Context) error {
 	if err := r.work.Wait(ctx); err != nil {
 		return err

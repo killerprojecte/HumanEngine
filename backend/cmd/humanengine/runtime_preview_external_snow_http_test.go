@@ -203,6 +203,14 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}()
 	args = append(args, "--node", node)
 	var runtimeLogs *commandLog
+	t.Cleanup(func() {
+		if t.Failed() && runtimeLogs != nil {
+			logs := strings.NewReplacer(token, "[test credential]", eventToken, "[test credential]",
+				"synthetic-launcher-token", "[test credential]").Replace(runtimeLogs.snapshot())
+			lines := strings.Split(logs, "\n")
+			t.Logf("sanitized launcher diagnostic tail:\n%s", strings.Join(lines[max(0, len(lines)-70):], "\n"))
+		}
+	})
 	boot := func(entry string) (string, func()) {
 		t.Helper()
 		proc, logs, done := runtimeCommandWithPlugin(t, args, entry, binary)

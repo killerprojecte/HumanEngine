@@ -101,7 +101,11 @@ func (a *Authority) Append(ctx context.Context, input Revocation, expected Head,
 	defer a.mu.Unlock()
 	return a.appendLocked(ctx, event, expected, force, nil)
 }
-func (a *Authority) appendLocked(ctx context.Context, event writeEvent, expected Head, force bool, commit commitExec) (head Head, err error) {
+func (a *Authority) appendLocked(ctx context.Context, event writeEvent, expected Head, force bool, commit commitExec) (Head, error) {
+	return a.appendLockedWithFlight(ctx, event, expected, force, commit, nil)
+}
+
+func (a *Authority) appendLockedWithFlight(ctx context.Context, event writeEvent, expected Head, force bool, commit commitExec, flight *intentFlight) (head Head, err error) {
 	if !a.writer {
 		return head, errors.New("recovery_writer_required")
 	}
@@ -169,6 +173,13 @@ func (a *Authority) appendLocked(ctx context.Context, event writeEvent, expected
 				return head, errors.New("recovery_authority_head_changed")
 			}
 		}
+	}
+	if flight != nil && head != previous {
+		// Publish the exact digest before it becomes visible to a reader on
+		// a separate connection. This never grants a read or acknowledges it.
+		announced := head
+		flight.expected.Store(&announced)
+		a.intent.Store(flight)
 	}
 	if err = commitOwned(ctx, a.conn, "authority", commit); err != nil {
 		return head, err

@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"unicode"
 )
 
@@ -53,6 +54,17 @@ func ReadGate(ctx context.Context, q Query) (Gate, error) {
 }
 
 type stamp struct{ data, schema, changes int64 }
+
+// authorityHeadAhead marks a verified read rejected before any callback ran.
+type authorityHeadAhead struct{ head Head }
+
+func (*authorityHeadAhead) Error() string { return "recovery_authority_head_changed" }
+
+type intentFlight struct {
+	expected  atomic.Pointer[Head]
+	done      chan struct{}
+	committed bool // published by closing done
+}
 type Authority struct {
 	mu     authorityLock
 	pool   *sql.DB
@@ -63,6 +75,7 @@ type Authority struct {
 	head   Head
 	stamp  stamp
 	scans  uint64
+	intent atomic.Pointer[intentFlight]
 }
 
 func Open(ctx context.Context, path string) (*Authority, error) {
@@ -158,6 +171,9 @@ func (a *Authority) publish(ctx context.Context, main *sql.DB, read func(*sql.Co
 		return errors.New("recovery_read_journal_unsupported")
 	}
 	if gate.Authority != a.path || gate.Head != head {
+		if gate.Authority == a.path && gate.Head.InstanceID == head.InstanceID && gate.Head.Sequence < head.Sequence {
+			return &authorityHeadAhead{head: head}
+		}
 		return errors.New("recovery_authority_head_changed")
 	}
 	bytes, err := read(conn, gate)

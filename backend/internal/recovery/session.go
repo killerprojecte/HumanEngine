@@ -34,6 +34,7 @@ type writeSessionState struct {
 	current     *WriteSession
 	readCapture *[]readWitnessQuery
 	afterRoot   []func(RootOutcome)
+	intent      *intentFlight
 }
 
 func (a *Authority) WithWriteSession(ctx context.Context, main *sql.DB, fn func(*WriteSession) error) error {
@@ -46,6 +47,10 @@ func (a *Authority) withWriteSession(ctx context.Context, main *sql.DB, fn func(
 	var cleanupErr error
 	defer func() {
 		if rootState != nil {
+			if rootState.intent != nil {
+				rootState.intent.committed = committed
+				close(rootState.intent.done)
+			}
 			status := RootRolledBack
 			if committed {
 				status = RootCommitted
@@ -330,7 +335,10 @@ func (s *WriteSession) AppendIntent(input Revocation) (head Head, err error) {
 			err = errors.New("recovery_writer_required")
 			return
 		}
-		head, err = a.appendLocked(s.ctx, event, g.Head, false, nil)
+		if s.intent == nil {
+			s.intent = &intentFlight{done: make(chan struct{})}
+		}
+		head, err = a.appendLockedWithFlight(s.ctx, event, g.Head, false, nil, s.intent)
 	}()
 	if err != nil {
 		return head, err

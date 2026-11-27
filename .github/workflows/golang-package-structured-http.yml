@@ -1,4 +1,4 @@
-name: Go external structured HTTP receipt
+name: Go external HTTP upgrade receipt
 
 on:
   workflow_dispatch:
@@ -6,7 +6,9 @@ on:
     branches: [feat/refactor-golang]
     paths:
       - '.github/workflows/golang-package-structured-http.yml'
+      - 'backend/internal/app/external_web_read_test.go'
       - 'backend/internal/app/external_web_request_test.go'
+      - 'backend/internal/app/external_web_upgrade_test.go'
       - 'backend/internal/pluginmanager/public_get.go'
       - 'backend/internal/pluginmanager/external_v2.go'
       - 'backend/internal/publicpage/**'
@@ -29,8 +31,9 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
-      - name: Build separate public request guest and native test environment
+      - name: Build both independent HTTP packages and one native fixture image
         run: |
+          make -C backend wasm-web-read-get-package WEB_READ_GET_PACKAGE_DIR="$RUNNER_TEMP/independent-page-plugin"
           make -C backend wasm-web-read-request-package WEB_READ_REQUEST_PACKAGE_DIR="$RUNNER_TEMP/independent-request-plugin"
           docker build --platform linux/amd64 --target build -f backend/packaging/runtime-preview/Dockerfile -t humanengine-request-fixture:local .
           mkdir "$RUNNER_TEMP/request-test-build"
@@ -41,7 +44,7 @@ jobs:
               . .native-build/icu/env.sh
               go test -race -tags sqlite_fts5,humanengine_icu -c -o /request-test-build/request-fixture ./internal/app
             '
-      - name: Prove exact encoded cache beyond 1 MiB and ordered response headers
+      - name: Prove cold upgrade, exact cached bytes and cold rollback
         run: |
           set -euo pipefail
           net="he-structured-http-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -63,6 +66,8 @@ jobs:
             --entrypoint node humanengine-request-fixture:local -e '
             const net = require("node:net"), fs = require("node:fs");
             const entity = fs.readFileSync("/entity.gz");
+            const html = Buffer.from("<html><head><title>Fixture title</title></head><body><h1>Public fixture heading</h1><p>" +
+              "x".repeat(9000) + "缓存中的准确字节" + "</p></body></html>");
             net.createServer((conn) => {
               let request = "";
               conn.on("data", function read(data) {
@@ -70,9 +75,16 @@ jobs:
                 if (!request.includes("\r\n\r\n")) return;
                 conn.off("data", read);
                 if (!request.startsWith("GET /manual.html HTTP/1.1\r\n") ||
-                    !/\r\nAccept-Encoding: gzip\r\n/i.test(request) ||
-                    !/\r\nX-Fixture-Request: exact\r\n/i.test(request) ||
                     /\r\n(?:Cookie|Authorization):/i.test(request)) {
+                  console.log("unexpected-request"); conn.destroy(); return;
+                }
+                if (!/\r\nX-Fixture-Request:/i.test(request)) {
+                  console.log("page-get");
+                  conn.write("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: " +
+                    html.length + "\r\nConnection: close\r\n\r\n");
+                  conn.end(html); return;
+                }
+                if (!/\r\nAccept-Encoding: gzip\r\n/i.test(request) || !/\r\nX-Fixture-Request: exact\r\n/i.test(request)) {
                   console.log("unexpected-request"); conn.destroy(); return;
                 }
                 console.log("structured-get");
@@ -88,9 +100,12 @@ jobs:
           done
           docker logs "$peer" | grep -qx ready
           docker run --rm --network "$net" \
+            --mount "type=bind,source=$RUNNER_TEMP/independent-page-plugin,target=/independent-page-plugin,readonly" \
             --mount "type=bind,source=$RUNNER_TEMP/independent-request-plugin,target=/independent-request-plugin,readonly" \
             --mount "type=bind,source=$RUNNER_TEMP/request-test-build,target=/request-test-build,readonly" \
             --mount "type=bind,source=$entity,target=/entity.gz,readonly" \
+            -e HE_PAGE_PACKAGE=/independent-page-plugin \
+            -e HE_PAGE_ORIGIN=http://192.0.1.2:41288/manual.html \
             -e HE_REQUEST_ENTITY=/entity.gz \
             -e HE_REQUEST_PACKAGE=/independent-request-plugin \
             -e HE_REQUEST_ORIGIN=http://192.0.1.2:41288/manual.html \
@@ -98,10 +113,12 @@ jobs:
             -e HE_IMAGE_LIBRARY=/src/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7 \
             --entrypoint sh humanengine-request-fixture:local -ec '
               cd /src/backend/internal/app
-              /request-test-build/request-fixture -test.v -test.run "^TestInstalledStructuredHTTPEncodedRange$"
+              /request-test-build/request-fixture -test.v -test.run "^TestExternalWebReadColdUpgradeRollback$"
             ' | tee "$proof"
+          grep -Fq "cold-get-request-get-settings-and-intent-preserved" "$proof"
+          test "$(grep -Fc "preview-and-range" "$proof")" = 2
           grep -Fq "structured-418-gzip-over-1mib-exact-range" "$proof"
-          test "$(docker logs "$peer" | grep -cx structured-get)" = 1
+          test "$(docker logs "$peer" | grep -E "^(page|structured)-get$")" = "$(printf '%s\n' page-get structured-get page-get)"
           ! docker logs "$peer" | grep -q unexpected-request
           printf '%s\n' 'one-origin-get-encoded-range-beyond-1mib' | tee -a "$proof"
       - name: Preserve synthetic HTTP evidence

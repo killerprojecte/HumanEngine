@@ -160,3 +160,11 @@ exact entity bytes without content decoding. The model sees a bounded preview;
 `tool-results.read` reads later byte ranges of the same complete cache without
 refetching. HEAD returns an empty entity. The separate staged
 `web-read.send` remains outside this profile.
+
+To switch between these profiles, stop the Go backend, replace the complete
+package directory, and restart with the same database and authority directory.
+Mount only one package under the plugin root and leave its manifest entry
+unchanged. To go back, repeat the process with the original package. The
+manifest is loaded at startup; toggling enablement does not reload it. Both
+profiles can have the same version and WASM digest, so identify the installed
+profile by its manifest, not by the guest digest alone.

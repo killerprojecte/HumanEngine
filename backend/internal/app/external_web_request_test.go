@@ -27,22 +27,6 @@ func TestInstalledStructuredHTTPEncodedRange(t *testing.T) {
 		t.Skip("explicit independent HTTP request package required")
 	}
 	const id = "web-read"
-	const offset = 1<<20 + 17
-	const width = 128
-	var entity []byte
-	protected := origin == ""
-	if protected {
-		origin = "http://127.0.0.1/"
-	} else {
-		if origin != "http://192.0.1.2:41288/manual.html" {
-			t.Fatal("test requires the isolated synthetic origin")
-		}
-		var err error
-		entity, err = os.ReadFile(os.Getenv("HE_REQUEST_ENTITY"))
-		if err != nil || len(entity) < offset+width || !bytes.HasPrefix(entity, []byte{31, 139}) {
-			t.Fatal("missing large encoded entity fixture", len(entity), err)
-		}
-	}
 	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 	defer cancel()
 	a, err := Open(ctx, Options{
@@ -70,7 +54,31 @@ func TestInstalledStructuredHTTPEncodedRange(t *testing.T) {
 		t.Fatal("expected actual WASM without Node")
 	}
 
-	const scene = "external-request-fixture"
+	runStructuredHTTPPlanner(t, ctx, a, "external-request-fixture", origin)
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-read/enabled", map[string]any{"enabled": false})
+	if a.WASM.Loaded(id) {
+		t.Fatal("retired guest remains loaded")
+	}
+}
+
+func runStructuredHTTPPlanner(t *testing.T, ctx context.Context, a *Application, scene, origin string) {
+	t.Helper()
+	const offset = 1<<20 + 17
+	const width = 128
+	var entity []byte
+	protected := origin == ""
+	if protected {
+		origin = "http://127.0.0.1/"
+	} else {
+		if origin != "http://192.0.1.2:41288/manual.html" {
+			t.Fatal("test requires the isolated synthetic origin")
+		}
+		var err error
+		entity, err = os.ReadFile(os.Getenv("HE_REQUEST_ENTITY"))
+		if err != nil || len(entity) < offset+width || !bytes.HasPrefix(entity, []byte{31, 139}) {
+			t.Fatal("missing large encoded entity fixture", len(entity), err)
+		}
+	}
 	appRequest(t, a, http.MethodPut, "/api/scenes/"+scene, map[string]any{
 		"id": scene, "kind": "group", "adapterId": "synthetic", "accountId": "bot", "platformSceneId": scene,
 		"name": "Fixture", "participationEnabled": true, "learningEnabled": false, "proactiveEnabled": false,
@@ -119,7 +127,7 @@ func TestInstalledStructuredHTTPEncodedRange(t *testing.T) {
 		name, args := "", ""
 		switch {
 		case slices.Contains(tools, "participation__decide"):
-			name, args = "participation__decide", `{"action":"reply","reasonCode":"fixture","targetMessageIds":["current"]}`
+			name, args = "participation__decide", fmt.Sprintf(`{"action":"reply","reasonCode":"fixture","targetMessageIds":[%q]}`, scene+"-current")
 		case !slices.Contains(tools, "web-read__read") || !slices.Contains(tools, "web-read__request") || slices.Contains(tools, "web-read__send"):
 			http.Error(w, "wrong external tool menu", 400)
 			return
@@ -180,7 +188,7 @@ func TestInstalledStructuredHTTPEncodedRange(t *testing.T) {
 	models := fmt.Sprintf(`{"providers":[{"id":"fixture","name":"Loopback","protocol":"openai-chat","baseUrl":%q,"retryCount":0,"timeoutMs":5000}],"models":[{"id":"fixture","displayName":"Planner","providerId":"fixture","apiModelName":"planner","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["fixture"],"timeoutMs":8000}]}`, api.URL+"/v1")
 	appRequest(t, a, http.MethodPut, "/api/models", json.RawMessage(models))
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	topic, err := a.Engine.Runtime.Ingest(ctx, scene, memoryToolObject("id", "current", "sceneId", scene,
+	topic, err := a.Engine.Runtime.Ingest(ctx, scene, memoryToolObject("id", scene+"-current", "sceneId", scene,
 		"senderId", "person", "origin", "live", "status", "available", "sentAt", now, "receivedAt", now,
 		"parts", []any{memoryToolObject("type", "text", "text", "Read the public manual.")}), false)
 	if err != nil {
@@ -211,9 +219,5 @@ func TestInstalledStructuredHTTPEncodedRange(t *testing.T) {
 		t.Log(got)
 	default:
 		t.Fatal("Planner did not receive the tool evidence")
-	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-read/enabled", map[string]any{"enabled": false})
-	if a.WASM.Loaded(id) {
-		t.Fatal("retired guest remains loaded")
 	}
 }

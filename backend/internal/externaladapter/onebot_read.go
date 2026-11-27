@@ -7,11 +7,28 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
 var errOneBotRead = errors.New("onebot_action_failed")
 
 func (s *httpSession) oneBotRead(ctx context.Context, action string, payload []byte, before func(context.Context) error) ([]byte, error) {
+	if s.ws != nil {
+		params, err := guestObject(payload)
+		if err != nil {
+			return nil, err
+		}
+		var guard func() error
+		if before != nil {
+			guard = func() error { return before(ctx) }
+		}
+		response, err := s.ws.ActionWithGuard(ctx, action, params, guard)
+		if err != nil {
+			return nil, err
+		}
+		return jsjson.Marshal(response)
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(s.profile.action, "/")+"/"+action, bytes.NewReader(payload))
 	if err != nil {
 		return nil, errOneBotRead

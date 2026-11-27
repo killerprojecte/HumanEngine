@@ -43,7 +43,7 @@ type BindingPorts struct {
 
 func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {
 	return func(desc pluginmanager.V2AdapterDescriptor) (pluginmanager.V2AdapterBinding, error) {
-		if (desc.Wire == oneBotHTTPWire || desc.Wire == oneBotHTTPMediaWire || desc.Wire == oneBotHTTPOutboundWire || desc.Wire == oneBotHTTPHistoryWire) && validWireIdentity(desc.AdapterID) {
+		if (desc.Wire == oneBotHTTPWire || desc.Wire == oneBotHTTPMediaWire || desc.Wire == oneBotHTTPOutboundWire || desc.Wire == oneBotHTTPHistoryWire || desc.Wire == oneBotForwardWire) && validWireIdentity(desc.AdapterID) {
 			return bindOneBotHTTP(ports, desc)
 		}
 		if desc.Wire != wireProfile || !validWireIdentity(desc.AdapterID) {

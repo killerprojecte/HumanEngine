@@ -103,22 +103,18 @@ func TestBuiltinWSImageReplyKeepsDataOutsidePinnedGuest(t *testing.T) {
 		}
 	}))
 	defer peer.Close()
-	ws, err := NewBuiltinWS(WSConfig{
-		URL: "ws" + strings.TrimPrefix(peer.URL, "http"), AccountID: "42", Token: "synthetic",
-	}, host, "snowluma", HTTPCallbacks{})
+	policy, err := host.BindCall("snowluma")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer ws.CloseAndWait(context.Background())
 
 	type observed struct {
 		data      bool
 		inputSize int
 		outSize   int
 	}
-	policy := ws.guest
 	observedEcho := make(chan observed, 16)
-	ws.guest = func(ctx context.Context, input []byte) ([]byte, error) {
+	observing := func(ctx context.Context, input []byte) ([]byte, error) {
 		output, err := policy(ctx, input)
 		value, parseErr := jsjson.ParseBytes(input)
 		if parseErr != nil {
@@ -132,6 +128,10 @@ func TestBuiltinWSImageReplyKeepsDataOutsidePinnedGuest(t *testing.T) {
 		}
 		return output, err
 	}
+	ws := bindWS(WSConfig{
+		URL: "ws" + strings.TrimPrefix(peer.URL, "http"), AccountID: "42", Token: "synthetic",
+	}, observing, HTTPCallbacks{}, true)
+	defer ws.CloseAndWait(context.Background())
 	if err := ws.Connect(ctx); err != nil {
 		t.Fatal(err)
 	}

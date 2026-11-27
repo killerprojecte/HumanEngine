@@ -19,13 +19,14 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
+	"github.com/killerprojecte/HumanEngine/backend/internal/onebotwire"
 	"github.com/killerprojecte/HumanEngine/backend/internal/outboundmedia"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 )
 
 const signatureHeader = "X-HumanEngine-Signature"
 
-// An HTTP profile is chosen by the host, not emitted as a URL or credential by
+// An adapter profile is chosen by the host, not emitted as a URL or credential by
 // the WASI guest. No guest method receives a credential, socket or SQL owner.
 type httpProfile struct {
 	scope
@@ -53,6 +54,7 @@ type httpSession struct {
 	cancel   context.CancelFunc
 	lease    *botruntime.AdapterRegistration
 	client   *http.Client
+	ws       *onebotwire.WS
 	encoder  *outboundmedia.Encoder
 	server   http.Server
 	listener net.Listener
@@ -69,41 +71,49 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 	if err != nil {
 		return nil, err
 	}
-	config := net.ListenConfig{}
-	listener, err := config.Listen(ctx, "tcp", profile.listen)
-	if err != nil {
-		lease.Release()
-		return nil, errors.New("external_adapter_listen_failed")
-	}
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.Proxy = nil
 	bound, cancel := context.WithCancel(life)
 	s := &httpSession{
 		profile: profile, call: call, source: source, life: bound, cancel: cancel,
-		lease: lease, listener: listener, served: make(chan struct{}), done: make(chan struct{}),
-		client: &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }},
+		lease: lease, done: make(chan struct{}),
 	}
-	if p := profile.onebotHTTP; p != nil {
-		s.client.Timeout = 20 * time.Second
-		s.server.SetKeepAlivesEnabled(false)
-		s.server.MaxHeaderBytes = 16384
-		s.server.ReadHeaderTimeout = 10 * time.Second
-		s.server.ReadTimeout = 15 * time.Second
-		if err := s.oneBotLogin(ctx, p); err != nil {
+	var published chan struct{}
+	if p := profile.onebotHTTP; p != nil && p.websocket {
+		published = make(chan struct{})
+		s.ws = s.oneBotSocket(p.token, published)
+	} else {
+		s.served = make(chan struct{})
+		config := net.ListenConfig{}
+		s.listener, err = config.Listen(ctx, "tcp", profile.listen)
+		if err != nil {
 			cancel()
-			_ = listener.Close()
-			s.client.CloseIdleConnections()
 			lease.Release()
-			return nil, err
+			return nil, errors.New("external_adapter_listen_failed")
 		}
+		transport := http.DefaultTransport.(*http.Transport).Clone()
+		transport.Proxy = nil
+		s.client = &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+		if profile.onebotHTTP != nil {
+			s.client.Timeout = 20 * time.Second
+			s.server.SetKeepAlivesEnabled(false)
+			s.server.MaxHeaderBytes = 16384
+			s.server.ReadHeaderTimeout = 10 * time.Second
+			s.server.ReadTimeout = 15 * time.Second
+			if err := s.oneBotLogin(ctx, profile.onebotHTTP); err != nil {
+				s.closeUnpublished()
+				return nil, err
+			}
+		}
+		s.server.BaseContext = func(net.Listener) context.Context { return bound }
+		s.server.Handler = http.HandlerFunc(s.receive)
 	}
-	s.server.BaseContext = func(net.Listener) context.Context { return bound }
-	s.server.Handler = http.HandlerFunc(s.receive)
 	s.adapter = botruntime.Adapter{
 		BotUserID: profile.sender(profile.botID),
 		Status: func(context.Context) (string, error) {
 			if bound.Err() != nil {
 				return "disposed", nil
+			}
+			if s.ws != nil && !s.ws.Ready() {
+				return "disconnected", nil
 			}
 			return "connected", nil
 		},
@@ -113,10 +123,7 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 	if p := profile.onebotHTTP; p != nil && p.outbound {
 		s.encoder, err = outboundmedia.NewEncoder()
 		if err != nil {
-			cancel()
-			_ = listener.Close()
-			s.client.CloseIdleConnections()
-			lease.Release()
+			s.closeUnpublished()
 			return nil, err
 		}
 	}
@@ -139,22 +146,42 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 			s.queryOneBotHistory(ctx, scene.SceneRef, 0, id, before, settle)
 		}
 	}
-	if err := lease.Publish(&s.adapter); err != nil {
-		if s.encoder != nil {
-			s.encoder.Dispose()
+	if s.ws != nil {
+		if err := s.ws.Connect(ctx); err != nil {
+			s.closeUnpublished()
+			return nil, err
 		}
-		cancel()
-		_ = listener.Close()
-		lease.Release()
+	}
+	if err := lease.Publish(&s.adapter); err != nil {
+		s.closeUnpublished()
 		return nil, err
 	}
-	go func() {
-		defer close(s.served)
-		_ = s.server.Serve(listener)
-		s.cancel()
-	}()
+	if s.ws != nil {
+		close(published)
+	} else {
+		go func() {
+			defer close(s.served)
+			_ = s.server.Serve(s.listener)
+			s.cancel()
+		}()
+	}
+
 	context.AfterFunc(bound, s.Dispose)
 	return s, nil
+}
+
+func (s *httpSession) closeUnpublished() {
+	s.cancel()
+	if s.ws != nil {
+		_ = s.ws.CloseAndWait(context.Background())
+	} else {
+		_ = s.listener.Close()
+		s.client.CloseIdleConnections()
+	}
+	if s.encoder != nil {
+		_ = s.encoder.CloseAndWait(context.Background())
+	}
+	s.lease.Release()
 }
 
 func (s *httpSession) Dispose() {
@@ -165,12 +192,19 @@ func (s *httpSession) Dispose() {
 			s.encoder.Dispose()
 		}
 		s.lease.Detach()
-		_ = s.listener.Close()
-		_ = s.server.Close()
-		s.client.CloseIdleConnections()
+		if s.ws == nil {
+			_ = s.listener.Close()
+			_ = s.server.Close()
+			s.client.CloseIdleConnections()
+		}
 		go func() {
-			<-s.served
-			s.closeErr = errors.Join(s.work.Wait(context.Background()), s.source.stopped(s.profile.adapter))
+			ctx := context.Background()
+			if s.ws == nil {
+				<-s.served
+			} else {
+				s.closeErr = s.ws.CloseAndWait(ctx)
+			}
+			s.closeErr = errors.Join(s.closeErr, s.work.Wait(ctx), s.source.stopped(s.profile.adapter))
 			if s.encoder != nil {
 				s.closeErr = errors.Join(s.closeErr, s.encoder.CloseAndWait(context.Background()))
 			}
@@ -256,6 +290,10 @@ func (s *httpSession) receive(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+	w.WriteHeader(s.receiveEvent(r.Context(), raw))
+}
+
+func (s *httpSession) receiveEvent(ctx context.Context, raw []byte) int {
 	var input any = json.RawMessage(raw)
 	p := s.profile.onebotHTTP
 	if p != nil {
@@ -265,41 +303,35 @@ func (s *httpSession) receive(w http.ResponseWriter, r *http.Request) {
 		}
 		input = envelope
 	}
-	output, err := s.invoke(r.Context(), "adapterIngress", input)
+	output, err := s.invoke(ctx, "adapterIngress", input)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
+		return http.StatusUnprocessableEntity
 	}
 	ev, err := projectEvent(output, p != nil && p.media)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
+		return http.StatusUnprocessableEntity
 	}
 	if ev.Type == "ignore" {
-		w.WriteHeader(http.StatusNoContent)
-		return
+		return http.StatusNoContent
 	}
 	scene, err := s.profile.scene(ev.Peer)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
+		return http.StatusUnprocessableEntity
 	}
 	switch ev.Type {
 	case "message":
 		message, e := s.profile.message(scene, ev, time.Now())
 		if e != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			return
+			return http.StatusUnprocessableEntity
 		}
-		err = s.source.ingest(r.Context(), &s.adapter, scene, message)
+		err = s.source.ingest(ctx, &s.adapter, scene, message)
 	case "recall":
-		err = s.source.recall(r.Context(), scene, messageID(scene, ev.Message))
+		err = s.source.recall(ctx, scene, messageID(scene, ev.Message))
 	}
 	if err != nil {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return
+		return http.StatusServiceUnavailable
 	}
-	w.WriteHeader(http.StatusNoContent)
+	return http.StatusNoContent
 }
 
 func (s *httpSession) invoke(wait context.Context, op string, input any) ([]byte, error) {
@@ -370,6 +402,9 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 		if err != nil {
 			return dispatch.Receipt{}, err
 		}
+		if s.ws != nil {
+			return s.transmitSocket(ctx, known, segment, action, before)
+		}
 		address, body = strings.TrimRight(address, "/")+"/"+action.Action, action.Params
 		if len(action.Originals) != 0 {
 			if !p.outbound {
@@ -436,18 +471,23 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 			return witness, nil
 		}
 	}
-	raw, err = s.invoke(ctx, "adapterReceipt", json.RawMessage(raw))
+	return s.actionReceipt(ctx, known, raw), nil
+}
+
+func (s *httpSession) actionReceipt(ctx context.Context, known dispatch.SceneRef, raw []byte) dispatch.Receipt {
+	witness := dispatch.Receipt{Status: dispatch.Unknown}
+	raw, err := s.invoke(ctx, "adapterReceipt", json.RawMessage(raw))
 	if err != nil {
-		return witness, nil
+		return witness
 	}
 	ack, err := guestObject(raw)
 	if err != nil {
-		return witness, nil
+		return witness
 	}
 	platform := text(ack, "message")
 	if !validWireIdentity(platform) {
-		return witness, nil
+		return witness
 	}
 	id := messageID(known, platform)
-	return dispatch.Receipt{Status: dispatch.Sent, MessageID: &id}, nil
+	return dispatch.Receipt{Status: dispatch.Sent, MessageID: &id}
 }

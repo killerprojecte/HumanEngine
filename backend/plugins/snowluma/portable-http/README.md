@@ -1,10 +1,13 @@
-# External SnowLuma HTTP preview
+# External SnowLuma forward preview
 
 This is an opt-in proof for a **disposable installation**, not a replacement
 for the bundled SnowLuma adapter. Do not select it on an existing installation:
 it deliberately uses the same plugin/adapter ID and credential names to exercise
-canonical identity, but does not yet implement WebSocket, legacy environment
-credentials or full OneBot message-part parity.
+canonical identity, but does not yet implement legacy environment credentials or full OneBot
+message-part parity. It supports signed HTTP events with HTTP actions, and
+forward WebSocket with actions and events on the same connection. Use a
+`ws://` or `wss://` URL. The saved HTTP listener and signing credential remain
+available when switching back to HTTP.
 
 Remote group and friend history use the existing bounded history window.
 Single-message lookups validate the exact requested conversation, so an equal
@@ -35,6 +38,6 @@ Git. Select the generated manifest in the unbundled preview using the existing
 `HUMANENGINE_PLUGINS` entry list and a disposable plugin directory and database.
 
 The package owns login-response checking and OneBot event, action and ACK
-projection. HumanEngine supplies the versioned OneBot HTTP envelope transport,
+projection. HumanEngine supplies the versioned OneBot transport,
 scoped credentials, runtime registrations and durable message/recall ownership.
 No SnowLuma implementation package is linked into the unbundled Go host.

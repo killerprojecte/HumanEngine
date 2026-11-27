@@ -395,6 +395,13 @@ class MigrationDrillTests(unittest.TestCase):
             self.assertEqual(select("0" * 40), {"browser": "false", "restore": "false", "compose": "false", "standalone": "false"})
 
             base = git("rev-parse", "HEAD")
+            source = Path(temp) / "backend/internal/externaladapter/onebot_websocket.go"
+            source.parent.mkdir(parents=True)
+            source.touch()
+            git("add", str(source))
+            git("commit", "-qm", "standalone adapter changed")
+            self.assertEqual(select(base), {"browser": "false", "restore": "true", "compose": "false", "standalone": "false"})
+            base = git("rev-parse", "HEAD")
             git("commit", "--allow-empty", "-qm",
                 "Candidate\n\nHumanEngine-Package-Proofs: all")
             selected = git("rev-parse", "HEAD")

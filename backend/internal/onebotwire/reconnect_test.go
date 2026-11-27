@@ -1,4 +1,4 @@
-package snowlumatransport
+package onebotwire
 
 import (
 	"context"
@@ -73,44 +73,38 @@ func testReconnectWhileOpening(t *testing.T, holdLogin bool) {
 		}
 	}))
 	defer peer.Close()
-	life, stop := context.WithCancel(context.Background())
 	const retry = 100 * time.Millisecond
 	var readyCount, closedCount atomic.Int32
-	ws := &WS{
-		config: WSConfig{URL: "ws" + strings.TrimPrefix(peer.URL, "http"), AccountID: "42", Timeout: 2 * time.Second, Reconnect: retry},
-		life:   life, cancel: stop, pending: make(map[string]*wsPending),
-		guest: func(_ context.Context, raw []byte) ([]byte, error) {
-			value, err := jsjson.ParseBytes(raw)
-			if err != nil {
-				return nil, err
-			}
-			event, hasEvent := value.(*jsjson.Object).Get("event")
-			if !hasEvent {
+	ws := NewWS(WSConfig{URL: "ws" + strings.TrimPrefix(peer.URL, "http"), Timeout: 2 * time.Second, Reconnect: retry},
+		WSCallbacks{
+			Login: func(context.Context, any) error {
 				if holdLogin && logins.Add(1) == 1 {
 					close(firstBlocked)
 					<-release
 				}
-				return []byte("{}"), nil // Successful account qualification.
-			}
-			data, _ := event.(*jsjson.Object).Get("data")
-			return jsjson.Marshal(wsObject("data", data))
-		},
-		callbacks: HTTPCallbacks{Status: func(status string) {
-			switch status {
-			case "connected":
-				if readyCount.Add(1) == 1 && !holdLogin {
-					close(firstBlocked)
-					<-release
-				} else if connections.Load() == 2 {
-					close(secondReady)
+				return nil
+			},
+			Reply: func(_ context.Context, event *jsjson.Object, _, _ string) (any, error) {
+				data, _ := event.Get("data")
+				return data, nil
+			},
+			Status: func(status string) {
+				switch status {
+				case "connected":
+					if readyCount.Add(1) == 1 && !holdLogin {
+						close(firstBlocked)
+						<-release
+					} else if connections.Load() == 2 {
+						close(secondReady)
+					}
+				case "disconnected":
+					if closedCount.Add(1) == 1 {
+						close(disconnected)
+					}
 				}
-			case "disconnected":
-				if closedCount.Add(1) == 1 {
-					close(disconnected)
-				}
-			}
-		}},
-	}
+			},
+		})
+
 	defer func() {
 		unblock()
 		if err := ws.CloseAndWait(context.Background()); err != nil {

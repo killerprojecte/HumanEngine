@@ -42,7 +42,7 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]string{"wire": "onebot11-http-4"}
+		return map[string]string{"wire": "onebot11-forward-1"}
 	case "adapterLogin":
 		account := str(in, "account")
 		response := obj(get(in, "response"))
@@ -136,7 +136,7 @@ func normalizedMessage(adapter, account string, event *jsjson.Object, origin, me
 		}
 		fallback := new(jsjson.Object)
 		_ = fallback.Set("type", "unsupported")
-		_ = fallback.Set("description", "OneBot part unavailable in the HTTP preview")
+		_ = fallback.Set("description", "OneBot part unavailable in the standalone preview")
 		parts[i] = fallback
 	}
 	if len(parts) == 0 {

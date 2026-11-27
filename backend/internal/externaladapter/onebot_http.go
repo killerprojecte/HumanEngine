@@ -27,6 +27,7 @@ const (
 	oneBotHTTPMediaWire       = "onebot11-http-2"
 	oneBotHTTPOutboundWire    = "onebot11-http-3"
 	oneBotHTTPHistoryWire     = "onebot11-http-4"
+	oneBotForwardWire         = "onebot11-forward-1"
 	oneBotActionResponseLimit = 8 * 1024 * 1024
 )
 
@@ -49,6 +50,7 @@ const oneBotHTTPSchema = `{
 
 type oneBotHTTP struct {
 	eventPath string
+	websocket bool
 	media     bool
 	outbound  bool
 	history   bool
@@ -65,6 +67,13 @@ type oneBotIngress struct {
 func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) (pluginmanager.V2AdapterBinding, error) {
 	value, _ := jsjson.Parse(oneBotHTTPSchema)
 	schema := value.(*jsjson.Object)
+	forward := desc.Wire == oneBotForwardWire
+	if forward {
+		properties, _ := schema.Get("properties")
+		transport, _ := properties.(*jsjson.Object).Get("transport")
+		_ = transport.(*jsjson.Object).Set("enum", []any{"http", "websocket"})
+		_ = schema.Set("required", []any{"transport", "url", "accountId"})
+	}
 	owner := ports.Runtime.NewAdapterOwner()
 	return pluginmanager.V2AdapterBinding{
 		Schema: schema,
@@ -85,9 +94,13 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			if err != nil {
 				return nil, err
 			}
-			eventToken, err := oneBotSecret(ctx, in, "eventToken", "event_credential_not_configured")
-			if err != nil {
-				return nil, err
+			websocket := text(cfg, "transport") == "websocket"
+			var eventToken string
+			if !websocket {
+				eventToken, err = oneBotSecret(ctx, in, "eventToken", "event_credential_not_configured")
+				if err != nil {
+					return nil, err
+				}
 			}
 			call, err := in.Host.BindCallWithAdmission(in.ID)
 			if err != nil {
@@ -100,10 +113,17 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			if route == "" {
 				route = "/onebot/events"
 			}
-			port, _ := cfg.Get("eventPort")
+			var listen string
+			if !websocket {
+				port, _ := cfg.Get("eventPort")
+				listen = net.JoinHostPort(host, strconv.Itoa(int(port.(float64))))
+			}
+			history := forward || desc.Wire == oneBotHTTPHistoryWire
 			p := httpProfile{scope: scope{adapter: desc.AdapterID, account: account, onebot: true},
-				botID: account, listen: net.JoinHostPort(host, strconv.Itoa(int(port.(float64)))), action: text(cfg, "url"),
-				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken), media: desc.Wire != oneBotHTTPWire, outbound: desc.Wire == oneBotHTTPOutboundWire || desc.Wire == oneBotHTTPHistoryWire, history: desc.Wire == oneBotHTTPHistoryWire}}
+				botID: account, listen: listen, action: text(cfg, "url"),
+				onebotHTTP: &oneBotHTTP{eventPath: route, websocket: websocket, token: token, eventKey: []byte(eventToken),
+					media: desc.Wire != oneBotHTTPWire, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history}}
+
 			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original})
 		},
 		Policy: pluginmanager.BuiltinPolicy{
@@ -111,10 +131,21 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				if err := pluginconfig.ValidateBuiltin(in, schema); err != nil {
 					return invalidConfig()
 				}
-				u, err := url.Parse(text(in, "url"))
-				if err != nil || !validActionURL(text(in, "url")) || u.RawQuery != "" || u.ForceQuery || strings.Contains(text(in, "url"), "#") || !validWireIdentity(text(in, "accountId")) || strings.Contains(text(in, "eventPath"), "//") {
+				address := text(in, "url")
+				u, err := url.Parse(address)
+				websocket := text(in, "transport") == "websocket"
+				if websocket && (u == nil || u.Scheme != "ws" && u.Scheme != "wss") {
+					return &pluginmanager.ConfigurationError{Issues: []pluginmanager.Issue{{Field: "url", Reason: "websocket_scheme_required"}}}
+				}
+				if err != nil || u.Hostname() == "" || u.User != nil || (!websocket && !validActionURL(address)) || u.RawQuery != "" || u.ForceQuery || strings.Contains(address, "#") || !validWireIdentity(text(in, "accountId")) || strings.Contains(text(in, "eventPath"), "//") {
 					return invalidConfig()
 				}
+				if !websocket {
+					if _, exists := in.Get("eventPort"); !exists {
+						return &pluginmanager.ConfigurationError{Issues: []pluginmanager.Issue{{Field: "eventPort", Reason: "required"}}}
+					}
+				}
+
 				for _, names := range oneBotCredentials {
 					clear, _ := in.Get(names[1])
 					if clear == true && text(in, names[0]) != "" {
@@ -123,7 +154,19 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				}
 				return nil
 			},
-			Prepare: func(_ context.Context, input, _ *jsjson.Object) (*jsjson.Object, []credentials.Change, error) {
+			Prepare: func(_ context.Context, input, previous *jsjson.Object) (*jsjson.Object, []credentials.Change, error) {
+				if text(input, "transport") == "websocket" {
+					for _, key := range [...]string{"eventHost", "eventPort", "eventPath"} {
+						input.Delete(key)
+						if previous != nil {
+							if value, ok := previous.Get(key); ok {
+								_ = input.Set(key, value)
+							}
+						}
+					}
+					input.Delete("eventToken")
+					input.Delete("clearEventToken")
+				}
 				var changes []credentials.Change
 				for _, names := range oneBotCredentials {
 					clear, _ := input.Get(names[1])
@@ -201,7 +244,6 @@ func oneBotActionEnvelope(wire []byte) (oneBotAction, error) {
 }
 
 func (s *httpSession) oneBotLogin(ctx context.Context, p *oneBotHTTP) error {
-	const op = "adapterLogin"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(s.profile.action, "/")+"/get_login_info", bytes.NewBufferString("{}"))
 	if err != nil {
 		return pluginmanager.NewStartupError("invalid_http_url", nil)
@@ -220,7 +262,11 @@ func (s *httpSession) oneBotLogin(ctx context.Context, p *oneBotHTTP) error {
 	if err != nil || len(raw) > oneBotActionResponseLimit {
 		return pluginmanager.NewStartupError("invalid_http_response", nil)
 	}
-	out, err := s.invoke(ctx, op, struct {
+	return s.validateOneBotLogin(ctx, raw)
+}
+
+func (s *httpSession) validateOneBotLogin(ctx context.Context, raw []byte) error {
+	out, err := s.invoke(ctx, "adapterLogin", struct {
 		Account  string          `json:"account"`
 		Response json.RawMessage `json:"response"`
 	}{s.profile.account, raw})

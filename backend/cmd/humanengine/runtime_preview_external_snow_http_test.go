@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
@@ -26,6 +27,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
 )
 
@@ -218,7 +220,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.5.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.0-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -242,7 +244,8 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		t.Fatal(err)
 	}
 	commandRequest(t, addr, "PUT", "/api/settings", settingsRaw, 200)
-	p := []byte(fmt.Sprintf(`{"transport":"http","url":%q,"accountId":"42","eventPort":%d,"token":%q,"eventToken":%q}`, peer.URL, port, token, eventToken))
+	const eventPath = "/onebot/custom-events"
+	p := []byte(fmt.Sprintf(`{"transport":"http","url":%q,"accountId":"42","eventPort":%d,"eventPath":%q,"token":%q,"eventToken":%q}`, peer.URL, port, eventPath, token, eventToken))
 	public := commandRequest(t, addr, "PUT", "/api/plugins/snowluma/config", p, 200)
 	if bytes.Contains(public, []byte(token)) || bytes.Contains(public, []byte(eventToken)) {
 		t.Fatal("stored credentials exposed")
@@ -256,7 +259,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		t.Helper()
 		mac := hmac.New(sha1.New, []byte(key))
 		_, _ = mac.Write([]byte(raw))
-		req, err := http.NewRequest("POST", fmt.Sprintf("http://127.0.0.1:%d/onebot/events", port), strings.NewReader(raw))
+		req, err := http.NewRequest("POST", fmt.Sprintf("http://127.0.0.1:%d%s", port, eventPath), strings.NewReader(raw))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -445,6 +448,20 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	history(group, "")
 	history(direct, "")
+	recalledPage.Store(false)
+	saved := portableSnowSocket(t, addr, peer.Config.Handler, token, eventPath, peer.URL, group, direct, original.Bytes())
+	var returned map[string]json.RawMessage
+	if err := json.Unmarshal(saved, &returned); err != nil {
+		t.Fatal(err)
+	}
+	returned["transport"] = json.RawMessage(`"http"`)
+	returned["url"], _ = json.Marshal(peer.URL)
+	roundTrip, _ := json.Marshal(returned)
+	commandRequest(t, addr, "PUT", "/api/plugins/snowluma/config", roundTrip, 200)
+
+	post(snowSocketEvent("group", 907, 78), eventToken, 204)
+	snowSocketHistory(t, addr, "group", 907, 78)
+
 	stop()
 	for _, name := range []string{entry, "snowluma-http.wasm"} {
 		if err := os.Remove(filepath.Join(root, name)); err != nil {
@@ -480,6 +497,196 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			t.Fatalf("persisted %s: got %d want %d (%v)", check.table, got, check.want, err)
 		}
 	}
+}
+
+func snowSocketEvent(kind string, peer, id int) string {
+	return fmt.Sprintf(`{"post_type":"message","message_type":%q,"sub_type":"normal","self_id":42,"group_id":%d,"user_id":%d,"message_id":%d,"time":%d,"message":[{"type":"text","data":{"text":"installed socket event"}}]}`, kind, peer, peer, id, time.Now().Unix())
+}
+
+func snowSocketHistory(t *testing.T, addr, kind string, peer, want int, forbid ...int) {
+	t.Helper()
+	encode := base64.RawURLEncoding.EncodeToString
+	scene := "ob:s:" + encode([]byte(fmt.Sprintf(`["snowluma","42",%q,%q]`, kind, fmt.Sprint(peer))))
+	key := func(id int) []byte { return []byte(scene + ":m:" + encode([]byte(fmt.Sprintf("%q", fmt.Sprint(id))))) }
+	for deadline := time.Now().Add(5 * time.Second); ; {
+		data := commandRequest(t, addr, "GET", "/api/scenes/"+url.PathEscape(scene)+"/history?source=local", nil, 200)
+		for _, id := range forbid {
+			if bytes.Contains(data, key(id)) {
+				t.Fatalf("unqualified socket event or stale ACK reached scene: %s", data)
+			}
+		}
+		if bytes.Contains(data, key(want)) {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("missing socket receipt %d: %s", want, data)
+		}
+		time.Sleep(25 * time.Millisecond)
+	}
+}
+
+func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token, eventPath, httpURL, historyGroup, historyDirect string, original []byte) []byte {
+	t.Helper()
+	var connections, sent atomic.Int32
+	sockets := make(chan *websocket.Conn, 3)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bearer "+token || r.URL.Path != "/socket" {
+			t.Error("missing stored handshake token or wrong configured path")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		socket, err := websocket.Accept(w, r, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		defer socket.CloseNow()
+		attempt := int(connections.Add(1))
+		for {
+			_, raw, err := socket.Read(ctx)
+			if err != nil {
+				return
+			}
+			var request struct {
+				Action, Echo string
+				Params       json.RawMessage
+			}
+			if err := json.Unmarshal(raw, &request); err != nil || request.Echo == "" {
+				t.Errorf("invalid socket envelope: %s", raw)
+				return
+			}
+			var response []byte
+			switch request.Action {
+			case "get_login_info":
+				// A valid independent event arriving before this socket's login
+				// response must not reach the runtime.
+				if err := socket.Write(ctx, websocket.MessageText, []byte(snowSocketEvent("group", 904, 80+attempt))); err != nil {
+					return
+				}
+				response = []byte(`{"status":"ok","retcode":0,"data":{"user_id":42}}`)
+			case "send_group_msg", "send_private_msg":
+				var action struct {
+					Group   string `json:"group_id"`
+					User    string `json:"user_id"`
+					Message []struct {
+						Type string
+						Data map[string]string
+					}
+				}
+				if err := json.Unmarshal(request.Params, &action); err != nil {
+					t.Error(err)
+					return
+				}
+				count := sent.Add(1)
+				if attempt == 1 {
+					if count != 1 || action.User != "901" || len(action.Message) != 2 || action.Message[0].Data["id"] != "24" {
+						t.Errorf("wrong request before disconnect: %+v", action)
+					}
+					// A physical send was accepted but no echo comes back.
+					return
+				}
+				if count != 2 || action.Group != "901" || len(action.Message) != 3 || action.Message[0].Data["id"] != "25" ||
+					action.Message[2].Type != "image" || action.Message[2].Data["file"] != "base64://"+base64.StdEncoding.EncodeToString(original) {
+					t.Errorf("scope, replay or managed-original mismatch: %+v", action)
+					return
+				}
+				response = []byte(`{"status":"ok","retcode":0,"data":{"message_id":29}}`)
+			default:
+				writer := httptest.NewRecorder()
+				req := httptest.NewRequest(http.MethodPost, "/"+request.Action, bytes.NewReader(request.Params))
+				req.Header.Set("Authorization", "Bearer "+token)
+				httpPeer.ServeHTTP(writer, req)
+				if writer.Code != 200 {
+					t.Errorf("socket action %s failed: %d", request.Action, writer.Code)
+					return
+				}
+				response = writer.Body.Bytes()
+			}
+			var data map[string]json.RawMessage
+			if err := json.Unmarshal(response, &data); err != nil {
+				t.Error(err)
+				return
+			}
+			data["echo"], _ = json.Marshal(request.Echo)
+			body, _ := json.Marshal(data)
+			if err := socket.Write(ctx, websocket.MessageText, body); err != nil {
+				return
+			}
+			if request.Action == "get_login_info" {
+				sockets <- socket
+			}
+		}
+	}))
+	defer server.Close()
+	const config = "/api/plugins/snowluma/config"
+	invalid := commandRequest(t, addr, "PUT", config, []byte(`{"transport":"websocket","url":"127.0.0.1:9000","accountId":"42"}`), 400)
+	if !bytes.Contains(invalid, []byte("websocket_scheme_required")) {
+		t.Fatalf("missing useful error: %s", invalid)
+	}
+	previous := commandRequest(t, addr, "GET", config, nil, 200)
+	if !bytes.Contains(previous, []byte(httpURL)) || !bytes.Contains(previous, []byte(eventPath)) {
+		t.Fatalf("invalid websocket value changed the active config: %s", previous)
+	}
+
+	good := fmt.Sprintf(`{"transport":"websocket","url":%q,"accountId":"42"}`, "ws"+strings.TrimPrefix(server.URL, "http")+"/socket")
+	saved := commandRequest(t, addr, "PUT", config, []byte(good), 200)
+	if !bytes.Contains(saved, []byte(eventPath)) || bytes.Contains(saved, []byte(token)) {
+		t.Fatalf("mode switch lost HTTP settings or disclosed a token: %s", saved)
+	}
+	next := func() *websocket.Conn {
+		select {
+		case socket := <-sockets:
+			return socket
+		case <-time.After(8 * time.Second):
+			t.Fatal("no authenticated socket")
+			return nil
+		}
+	}
+	send := func(socket *websocket.Conn, event string) {
+		t.Helper()
+		if err := socket.Write(ctx, websocket.MessageText, []byte(event)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	first := next()
+	send(first, snowSocketEvent("private", 901, 24))
+	second := next()
+	// A successful history action proves the replacement peer is ready before
+	// sending its post-login event. The action uses the same physical socket.
+	remote := commandRequest(t, addr, "GET", "/api/scenes/"+url.PathEscape(historyGroup)+"/history?source=remote", nil, 200)
+	if !bytes.Contains(remote, []byte("Group history witness")) {
+		t.Fatalf("unexpected qualified history response: %s", remote)
+	}
+	private := "/api/scenes/" + url.PathEscape(historyDirect)
+	remote = commandRequest(t, addr, "GET", private+"/history?source=remote", nil, 200)
+	var history struct {
+		Items []struct{ Parts []struct{ MediaURL string } }
+	}
+	if err := json.Unmarshal(remote, &history); err != nil || len(history.Items) != 2 || len(history.Items[0].Parts) != 2 || history.Items[0].Parts[1].MediaURL == "" {
+		t.Fatalf("private image history unavailable over socket: %s", remote)
+	}
+	if image := commandRequest(t, addr, "GET", history.Items[0].Parts[1].MediaURL, nil, 200); !bytes.Equal(image, original) {
+		t.Fatal("socket history image differed from the scoped original")
+	}
+	send(second, snowSocketEvent("group", 904, 83))
+	snowSocketHistory(t, addr, "group", 904, 83, 81, 82)
+	send(second, snowSocketEvent("private", 904, 83))
+	snowSocketHistory(t, addr, "private", 904, 83, 81, 82)
+	send(second, fmt.Sprintf(`{"post_type":"notice","notice_type":"friend_recall","self_id":42,"user_id":904,"message_id":83,"time":%d}`, time.Now().Unix()))
+	send(second, snowSocketEvent("group", 901, 25))
+	snowSocketHistory(t, addr, "group", 901, 29)
+	private = "/api/scenes/" + url.PathEscape("ob:s:"+base64.RawURLEncoding.EncodeToString([]byte(`["snowluma","42","private","904"]`)))
+	recalled := commandRequest(t, addr, "GET", private+"/history?source=local", nil, 200)
+	if !bytes.Contains(recalled, []byte(`"status":"recalled"`)) {
+		t.Fatalf("peer socket recall was not durably applied: %s", recalled)
+	}
+	snowSocketHistory(t, addr, "group", 904, 83, 81, 82)
+	if sent.Load() != 2 || connections.Load() != 2 {
+		t.Fatalf("unexpected playback: sends=%d sockets=%d", sent.Load(), connections.Load())
+	}
+	return saved
 }
 
 func portableSnowHTTPModel(w http.ResponseWriter, r *http.Request) {

@@ -19,22 +19,15 @@ import (
 	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/onebotwire"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	whatwg "github.com/nlnwa/whatwg-url/url"
-	"golang.org/x/text/encoding/unicode"
 )
 
-type Error struct {
-	Code        string
-	Transmitted bool
-	HTTPStatus  int
-}
+type Error = onebotwire.Error
 
-func (e *Error) Error() string { return e.Code }
-func failure(code string, transmitted bool) error {
-	return &Error{Code: code, Transmitted: transmitted}
-}
+func failure(code string, transmitted bool) error { return onebotwire.Failure(code, transmitted) }
 
 type HTTPConfig struct {
 	URL, AccountID, Token, EventToken, EventHost, EventPath string
@@ -307,7 +300,7 @@ func (h *HTTP) actionPrepared(ctx context.Context, name string, params *jsjson.O
 	if preparation != nil {
 		lease, err = preparation.Encoder.Encode(requestCtx, params, preparation.Sources)
 		if err != nil {
-			return nil, encoderFailure(err, requestCtx.Err() == context.DeadlineExceeded && ctx.Err() == nil && h.life.Err() == nil)
+			return nil, onebotwire.EncoderFailure(err, requestCtx.Err() == context.DeadlineExceeded && ctx.Err() == nil && h.life.Err() == nil)
 		}
 		defer lease.Release()
 		wire = lease.Bytes
@@ -350,7 +343,7 @@ func (h *HTTP) actionPrepared(ctx context.Context, name string, params *jsjson.O
 	}
 	transmitted = true
 	if h.config.Token != "" {
-		token, err := headerByteString("Bearer " + h.config.Token)
+		token, err := onebotwire.HeaderByteString("Bearer " + h.config.Token)
 		if err != nil {
 			return nil, classify(err)
 		}
@@ -383,7 +376,7 @@ func (h *HTTP) actionPrepared(ctx context.Context, name string, params *jsjson.O
 	if requestCtx.Err() != nil {
 		return nil, classify(requestCtx.Err())
 	}
-	decision, err := h.decision("http_response", bufferText(body))
+	decision, err := h.decision("http_response", onebotwire.BufferText(body))
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +439,7 @@ func (h *HTTP) event(w http.ResponseWriter, r *http.Request) {
 		finish(401)
 		return
 	}
-	raw := bufferText(body)
+	raw := onebotwire.BufferText(body)
 	decision, err := h.decision("http_event", raw)
 	if err != nil {
 		finish(400)
@@ -492,25 +485,6 @@ func (h *HTTP) CloseAndWait(ctx context.Context) error {
 	return h.work.Wait(ctx)
 }
 
-// Buffer.toString('utf8') replaces malformed bytes but preserves a leading BOM.
-func bufferText(raw []byte) string {
-	decoded, _ := unicode.UTF8.NewDecoder().Bytes(raw)
-	return string(decoded)
-}
-func headerByteString(value string) (string, error) {
-	units, err := jsjson.UTF16(value)
-	if err != nil {
-		return "", err
-	}
-	bytes := make([]byte, len(units))
-	for i, unit := range units {
-		if unit > 255 {
-			return "", errors.New("invalid_header_value")
-		}
-		bytes[i] = byte(unit)
-	}
-	return string(bytes), nil
-}
 func headerText(value string) string {
 	units := make([]uint16, len(value))
 	for i := 0; i < len(value); i++ {

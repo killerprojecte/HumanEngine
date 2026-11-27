@@ -137,13 +137,21 @@ func TestStructuredTransportRefusesPrivateAddressBeforeAuthentication(t *testing
 }
 
 func TestStructuredHTMLGETOnlyUsesTheFixedOrigin(t *testing.T) {
+	for _, queryField := range []string{"q", "query"} {
+		t.Run(queryField, func(t *testing.T) {
+			testStructuredHTMLGET(t, queryField)
+		})
+	}
+}
+
+func testStructuredHTMLGET(t *testing.T, queryField string) {
 	const query = "x&url=http://127.0.0.1"
 	var calls atomic.Int32
 	tls := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls.Add(1)
 		if r.Method != http.MethodGet || r.Host != "example.com" || r.URL.Path != "/search" ||
-			len(r.URL.Query()) != 1 || r.URL.Query().Get("q") != query || r.ContentLength != 0 ||
-			r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" ||
+			len(r.URL.Query()) != 1 || r.URL.Query().Get(queryField) != query || r.ContentLength != 0 ||
+			r.Header.Get("Authorization") != "" || r.Header.Get("X-API-Key") != "" || r.Header.Get("Cookie") != "" ||
 			r.Header.Get("Accept") != "text/html" || r.Header.Get("User-Agent") != "HumanEngine-WebSearch/1.0" {
 			t.Errorf("unexpected HTML query request: %s %s", r.Method, r.URL)
 		}
@@ -155,6 +163,7 @@ func TestStructuredHTMLGETOnlyUsesTheFixedOrigin(t *testing.T) {
 		t.Fatal(err)
 	}
 	owner := newStructuredTransport(t.Context(), endpoint, "", "synthetic-never-use")
+	owner.queryField = queryField
 	defer owner.CloseAndWait(t.Context())
 	owner.pool.TLSClientConfig = tls.Client().Transport.(*http.Transport).TLSClientConfig.Clone()
 	owner.pool.DialContext = func(ctx context.Context, network, _ string) (net.Conn, error) {

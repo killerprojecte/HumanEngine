@@ -18,13 +18,12 @@ var (
 	htmlChallenge  = regexp.MustCompile(`(?i)captcha|challenge|anomaly`)
 	challengeClass = regexp.MustCompile(`(?i)g-recaptcha|h-captcha|cf-challenge|anomaly-modal`)
 	challengeTitle = regexp.MustCompile(`(?i)captcha|access denied|just a moment`)
-	emptyBingPage  = regexp.MustCompile(`(?i)no results|did not match any documents|no more results|没有找到|未找到|找不到相关`)
-	bingBase       = url.URL{Scheme: "https", Host: "www.bing.com"}
+	emptyHTMLPage  = regexp.MustCompile(`(?i)no results|did not match any documents|no more results|没有找到|未找到|找不到相关`)
 )
 
-// parseBing reads inert HTML. Neither parsing nor decoding a citation wrapper
+// parseHTML reads inert HTML. Neither parsing nor decoding a citation wrapper
 // makes another request. Structural limits match the TypeScript adapter.
-func parseBing(body string) ([]Result, error) {
+func parseHTML(provider, body string) ([]Result, error) {
 	root := &html.Node{Type: html.DocumentNode}
 	stack := []*html.Node{root}
 	z := html.NewTokenizer(strings.NewReader(body))
@@ -91,7 +90,7 @@ func parseBing(body string) ([]Result, error) {
 			}
 		}
 		parent.AppendChild(node)
-		if node.Data == "li" && len(cards) < 100 && htmlClass(node, "b_algo") {
+		if len(cards) < 100 && htmlCandidate(provider, node) {
 			cards = append(cards, node)
 		} else if node.Data == "title" {
 			titles = append(titles, node)
@@ -107,47 +106,97 @@ func parseBing(body string) ([]Result, error) {
 	}
 	items := make([]Result, 0, len(cards))
 	for _, card := range cards {
-		heading := htmlFind(card, "h2", "")
-		if heading == nil {
-			continue
-		}
-		anchor := htmlFind(heading, "a", "")
+		anchor, heading, snippet := htmlResultNodes(provider, card)
 		if anchor == nil {
 			continue
 		}
-		target := bingTarget(htmlAttr(anchor, "href"))
+		target := htmlTarget(provider, htmlAttr(anchor, "href"))
 		title := htmlText(heading)
 		if target == "" || title == "" {
 			continue
 		}
-		snippet := htmlFind(card, "", "b_caption")
-		if snippet == nil {
-			snippet = htmlFind(card, "p", "")
-		}
-		items = append(items, Result{"bing", slice(title, 512), target, slice(htmlText(snippet), 4000)})
+		items = append(items, Result{provider, slice(title, 512), target, slice(htmlText(snippet), 4000)})
 	}
-	if len(items) == 0 && !emptyBingPage.MatchString(htmlText(root)) {
+	if len(items) == 0 && !emptyHTMLPage.MatchString(htmlText(root)) {
 		return nil, errInvalidHTML
 	}
 	return Unique(items, 100), nil
 }
 
-func bingTarget(raw string) string {
-	target, err := bingBase.Parse(raw)
+func htmlCandidate(provider string, n *html.Node) bool {
+	switch provider {
+	case "bing":
+		return n.Data == "li" && htmlClass(n, "b_algo")
+	case "sogou":
+		return htmlClass(n, "vrwrap") || htmlClass(n, "rb")
+	case "google":
+		return n.Data == "h3"
+	case "duckduckgo":
+		return n.Data == "a" && htmlClass(n, "result__a")
+	}
+	return false
+}
+
+func htmlResultNodes(provider string, node *html.Node) (anchor, heading, snippet *html.Node) {
+	switch provider {
+	case "google":
+		anchor = htmlAncestor(node, "a", "", "")
+		card := htmlAncestor(node, "", "g", "MjjYud")
+		return anchor, node, htmlFind(card, "", "VwiC3b", "IsZvec")
+	case "duckduckgo":
+		card := htmlAncestor(node, "", "result", "")
+		return node, node, htmlFind(card, "", "result__snippet", "")
+	case "sogou", "bing":
+		tag, class := "h3", "fz-mid"
+		if provider == "bing" {
+			tag, class = "h2", "b_caption"
+		}
+		heading = htmlFind(node, tag, "", "")
+		snippet = htmlFind(node, "", class, "")
+		if snippet == nil {
+			snippet = htmlFind(node, "p", "", "")
+		}
+		return htmlFind(heading, "a", "", ""), heading, snippet
+	}
+	return nil, nil, nil
+}
+
+func htmlTarget(provider, raw string) string {
+	base := url.URL{Scheme: "https", Host: htmlSpecs[provider].citationHost}
+	target, err := base.Parse(raw)
 	if err != nil {
 		return ""
 	}
 	host := strings.ToLower(strings.TrimSuffix(target.Hostname(), "."))
-	if (host == "www.bing.com" || host == "cn.bing.com") && target.Path == "/ck/a" {
-		encoded, ok := strings.CutPrefix(target.Query().Get("u"), "a1")
-		if !ok {
-			return ""
+	switch provider {
+	case "bing":
+		if (host == "www.bing.com" || host == "cn.bing.com") && target.Path == "/ck/a" {
+			encoded, ok := strings.CutPrefix(target.Query().Get("u"), "a1")
+			if !ok {
+				return ""
+			}
+			value, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(encoded, "="))
+			if err != nil {
+				return ""
+			}
+			return PublicURL(string(value))
 		}
-		value, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(encoded, "="))
-		if err != nil {
-			return ""
+	case "google":
+		if host == "www.google.com" && target.Path == "/url" {
+			values := target.Query()
+			if values.Has("q") {
+				return PublicURL(values.Get("q"))
+			}
+			return PublicURL(values.Get("url"))
 		}
-		return PublicURL(string(value))
+	case "duckduckgo":
+		if host == "duckduckgo.com" || host == "html.duckduckgo.com" {
+			return PublicURL(target.Query().Get("uddg"))
+		}
+	}
+	// Unresolved tracking and navigation links are not cited.
+	if host == base.Host {
+		return ""
 	}
 	for _, domain := range []string{"bing.com", "google.com", "duckduckgo.com"} {
 		if host == domain || strings.HasSuffix(host, "."+domain) {
@@ -175,15 +224,32 @@ func htmlClass(n *html.Node, class string) bool {
 	return false
 }
 
-func htmlFind(root *html.Node, tag, class string) *html.Node {
+func htmlMatches(n *html.Node, tag, class, alternate string) bool {
+	return (tag == "" || n.Data == tag) &&
+		(class == "" || htmlClass(n, class) || alternate != "" && htmlClass(n, alternate))
+}
+
+func htmlAncestor(node *html.Node, tag, class, alternate string) *html.Node {
+	for n := node.Parent; n != nil; n = n.Parent {
+		if n.Type == html.ElementNode && htmlMatches(n, tag, class, alternate) {
+			return n
+		}
+	}
+	return nil
+}
+
+func htmlFind(root *html.Node, tag, class, alternate string) *html.Node {
+	if root == nil {
+		return nil
+	}
 	for n := root.FirstChild; n != nil; n = n.NextSibling {
 		if n.Type != html.ElementNode {
 			continue
 		}
-		if (tag == "" || n.Data == tag) && (class == "" || htmlClass(n, class)) {
+		if htmlMatches(n, tag, class, alternate) {
 			return n
 		}
-		if found := htmlFind(n, tag, class); found != nil {
+		if found := htmlFind(n, tag, class, alternate); found != nil {
 			return found
 		}
 	}

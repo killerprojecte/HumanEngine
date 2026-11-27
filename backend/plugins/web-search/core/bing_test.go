@@ -46,3 +46,29 @@ func TestBingHTMLSourceFixtures(t *testing.T) {
 		})
 	}
 }
+
+func TestHTMLProviderCitationFixtures(t *testing.T) {
+	for _, tc := range []struct{ provider, body, status, url, snippet string }{
+		{"google", `<html><div class="MjjYud"><a href="/url?q=https%3A%2F%2Fexample.org&amp;url=https%3A%2F%2Fignored.example"><h3>Fixture</h3></a><div class="VwiC3b">Summary</div></div></html>`, "ok", "https://example.org/", "Summary"},
+		{"google", `<html><div class="g"><a href="/url?q=&amp;url=https%3A%2F%2Fexample.org"><h3>Empty primary</h3></a></div></html>`, "unavailable", "", ""},
+		{"sogou", `<html><div class="rb"><h3><a href="/link?url=opaque">Tracking</a></h3></div><div class="vrwrap"><h3><a href="https://example.org">Fixture</a></h3><p>Summary</p></div></html>`, "ok", "https://example.org/", "Summary"},
+		{"duckduckgo", `<html><div class="result"><a class="result__a" href="//html.duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.org">Fixture</a><div class="result__snippet">Summary</div></div></html>`, "ok", "https://example.org/", "Summary"},
+		{"duckduckgo", `<html><a class="result__a" href="//duckduckgo.com/l/?uddg=http%3A%2F%2F127.0.0.1">Private</a></html>`, "unavailable", "", ""},
+		{"duckduckgo", `<html><a class="result__a" href="//example.org/l/?uddg=https%3A%2F%2Finjected.example">Fixture</a></html>`, "ok", "https://example.org/l/?uddg=https%3A%2F%2Finjected.example", ""},
+	} {
+		got := websearch.FinishSearch(websearch.SearchObservation{
+			Provider: tc.provider, Limit: 3, Text: tc.body, Body: json.RawMessage(`{"resultId":"body"}`),
+			Status: 200, Budget: 4096, Attempted: []string{tc.provider},
+		})
+		if got.Status != tc.status || got.BodyProvider != tc.provider {
+			t.Errorf("%s wrong result: %+v", tc.provider, got)
+		}
+		want := []websearch.Result{}
+		if tc.url != "" {
+			want = append(want, websearch.Result{Provider: tc.provider, Title: "Fixture", URL: tc.url, Snippet: tc.snippet})
+		}
+		if !reflect.DeepEqual(got.Results, want) {
+			t.Errorf("%s results: got %+v, want %+v", tc.provider, got.Results, want)
+		}
+	}
+}

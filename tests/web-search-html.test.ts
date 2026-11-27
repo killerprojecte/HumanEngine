@@ -84,3 +84,23 @@ test('HTML parser no longer imposes a 1 MiB byte ceiling but reports structural 
   assert.equal(parseHtml('bing', html)[0]?.title, 'Large page')
   assert.throws(() => parseHtml('bing', '<html>' + '<div>'.repeat(130)), /parse_limit/)
 })
+
+test('routed Go TLS fixtures have the same citation semantics in TypeScript', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const fixtures = JSON.parse(
+    await readFile(
+      new URL('../backend/internal/app/testdata/html-search-routes.json', import.meta.url),
+      'utf8',
+    ),
+  )
+  for (const provider of ['google', 'sogou', 'duckduckgo'] as const) {
+    assert.deepEqual(parseHtml(provider, fixtures[provider].prefix + '</div></html>'), [
+      {
+        provider,
+        title: 'Fixture result',
+        url: 'https://example.com/doc',
+        snippet: 'Fixture snippet',
+      },
+    ])
+  }
+})

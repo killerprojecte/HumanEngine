@@ -1,0 +1,20 @@
+{
+  "google": {
+    "host": "www.google.com",
+    "path": "/search",
+    "queryField": "q",
+    "prefix": "<html><div class=\"g\"><a href=\"/url?url=https%3A%2F%2Fexample.com%2Fdoc\"><h3>Fixture result</h3></a><div class=\"IsZvec\">Fixture snippet</div></div><div>"
+  },
+  "sogou": {
+    "host": "www.sogou.com",
+    "path": "/web",
+    "queryField": "query",
+    "prefix": "<html><div class=\"vrwrap\"><h3><a href=\"/link?url=unresolved\">Unresolved</a></h3></div><div class=\"rb\"><h3><a href=\"https://example.com/doc\">Fixture result</a></h3><div class=\"fz-mid\">Fixture snippet</div></div><div>"
+  },
+  "duckduckgo": {
+    "host": "html.duckduckgo.com",
+    "path": "/html/",
+    "queryField": "q",
+    "prefix": "<html><div class=\"result\"><a class=\"result__a\" href=\"//duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Fdoc\">Fixture result</a><a class=\"result__snippet\">Fixture snippet</a></div><div>"
+  }
+}

@@ -35,6 +35,7 @@ var structuredResolver = &net.Resolver{PreferGo: true}
 type structuredTransport struct {
 	endpoint   structuredEndpoint
 	authHeader string
+	queryField string
 	auth       string
 	life       context.Context
 	pool       *http.Transport
@@ -45,7 +46,7 @@ func newStructuredTransport(life context.Context, endpoint structuredEndpoint, h
 	if header == "" {
 		header, key = "Authorization", "Bearer "+key
 	}
-	s := &structuredTransport{endpoint: endpoint, authHeader: header, auth: key, life: life}
+	s := &structuredTransport{endpoint: endpoint, authHeader: header, auth: key, life: life, queryField: "q"}
 	s.pool = &http.Transport{
 		DialContext: s.dial, ForceAttemptHTTP2: true,
 		TLSHandshakeTimeout: 10 * time.Second, IdleConnTimeout: 90 * time.Second,
@@ -112,7 +113,7 @@ func (s *structuredTransport) get(ctx context.Context, body []byte) (*http.Respo
 	if err := json.Unmarshal(body, &query); err != nil || query == "" {
 		return nil, errors.New("structured_query_invalid")
 	}
-	address := string(s.endpoint) + "?" + url.Values{"q": {query}}.Encode()
+	address := string(s.endpoint) + "?" + url.Values{s.queryField: {query}}.Encode()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, nil)
 	if err != nil {
 		return nil, err

@@ -5,6 +5,7 @@ package app
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -22,6 +23,9 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/toolresults"
 )
 
+//go:embed testdata/html-search-routes.json
+var htmlRouteFixtures []byte
+
 func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	root := t.TempDir()
 	pkg, mode := os.Getenv("HE_SEARCH_PACKAGE"), os.Getenv("HE_SEARCH_MODE")
@@ -29,6 +33,11 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 		t.Skip("explicit independent web search package required")
 	}
 	provider, parsedMode, external := strings.Cut(mode, "-")
+	var htmlRoutes map[string]struct{ Host, Prefix string }
+	if err := json.Unmarshal(htmlRouteFixtures, &htmlRoutes); err != nil {
+		t.Fatal(err)
+	}
+	htmlFixture, extraHTML := htmlRoutes[provider]
 	if external {
 		mode = parsedMode
 	} else {
@@ -43,6 +52,8 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 		host = "www.bing.com"
 		// The synthetic peer uses the normal Bing tracking wrapper.
 		prefix = `<html><ol><li class="b_algo"><h2><a href="/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS9kb2M">Fixture result</a></h2><div class="b_caption">Fixture snippet</div></li></ol><div>`
+	case "google", "sogou", "duckduckgo":
+		host, prefix = htmlFixture.Host, htmlFixture.Prefix
 	case "deepseek":
 		host, key, clear, secret = "api.deepseek.com", "deepseekKey", "clearDeepseekKey", "synthetic-deepseek-key"
 		prefix = `{"results":[{"title":"Fixture result","url":"https://example.com/doc","snippet":"Fixture snippet"}],"payload":"`
@@ -68,6 +79,9 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	from := os.Getenv("HE_SEARCH_FALLBACK_FROM")
 	attempted := []string{provider}
 	query := "Go 搜索"
+	if extraHTML {
+		query += "&url=https://example.com"
+	}
 	configure := map[string]any{"provider": provider, key: secret}
 	if from != "" {
 		if from != "you" || provider != "tavily" {
@@ -147,6 +161,8 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 			}
 		}
 		appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"allowExperimentalHtml": true, "fallbackProvider": "none"})
+	} else if extraHTML {
+		appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"allowExperimentalHtml": true})
 	}
 	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/enabled", map[string]any{"enabled": true})
 	if !a.WASM.Loaded(id) || a.Bridge.Host.PID() != 0 {

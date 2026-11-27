@@ -68,21 +68,24 @@ func apiBody(provider, query string, limit int) ([]byte, error) {
 	return json.Marshal(body)
 }
 
+type htmlSpec struct {
+	endpoint, citationHost, queryField string
+}
+
+var htmlSpecs = map[string]htmlSpec{
+	"bing":       {"https://www.bing.com/search", "www.bing.com", "q"},
+	"google":     {"https://www.google.com/search", "www.google.com", "q"},
+	"sogou":      {"https://www.sogou.com/web", "www.sogou.com", "query"},
+	"duckduckgo": {"https://html.duckduckgo.com/html/", "duckduckgo.com", "q"},
+}
+
 func BuildHTML(provider, query string) (Request, error) {
-	endpoints := map[string]string{"bing": "https://www.bing.com/search", "google": "https://www.google.com/search", "sogou": "https://www.sogou.com/web", "duckduckgo": "https://html.duckduckgo.com/html/"}
-	endpoint := endpoints[provider]
-	if endpoint == "" {
+	spec, found := htmlSpecs[provider]
+	if !found {
 		return Request{}, errors.New("provider_disabled")
 	}
-	address, _ := url.Parse(endpoint)
-	values := address.Query()
-	key := "q"
-	if provider == "sogou" {
-		key = "query"
-	}
-	values.Set(key, query)
-	address.RawQuery = values.Encode()
-	return Request{URL: address.String(), Format: "html", Init: Init{Method: "GET", Redirect: "error", Headers: map[string]string{"Accept": "text/html", "User-Agent": "HumanEngine-WebSearch/1.0"}}}, nil
+	address := spec.endpoint + "?" + url.Values{spec.queryField: {query}}.Encode()
+	return Request{URL: address, Format: "html", Init: Init{Method: "GET", Redirect: "error", Headers: map[string]string{"Accept": "text/html", "User-Agent": "HumanEngine-WebSearch/1.0"}}}, nil
 }
 
 var blockedHost = regexp.MustCompile(`(?:^|\.)(localhost|local|internal|test|invalid)$`)

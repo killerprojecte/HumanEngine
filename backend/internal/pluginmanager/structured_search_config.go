@@ -21,6 +21,7 @@ type structuredRoute struct {
 	clear      string
 	consent    string
 	authHeader string
+	queryField string
 }
 
 type structuredProfile struct {
@@ -52,6 +53,7 @@ func parseStructuredRoute(properties, route *jsjson.Object) (structuredRoute, er
 	out := structuredRoute{endpoint: endpoint, provider: text(route, "provider"), credential: text(route, "credential"), clear: text(route, "clear")}
 	out.consent = text(route, "consent")
 	out.authHeader = text(route, "authHeader")
+	out.queryField = text(route, "queryField")
 	providerField, _ := prop(properties, "provider").(*jsjson.Object)
 	providers, _ := prop(providerField, "enum").([]any)
 	keyField, _ := prop(properties, out.credential).(*jsjson.Object)
@@ -63,6 +65,7 @@ func parseStructuredRoute(properties, route *jsjson.Object) (structuredRoute, er
 		text(keyField, "type") != "string" || prop(keyField, "secret") != true ||
 		text(clearField, "type") != "boolean" ||
 		(method != "" && method != http.MethodGet) ||
+		(out.queryField != "" && (method != http.MethodGet || out.queryField != "query")) ||
 		(out.authHeader != "" && (method != "" || out.authHeader != "X-API-Key")) ||
 		(method == http.MethodGet && text(consentField, "type") != "boolean") ||
 		(method == "" && out.consent != "") {

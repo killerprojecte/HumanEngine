@@ -68,6 +68,9 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 		owners = append(owners, owner)
 		attempt.request, attempt.contentType = owner.post, "application/json"
 		if route.consent != "" {
+			if route.queryField != "" {
+				owner.queryField = route.queryField
+			}
 			attempt.request, attempt.contentType = owner.get, "text/html"
 		}
 		attempts = append(attempts, attempt)

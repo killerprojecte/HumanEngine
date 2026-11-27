@@ -1,5 +1,5 @@
 {
-  "description": "Opt-in Bing, Tavily, DeepSeek, You, and You News. Uses only the configured primary and optional fallback.",
+  "description": "Opt-in public web search with four API and four experimental HTML providers. Uses only the configured primary and optional fallback.",
   "toolWire": "structured-search-v1",
   "service": {
     "routes": [
@@ -36,6 +36,31 @@
         "credential": "youKey",
         "clear": "clearYouKey",
         "authHeader": "X-API-Key"
+      },
+      {
+        "provider": "google",
+        "endpoint": "https://www.google.com/search",
+        "method": "GET",
+        "consent": "allowExperimentalHtml",
+        "credential": "tavilyKey",
+        "clear": "clearTavilyKey"
+      },
+      {
+        "provider": "sogou",
+        "endpoint": "https://www.sogou.com/web",
+        "method": "GET",
+        "consent": "allowExperimentalHtml",
+        "credential": "tavilyKey",
+        "clear": "clearTavilyKey",
+        "queryField": "query"
+      },
+      {
+        "provider": "duckduckgo",
+        "endpoint": "https://html.duckduckgo.com/html/",
+        "method": "GET",
+        "consent": "allowExperimentalHtml",
+        "credential": "tavilyKey",
+        "clear": "clearTavilyKey"
       }
     ]
   },

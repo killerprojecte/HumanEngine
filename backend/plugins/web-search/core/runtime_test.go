@@ -115,6 +115,33 @@ func TestStructuredSearchGuestMatchesTypeScript(t *testing.T) {
 		}
 	})
 
+	var htmlRoutes map[string]struct{ Prefix string }
+	htmlFixture, err := os.ReadFile("../../../internal/app/testdata/html-search-routes.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(htmlFixture, &htmlRoutes); err != nil {
+		t.Fatal(err)
+	}
+	for _, provider := range []string{"google", "sogou", "duckduckgo"} {
+		t.Run(provider+"-routed-citation", func(t *testing.T) {
+			plan := call(t, map[string]any{"operation": "search_plan", "provider": provider, "maxResults": 2,
+				"input": map[string]any{"query": "  Go 搜索  ", "limit": 3}})
+			if !reflect.DeepEqual(plan, map[string]any{"limit": 2.0, "body": "Go 搜索"}) {
+				t.Fatalf("wrong guest HTML plan: %v", plan)
+			}
+			result := call(t, map[string]any{"operation": "search_response", "observation": map[string]any{
+				"provider": provider, "limit": 2, "body": map[string]string{"resultId": "cached"},
+				"httpStatus": 200, "parserBudgetBytes": 4096, "attemptedProviders": []string{provider},
+				"text": htmlRoutes[provider].Prefix + "</div></html>",
+			}}).(map[string]any)
+			want := []any{map[string]any{"provider": provider, "title": "Fixture result", "url": "https://example.com/doc", "snippet": "Fixture snippet"}}
+			if result["status"] != "ok" || result["bodyProvider"] != provider || !reflect.DeepEqual(result["results"], want) {
+				t.Fatalf("wrong guest HTML citation: %v", result)
+			}
+		})
+	}
+
 	if err := host.Disable(ctx, "web-search"); err != nil || host.Loaded("web-search") {
 		t.Fatalf("unload: %v", err)
 	}

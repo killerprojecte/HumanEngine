@@ -26,9 +26,6 @@ for name in ids:
     assert f"/plugins/{name}/core" in (root / "wasm/main.go").read_text()
     for path in (root / "core").glob("*.go"):
         assert "/plugins/metadata" not in path.read_text(), f"aggregate dependency creates cycle: {path}"
-assert (plugins / "typing-delay/host/delay.go").is_file(), "typing host ownership missing"
-typing_factory = (plugins / "typing-delay/host/factory.go").read_text()
-assert "Delay(Ports{" in typing_factory
 for path in (backend / "internal/pluginmanager").glob("*.go"):
     if path.name.endswith("_test.go"):
         continue

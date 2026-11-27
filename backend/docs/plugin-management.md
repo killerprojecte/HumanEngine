@@ -101,4 +101,28 @@ Default builds do not require generated dist files. Run make wasm before a
 bundled_wasm build; make clean-wasm removes the four generated artifacts.
 make plugin-layout-check rejects former split directories and stale references.
 
-The typing-delay native timer composition belongs to `plugins/typing-delay/host`. The manager lends its existing work admission, plugin lifetime, exact current-revision predicate, and instance-bound guest call. It still owns registration removal and cleanup. No second work registry is created; turn cancellation interrupts the delay without replacing the plugin lifetime passed into synchronous guest policy.
+### External V2 send-delay packages
+
+The same host hook supports the bundled typing-delay policy and independent V2
+packages declaring `["send-delay", "schema-form"]`. The plugin owns the policy
+and configuration schema; the host owns the timer and its cancellation. An
+external package does not start until enabled, cannot install another kind of
+hook through this capability, and cannot declare credential fields. There is
+one active send-delay hook per runtime.
+
+Build the independent package outside source control:
+
+    make -C backend wasm-typing-delay-package TYPING_DELAY_PACKAGE_DIR=/tmp/typing-delay-package
+
+With a Go host built without `bundled_wasm` (the opt-in Docker build arg
+`PREVIEW_PLUGIN_PROFILE=external-only`), mount that directory at the plugin
+root and include `typing-delay.v2.json` in `HUMANENGINE_PLUGINS`. Enable it in
+the plugin settings and adjust speedFactor as desired. The bundled compatibility
+profile still pre-registers the original package; do not list both under the same ID.
+
+A V2 send-delay guest is called once per complete outgoing segment with
+`{"operation":"delay","segment":{...},"config":{...}}` and returns an integer
+`{"delayMs":123}` or an error. Disabling the guest or invalidating the turn cancels
+pending timers. The generic host uses the existing physical work admission,
+exact generation predicate and instance-bound call, without adding a worker or
+a second work registry.

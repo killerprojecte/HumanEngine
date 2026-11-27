@@ -4,9 +4,12 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
+	resource "github.com/killerprojecte/HumanEngine/backend/plugins/web-read"
 	webread "github.com/killerprojecte/HumanEngine/backend/plugins/web-read/host/runtime"
 )
 
@@ -22,5 +25,8 @@ func (a *Application) bindWebRead(ctx context.Context) error {
 	if err = policy.Validate(ctx, new(jsjson.Object)); err != nil {
 		return err
 	}
-	return a.registerBuiltin("web-read", webread.Factory(a.Plugins), policy)
+	return a.Plugins.RegisterBuiltin(pluginmanager.BuiltinDescriptor{
+		Manifest: resource.Manifest().(json.RawMessage), LoadArtifact: func() ([]byte, error) { return artifact, nil },
+		Start: webread.Factory(a.Plugins), Policy: policy,
+	})
 }

@@ -33,6 +33,11 @@ The default `compatibility` image still includes SnowLuma. The optional local
 binary and its default plugin list. The other embedded WASM artifacts are
 unchanged. This profile is a comparison host for external package testing,
 not a SnowLuma installer. Use a separate image tag and disposable data.
+The opt-in `--build-arg PREVIEW_PLUGIN_PROFILE=external-only` embeds no plugin
+artifacts and starts with an empty catalog. Install supported packages via a
+plugin-root mount and `HUMANENGINE_PLUGINS`; see
+[external send-delay packaging](../../docs/plugin-management.md#external-v2-send-delay-packages).
+Neither profile changes the default image.
 The optional migration job retains the bundled image for general state coverage.
 Its recall/rollback case selects the SnowLuma-free Go image and mounts a separately
 built HTTP plugin manifest and WASM read-only on the Go legs only. The same seeded

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
@@ -51,8 +52,9 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 	}
 	manifest, ok := parsed.(*jsjson.Object)
 	capabilities, _ := prop(manifest, "capabilities").([]any)
+	sendDelay := len(capabilities) == 2 && slices.Contains(capabilities, "send-delay") && slices.Contains(capabilities, "schema-form")
 	if !ok || !validID(text(manifest, "id")) || text(manifest, "name") == "" || text(manifest, "version") == "" ||
-		len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter") {
+		(!sendDelay && (len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter"))) {
 		return errors.New("external_v2_manifest_invalid")
 	}
 	artifact := text(manifest, "artifact")
@@ -70,14 +72,21 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 		manifest.Delete("artifactSha256")
 	}
 	manifest.Delete("artifact")
-	if _, found := manifest.Get("configSchema"); found {
-		return errors.New("external_v2_configuration_unsupported")
-	}
 	binding := V2AdapterBinding{
 		Schema: objectJSON(map[string]any{"type": "object", "additionalProperties": false}),
 		Start:  m.startExternalV2,
 	}
-	if capabilities[0] == "adapter" {
+	rawSchema, hasSchema := manifest.Get("configSchema")
+	switch {
+	case sendDelay:
+		schema, _ := rawSchema.(*jsjson.Object)
+		if text(schema, "type") != "object" || schemaDeclaresSecret(schema) {
+			return errors.New("external_v2_send_delay_schema_invalid")
+		}
+		binding.Schema, binding.Start = schema, m.StartSendDelay
+	case hasSchema:
+		return errors.New("external_v2_configuration_unsupported")
+	case capabilities[0] == "adapter":
 		adapter, _ := prop(manifest, "adapter").(*jsjson.Object)
 		descriptor := V2AdapterDescriptor{
 			PluginID: text(manifest, "id"), AdapterID: text(adapter, "id"), Wire: text(adapter, "wire"),
@@ -113,6 +122,28 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 			return artifact, nil
 		}, Start: binding.Start, Policy: binding.Policy,
 	}, false)
+}
+
+// A schema-form send hook has no credential policy. Do not accept secret
+// fields that would otherwise be treated as ordinary plugin configuration.
+func schemaDeclaresSecret(schema *jsjson.Object) bool {
+	if schema == nil {
+		return false
+	}
+	if prop(schema, "secret") == true {
+		return true
+	}
+	if child, _ := prop(schema, "items").(*jsjson.Object); schemaDeclaresSecret(child) {
+		return true
+	}
+	if properties, _ := prop(schema, "properties").(*jsjson.Object); properties != nil {
+		for _, property := range properties.Members() {
+			if child, _ := property.Value.(*jsjson.Object); schemaDeclaresSecret(child) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // The tool bridge and WASM host already own all work for this guest.

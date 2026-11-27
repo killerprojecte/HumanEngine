@@ -3,17 +3,12 @@ package app
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"os"
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
-	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
-	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
-	typing "github.com/killerprojecte/HumanEngine/backend/plugins/typing-delay/host"
 )
 
 func (a *Application) restorePlugins(ctx context.Context, owners Owners) error {
@@ -123,7 +118,7 @@ func (a *Application) bindBuiltins(ctx context.Context, owners Owners, ids []str
 		var err error
 		switch id {
 		case "typing-delay":
-			err = a.registerBuiltin(id, typing.Factory(a.Engine.Runtime.InstallTypingDelay), pluginmanager.BuiltinPolicy{})
+			err = a.bindTypingDelay()
 		case "web-read":
 			err = a.bindWebRead(ctx)
 		default:
@@ -134,14 +129,4 @@ func (a *Application) bindBuiltins(ctx context.Context, owners Owners, ids []str
 		}
 	}
 	return nil
-}
-
-func (a *Application) registerBuiltin(id string, start pluginmanager.BuiltinRuntimeFactory, policy pluginmanager.BuiltinPolicy) error {
-	manifest, ok := metadata.Manifest(id).(json.RawMessage)
-	if !ok {
-		return errors.New("builtin_manifest_invalid")
-	}
-	return a.Plugins.RegisterBuiltin(pluginmanager.BuiltinDescriptor{
-		Manifest: manifest, LoadArtifact: func() ([]byte, error) { return plugins.BuiltinArtifact(id) }, Start: start, Policy: policy,
-	})
 }

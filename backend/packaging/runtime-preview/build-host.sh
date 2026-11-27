@@ -12,6 +12,10 @@ case "$1" in
         make wasm WASM_PLUGINS='typing-delay web-read web-search'
         make unbundled-plugin-graph-check SNOW_FREE_TAGS="$tags"
         ;;
+    external-only)
+        tags=sqlite_fts5,humanengine_icu,bundled_sqlite_vec
+        make external-only-plugin-graph-check
+        ;;
     *)
         printf 'Unknown preview plugin profile: %s\n' "$1" >&2
         exit 2

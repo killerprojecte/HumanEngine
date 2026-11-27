@@ -1,4 +1,4 @@
-.PHONY: builtin-source-check plugin-source-check plugin-layout-check unbundled-plugin-graph-check clean-wasm clean contextual-source-check
+.PHONY: builtin-source-check plugin-source-check plugin-layout-check unbundled-plugin-graph-check external-only-plugin-graph-check clean-wasm clean contextual-source-check
 .PHONY: test build differential wasm bundle test-bundle test-sqlite-profile test-projection-source-free native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
 
 # Native ICU is opt-in: default build/startup and the TypeScript image are unchanged.
@@ -14,7 +14,7 @@ test: test-runtime-preview-profile
 build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
-plugin-layout-check: unbundled-plugin-graph-check
+plugin-layout-check: unbundled-plugin-graph-check external-only-plugin-graph-check
 	python3 plugins/check-layout.py
 
 # Check import paths, actual package paths and local module replacements.
@@ -23,6 +23,13 @@ unbundled-plugin-graph-check:
 	@deps=$$(go list -buildvcs=false -tags '$(SNOW_FREE_TAGS)' -deps -f '{{.ImportPath}} {{.Dir}}{{with .Module}}{{with .Replace}} {{.Dir}}{{end}}{{end}}' ./cmd/humanengine) || exit $$?; \
 	if printf '%s\n' "$$deps" | grep -E '/plugins/snowluma(/|[[:space:]]|$$)'; then \
 		echo 'SnowLuma-free command depends on SnowLuma' >&2; exit 1; \
+	fi
+
+# The external-only host must not statically link any plugin resource or policy.
+external-only-plugin-graph-check:
+	@deps=$$(go list -buildvcs=false -tags 'sqlite_fts5,humanengine_icu' -deps -f '{{.ImportPath}} {{.Dir}}{{with .Module}}{{with .Replace}} {{.Dir}}{{end}}{{end}}' ./cmd/humanengine) || exit $$?; \
+	if printf '%s\n' "$$deps" | grep -E '/plugins/(typing-delay|web-read|web-search|snowluma|metadata)(/|[[:space:]]|$$)'; then \
+		echo 'External-only command depends on a plugin' >&2; exit 1; \
 	fi
 
 clean: clean-wasm
@@ -211,6 +218,7 @@ bundle: wasm
 
 test-bundle: wasm
 	go test -tags sqlite_fts5,bundled_wasm ./internal/plugins -run TestDistributedArtifactsLoadWithoutSources
+	go test -race -tags sqlite_fts5,bundled_wasm ./internal/httpapi -run '^TestTyping(Builtin|External)RealWASMAndPendingCancellation$$'
 
 # Fetch and verify only when the configured archive is absent. The builder also
 # verifies an existing archive; a mismatched artifact never silently updates.
@@ -322,3 +330,12 @@ wasm-snowluma-http-preview:
 	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
 		-o "$(SNOW_HTTP_PACKAGE_DIR)/snowluma-http.wasm" ./plugins/snowluma/portable-http
 	python3 -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); m=json.loads(pathlib.Path("plugins/snowluma/portable-http/manifest.json").read_text()); m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"snowluma-http.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(SNOW_HTTP_PACKAGE_DIR)"
+
+# Independent send-delay package. Emit the manifest and digest beside the guest.
+TYPING_DELAY_PACKAGE_DIR ?= plugins/typing-delay/dist/external
+.PHONY: wasm-typing-delay-package
+wasm-typing-delay-package:
+	mkdir -p "$(TYPING_DELAY_PACKAGE_DIR)"
+	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
+		-o "$(TYPING_DELAY_PACKAGE_DIR)/typing-delay.wasm" ./plugins/typing-delay/wasm
+	$(PYTHON) -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); m=json.loads(pathlib.Path("plugins/typing-delay/manifest.json").read_text()); m["artifact"]="typing-delay.wasm"; m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"typing-delay.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(TYPING_DELAY_PACKAGE_DIR)"

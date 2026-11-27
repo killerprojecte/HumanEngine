@@ -65,6 +65,24 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	default:
 		t.Fatal("missing explicit search fixture mode")
 	}
+	from := os.Getenv("HE_SEARCH_FALLBACK_FROM")
+	attempted := []string{provider}
+	query := "Go 搜索"
+	configure := map[string]any{"provider": provider, key: secret}
+	if from != "" {
+		if from != "you" || provider != "tavily" {
+			t.Fatal("unsupported fallback fixture route")
+		}
+		if mode == "fixture" {
+			addrs, err := (&net.Resolver{PreferGo: true}).LookupHost(t.Context(), "ydc-index.io")
+			if err != nil || !slices.Equal(addrs, []string{"192.0.1.2"}) {
+				t.Fatal("fallback test requires its isolated TLS fixture host", err)
+			}
+		}
+		attempted = []string{from, provider}
+		query += "回退"
+		configure["provider"], configure["fallbackProvider"], configure["youKey"] = from, provider, "synthetic-you-key"
+	}
 	const id = "web-search"
 	const tail = "搜索缓存里的原始字节"
 	offset := len(prefix) + 9000
@@ -93,7 +111,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if field(field(catalog[0], "configuredSecrets"), key) != false {
 		t.Fatal("fixture starts without a key")
 	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"provider": provider, key: secret})
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", configure)
 	config := appRequest(t, a, http.MethodGet, "/api/plugins/web-search/config", nil)
 	catalog = appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
 	if field(config, key) != nil || field(field(catalog[0], "configuredSecrets"), key) != true {
@@ -190,7 +208,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 			http.Error(w, "wrong external tool menu", 400)
 			return
 		case len(search.Value) == 0:
-			name, args = "web-search__search", `{"query":"  Go 搜索  ","limit":3}`
+			name, args = "web-search__search", fmt.Sprintf(`{"query":%q,"limit":3}`, "  "+query+"  ")
 		default:
 			var result struct {
 				Status, Trust, BodyProvider string
@@ -199,7 +217,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 				Body                        toolresults.Result
 			}
 			if json.Unmarshal(search.Value, &result) != nil || strings.Contains(string(search.Value), secret) ||
-				!slices.Equal(result.AttemptedProviders, []string{provider}) || result.Trust != "untrusted_web_content" {
+				!slices.Equal(result.AttemptedProviders, attempted) || result.Trust != "untrusted_web_content" {
 				http.Error(w, "invalid search result", 400)
 				return
 			}
@@ -271,7 +289,11 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 		if got != want {
 			t.Fatal(got, want)
 		}
-		t.Log(provider + "-" + got)
+		if from != "" {
+			t.Log(from + "-to-" + provider + "-" + got)
+		} else {
+			t.Log(provider + "-" + got)
+		}
 	default:
 		t.Fatal("Planner did not receive the tool evidence")
 	}

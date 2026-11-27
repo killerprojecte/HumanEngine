@@ -1,0 +1,57 @@
+{
+  "description": "Opt-in Bing, Tavily, DeepSeek, You, and You News. Uses only the configured primary and optional fallback.",
+  "toolWire": "structured-search-v1",
+  "service": {
+    "routes": [
+      {
+        "provider": "tavily",
+        "endpoint": "https://api.tavily.com/search",
+        "credential": "tavilyKey",
+        "clear": "clearTavilyKey"
+      },
+      {
+        "provider": "bing",
+        "endpoint": "https://www.bing.com/search",
+        "method": "GET",
+        "consent": "allowExperimentalHtml",
+        "credential": "tavilyKey",
+        "clear": "clearTavilyKey"
+      },
+      {
+        "provider": "deepseek",
+        "endpoint": "https://api.deepseek.com/v1/tools/search",
+        "credential": "deepseekKey",
+        "clear": "clearDeepseekKey"
+      },
+      {
+        "provider": "you",
+        "endpoint": "https://ydc-index.io/v1/search",
+        "credential": "youKey",
+        "clear": "clearYouKey",
+        "authHeader": "X-API-Key"
+      },
+      {
+        "provider": "you_news",
+        "endpoint": "https://ydc-index.io/v1/search",
+        "credential": "youKey",
+        "clear": "clearYouKey",
+        "authHeader": "X-API-Key"
+      }
+    ]
+  },
+  "properties": [
+    "provider",
+    "fallbackProvider",
+    "allowExperimentalHtml",
+    "maxResults",
+    "timeoutMs",
+    "maxResponseBytes",
+    "maxConcurrency",
+    "tavilyKey",
+    "clearTavilyKey",
+    "deepseekKey",
+    "clearDeepseekKey",
+    "youKey",
+    "clearYouKey"
+  ]
+}

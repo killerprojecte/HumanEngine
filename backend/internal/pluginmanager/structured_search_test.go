@@ -95,7 +95,9 @@ func testStructuredTransportFixedTLSAndStream(t *testing.T, header string) {
 	finish := func(raw []byte) ([]byte, error) { return raw, nil }
 	search := func() structuredResponse {
 		t.Helper()
-		raw, err := executeStructuredSearch(t.Context(), "tavily", 5, 4096, []byte(`{"query":"synthetic"}`), "application/json", owner.post, cache, finish)
+		attempt := structuredAttempt{provider: "tavily", contentType: "application/json", request: owner.post}
+		observation, _ := attempt.observe(t.Context(), 5, 4096, []byte(`{"query":"synthetic"}`), cache)
+		raw, err := finishStructuredSearch(observation, finish)
 		if err != nil || strings.Contains(string(raw), secret) {
 			t.Fatalf("search failed or included its credential: %v", err)
 		}

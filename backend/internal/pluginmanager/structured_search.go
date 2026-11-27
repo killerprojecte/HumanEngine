@@ -6,112 +6,16 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/killerprojecte/HumanEngine/backend/internal/credentials"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
-	"github.com/killerprojecte/HumanEngine/backend/internal/pluginconfig"
 	"github.com/killerprojecte/HumanEngine/backend/internal/toolresults"
 	"golang.org/x/net/http/httpguts"
 )
 
-type structuredRoute struct {
-	endpoint   structuredEndpoint
-	provider   string
-	credential string
-	clear      string
-	consent    string
-	authHeader string
-}
-
-func (m *Manager) bindStructuredSearch(id string, schema, route *jsjson.Object) (V2AdapterBinding, error) {
-	endpoint, err := parseStructuredEndpoint(text(route, "endpoint"))
-	out := structuredRoute{endpoint: endpoint, provider: text(route, "provider"), credential: text(route, "credential"), clear: text(route, "clear")}
-	out.consent = text(route, "consent")
-	out.authHeader = text(route, "authHeader")
-	properties, _ := prop(schema, "properties").(*jsjson.Object)
-	providerField, _ := prop(properties, "provider").(*jsjson.Object)
-	providers, _ := prop(providerField, "enum").([]any)
-	keyField, _ := prop(properties, out.credential).(*jsjson.Object)
-	clearField, _ := prop(properties, out.clear).(*jsjson.Object)
-	consentField, _ := prop(properties, out.consent).(*jsjson.Object)
-	method := text(route, "method")
-	if err != nil || m.credentials == nil || out.provider == "" || !slices.Contains(providers, any(out.provider)) ||
-		out.credential == "" || out.clear == "" ||
-		text(schema, "type") != "object" || prop(schema, "additionalProperties") != false || prop(schema, "secret") == true ||
-		text(keyField, "type") != "string" || prop(keyField, "secret") != true ||
-		text(clearField, "type") != "boolean" ||
-		(method != "" && method != http.MethodGet) ||
-		(out.authHeader != "" && (method != "" || out.authHeader != "X-API-Key")) ||
-		(method == http.MethodGet && text(consentField, "type") != "boolean") ||
-		(method == "" && out.consent != "") {
-		return V2AdapterBinding{}, errors.New("external_v2_structured_configuration_invalid")
-	}
-	for _, field := range properties.Members() {
-		node, _ := field.Value.(*jsjson.Object)
-		if field.Key != out.credential && schemaDeclaresSecret(node) {
-			return V2AdapterBinding{}, errors.New("external_v2_structured_configuration_invalid")
-		}
-	}
-	policy := BuiltinPolicy{
-		Validate: func(_ context.Context, value *jsjson.Object) error {
-			if err := pluginconfig.ValidateBuiltin(value, schema); err != nil {
-				return &ConfigurationError{Issues: []Issue{{Field: "configuration", Reason: "invalid_value"}}}
-			}
-			if value := text(value, out.credential); !httpguts.ValidHeaderFieldValue(value) {
-				return &ConfigurationError{Issues: []Issue{{Field: out.credential, Reason: "invalid_value"}}}
-			}
-			return nil
-		},
-		CheckStart: func(config *jsjson.Object) error {
-			provider, fallback := text(config, "provider"), text(config, "fallbackProvider")
-			// An implicit TypeScript default is Bing, not this endpoint.
-			// Never substitute the preview for an absent or different route.
-			if provider != out.provider || fallback != "" && fallback != "none" && fallback != out.provider ||
-				out.consent != "" && prop(config, out.consent) != true {
-				return errPluginProfileUnsupported
-			}
-			return nil
-		},
-		Prepare: func(_ context.Context, value, previous *jsjson.Object) (*jsjson.Object, []credentials.Change, error) {
-			var changes []credentials.Change
-			switch {
-			case prop(value, out.clear) == true:
-				changes = []credentials.Change{{Name: out.credential, Mutation: &credentials.Mutation{Action: "clear"}}}
-			case text(value, out.credential) != "":
-				changes = []credentials.Change{{Name: out.credential, Mutation: &credentials.Mutation{Action: "set", Value: text(value, out.credential)}}}
-			}
-			safe, _ := pluginconfig.Redact(value, schema)
-			config := safe.(*jsjson.Object)
-			config.Delete(out.clear)
-			// An edit without routing fields preserves the existing route,
-			// including an implicit source default, for rollback.
-			for _, name := range []string{"provider", "fallbackProvider", "allowExperimentalHtml"} {
-				if _, found := config.Get(name); !found {
-					if saved, found := previous.Get(name); found {
-						_ = config.Set(name, saved)
-					}
-				}
-			}
-			return config, changes, nil
-		},
-		Secrets: func(ctx context.Context) (*jsjson.Object, error) {
-			has, err := m.credentials.Has(ctx, "plugin:"+id, out.credential)
-			if err != nil {
-				return nil, err
-			}
-			return jsjson.NewObject(jsjson.Member{Key: out.credential, Value: has})
-		},
-	}
-	return V2AdapterBinding{Schema: schema, Policy: policy, Start: func(ctx context.Context, in BuiltinRuntimeInput) (BuiltinLifetime, error) {
-		return m.startStructuredSearch(ctx, in, out)
-	}}, nil
-}
-
-func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeInput, route structuredRoute) (BuiltinLifetime, error) {
+func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeInput, profile structuredProfile) (BuiltinLifetime, error) {
 	config := struct {
 		MaxResults     int `json:"maxResults"`
 		TimeoutMS      int `json:"timeoutMs"`
@@ -123,17 +27,50 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 		config.ParserBudget > 16777216 || config.MaxConcurrency < 1 || config.MaxConcurrency > 4 {
 		return nil, NewStartupError("invalid_plugin_configuration", nil)
 	}
-	var key string
-	if route.consent == "" {
-		var found bool
-		var err error
-		key, found, err = in.Secret(ctx, route.credential)
-		if err != nil {
-			return nil, NewStartupError(err.Error(), nil)
+	value, err := jsjson.Parse(string(in.Config))
+	if err != nil {
+		return nil, NewStartupError("invalid_plugin_configuration", nil)
+	}
+	settings := value.(*jsjson.Object)
+	var owners structuredLifetime
+	var attempts []structuredAttempt
+	keys := map[string]string{}
+	for _, route := range profile.routesFor(settings) {
+		attempt := structuredAttempt{provider: route.provider}
+		if route.consent != "" && prop(settings, route.consent) != true {
+			attempts = append(attempts, attempt)
+			continue
 		}
-		if !found || key == "" || !httpguts.ValidHeaderFieldValue(key) {
-			return nil, NewStartupError("credential_not_configured", nil)
+		var key string
+		if route.consent == "" {
+			var cached bool
+			key, cached = keys[route.credential]
+			if !cached {
+				var found bool
+				key, found, err = in.Secret(ctx, route.credential)
+				if err != nil {
+					return nil, NewStartupError(err.Error(), nil)
+				}
+				if !found || !httpguts.ValidHeaderFieldValue(key) {
+					key = ""
+				}
+				keys[route.credential] = key
+			}
+			if key == "" {
+				if !profile.combined {
+					return nil, NewStartupError("credential_not_configured", nil)
+				}
+				attempts = append(attempts, attempt)
+				continue
+			}
 		}
+		owner := newStructuredTransport(in.Life, route.endpoint, route.authHeader, key)
+		owners = append(owners, owner)
+		attempt.request, attempt.contentType = owner.post, "application/json"
+		if route.consent != "" {
+			attempt.request, attempt.contentType = owner.get, "text/html"
+		}
+		attempts = append(attempts, attempt)
 	}
 	definitions, err := in.CallGuest(ctx, []byte(`{"operation":"search_registrations"}`))
 	if err != nil {
@@ -142,11 +79,6 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 	call, err := m.wasm.BindCallWithAdmission(in.ID)
 	if err != nil {
 		return nil, err
-	}
-	owner := newStructuredTransport(in.Life, route.endpoint, route.authHeader, key)
-	request, defaultType := owner.post, "application/json"
-	if route.consent != "" {
-		request, defaultType = owner.get, "text/html"
 	}
 	var active atomic.Int32
 	_, err = m.InstallBuiltinTools(in, definitions, func(ctx context.Context, _ string, raw json.RawMessage, cache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error)) (json.RawMessage, error) {
@@ -162,32 +94,11 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 		defer active.Add(-1)
 		timed, cancel := context.WithTimeout(ctx, time.Duration(config.TimeoutMS)*time.Millisecond)
 		defer cancel()
-		planInput, err := json.Marshal(struct {
-			Operation  string          `json:"operation"`
-			Provider   string          `json:"provider"`
-			MaxResults int             `json:"maxResults"`
-			Input      json.RawMessage `json:"input"`
-		}{"search_plan", route.provider, config.MaxResults, raw})
-		if err != nil {
-			return nil, err
-		}
-		reply, err := call(timed, in.Life, planInput)
-		if err != nil {
-			return nil, err
-		}
-		var plan struct {
-			Limit int             `json:"limit"`
-			Body  json.RawMessage `json:"body"`
-			Error string          `json:"error"`
-		}
-		if err := json.Unmarshal(reply, &plan); err != nil || plan.Error != "" || len(plan.Body) == 0 ||
-			plan.Limit < 1 || plan.Limit > config.MaxResults {
-			return []byte(`{"status":"invalid_response","ok":false}`), nil
-		}
-		return executeStructuredSearch(timed, route.provider, plan.Limit, config.ParserBudget, plan.Body, defaultType, request, cache,
+		return runStructuredSearch(timed, attempts, config.MaxResults, config.ParserBudget, raw, cache,
 			func(raw []byte) ([]byte, error) { return call(timed, in.Life, raw) })
+
 	})
-	return owner, err
+	return owners, err
 }
 
 type structuredResponse struct {
@@ -196,6 +107,7 @@ type structuredResponse struct {
 	Limit     int                 `json:"limit"`
 	Body      *toolresults.Result `json:"body,omitempty"`
 	Text      string              `json:"text,omitempty"`
+	Retained  bool                `json:"retained,omitempty"`
 	Partial   bool                `json:"parseLimited"`
 	Budget    int                 `json:"parserBudgetBytes"`
 	Status    int                 `json:"httpStatus"`
@@ -238,38 +150,95 @@ func (s *searchBody) Next(ctx context.Context) ([]byte, error) {
 
 func (s *searchBody) Destroy() { _ = s.reader.Close() }
 
-func executeStructuredSearch(ctx context.Context, provider string, limit, budget int, body []byte, defaultType string,
-	requestUpstream func(context.Context, []byte) (*http.Response, error),
-	cache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error),
-	finish func([]byte) ([]byte, error),
+type structuredLifetime []*structuredTransport
+
+func (s structuredLifetime) Dispose() {
+	for _, owner := range s {
+		owner.Dispose()
+	}
+}
+
+func (s structuredLifetime) CloseAndWait(ctx context.Context) error {
+	s.Dispose()
+	var err error
+	for _, owner := range s {
+		err = errors.Join(err, owner.dials.Wait(ctx))
+	}
+	return err
+}
+
+type structuredAttempt struct {
+	provider    string
+	contentType string
+	request     func(context.Context, []byte) (*http.Response, error)
+}
+
+type structuredCache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error)
+
+var invalidSearch = json.RawMessage(`{"status":"invalid_response","ok":false}`)
+
+func runStructuredSearch(ctx context.Context, attempts []structuredAttempt, maxResults, budget int, input json.RawMessage,
+	cache structuredCache, guest func([]byte) ([]byte, error),
 ) (json.RawMessage, error) {
-	observation := structuredResponse{Attempted: []string{provider}, Provider: provider, Limit: limit}
-	response, err := requestUpstream(ctx, body)
-	if err == nil {
-		defer response.Body.Close()
-		if response.StatusCode >= 200 && response.StatusCode < 300 {
-			contentType := response.Header.Get("Content-Type")
-			if contentType == "" {
-				contentType = defaultType
-			}
-			source := &searchBody{reader: response.Body, budget: budget}
-			preview := 1024.0
-			result, err := cache(ctx, source, toolresults.Options{ContentType: &contentType, Encoding: toolresults.UTF8, PreviewBytes: &preview})
-			if err == nil {
-				observation.Body, observation.Text, observation.Partial = &result, string(source.parse), source.partial
-				observation.Budget, observation.Status = budget, response.StatusCode
-			} else {
-				// The cache may cancel with an in-flight Next; close the HTTP
-				// body before joining, including errors before the iterator ran.
-				source.Destroy()
-				source.mu.Lock()
-				source.mu.Unlock()
-			}
+	attempted := make([]string, 0, len(attempts))
+	var prior structuredResponse
+	for i, attempt := range attempts {
+		if ctx.Err() != nil {
+			return pageError(ctx, ctx.Err()), nil
 		}
+		planInput, err := json.Marshal(struct {
+			Operation  string          `json:"operation"`
+			Provider   string          `json:"provider"`
+			MaxResults int             `json:"maxResults"`
+			Input      json.RawMessage `json:"input"`
+		}{"search_plan", attempt.provider, maxResults, input})
+		if err != nil {
+			return nil, err
+		}
+		reply, err := guest(planInput)
+		if err != nil {
+			return nil, err
+		}
+		var plan struct {
+			Limit int             `json:"limit"`
+			Body  json.RawMessage `json:"body"`
+			Error string          `json:"error"`
+		}
+		if err := json.Unmarshal(reply, &plan); err != nil || plan.Error != "" || len(plan.Body) == 0 ||
+			plan.Limit < 1 || plan.Limit > maxResults {
+			return invalidSearch, nil
+		}
+
+		attempted = append(attempted, attempt.provider)
+		observation, cacheFailed := attempt.observe(ctx, plan.Limit, budget, plan.Body, cache)
+		if ctx.Err() != nil {
+			return pageError(ctx, ctx.Err()), nil
+		}
+		hasFallback := i+1 < len(attempts) && !cacheFailed
+		if observation.Body == nil {
+			if hasFallback {
+				continue
+			}
+			observation = prior
+		}
+		observation.Attempted = attempted
+		result, err := finishStructuredSearch(observation, guest)
+		if err != nil || !hasFallback {
+			return result, err
+		}
+		var verdict struct{ Status string }
+		if err := json.Unmarshal(result, &verdict); err != nil || verdict.Status != "unavailable" {
+			return result, err
+		}
+		// Only a parser failure may reach here with a cache reference. Keep
+		// its provenance if the next provider does not cache another body.
+		prior = observation
+		prior.Text, prior.Retained = "", true
 	}
-	if ctx.Err() != nil {
-		return pageError(ctx, ctx.Err()), nil
-	}
+	return invalidSearch, nil
+}
+
+func finishStructuredSearch(observation structuredResponse, finish func([]byte) ([]byte, error)) (json.RawMessage, error) {
 	request, err := json.Marshal(struct {
 		Operation   string             `json:"operation"`
 		Observation structuredResponse `json:"observation"`
@@ -278,4 +247,38 @@ func executeStructuredSearch(ctx context.Context, provider string, limit, budget
 		return nil, err
 	}
 	return finish(request)
+}
+
+// The cache outcome is private: public "unavailable" alone cannot authorize
+// another provider request after a local cache or stream failure.
+func (a structuredAttempt) observe(ctx context.Context, limit, budget int, body []byte, cache structuredCache) (structuredResponse, bool) {
+	observation := structuredResponse{Provider: a.provider, Limit: limit}
+	if a.request == nil {
+		return observation, false
+	}
+	response, err := a.request(ctx, body)
+	if err != nil {
+		return observation, false
+	}
+	defer response.Body.Close()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return observation, false
+	}
+	contentType := response.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = a.contentType
+	}
+	source := &searchBody{reader: response.Body, budget: budget}
+	preview := 1024.0
+	result, err := cache(ctx, source, toolresults.Options{ContentType: &contentType, Encoding: toolresults.UTF8, PreviewBytes: &preview})
+	if err != nil {
+		// The cache can stop with an in-flight Next. Close before joining.
+		source.Destroy()
+		source.mu.Lock()
+		source.mu.Unlock()
+		return observation, true
+	}
+	observation.Body, observation.Text, observation.Partial = &result, string(source.parse), source.partial
+	observation.Budget, observation.Status = budget, response.StatusCode
+	return observation, false
 }

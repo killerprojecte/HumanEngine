@@ -1,0 +1,11 @@
+{
+  "description": "Tavily structured API only. Queries go to Tavily. This external Go profile has no HTML providers or fallback.",
+  "toolWire": "structured-search-v1",
+  "service": {
+    "provider": "tavily",
+    "endpoint": "https://api.tavily.com/search",
+    "credential": "tavilyKey",
+    "clear": "clearTavilyKey"
+  },
+  "properties": ["maxResults", "timeoutMs", "maxResponseBytes", "maxConcurrency", "tavilyKey", "clearTavilyKey"]
+}

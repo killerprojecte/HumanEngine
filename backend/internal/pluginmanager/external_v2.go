@@ -53,10 +53,12 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 	manifest, ok := parsed.(*jsjson.Object)
 	capabilities, _ := prop(manifest, "capabilities").([]any)
 	sendDelay := len(capabilities) == 2 && slices.Contains(capabilities, "send-delay") && slices.Contains(capabilities, "schema-form")
-	publicGET := len(capabilities) == 2 && slices.Contains(capabilities, "tool") &&
-		slices.Contains(capabilities, "schema-form") && text(manifest, "toolWire") == "public-get-v1"
+	toolForm := len(capabilities) == 2 && slices.Contains(capabilities, "tool") && slices.Contains(capabilities, "schema-form")
+	toolWire := text(manifest, "toolWire")
+	publicGET := toolForm && toolWire == "public-get-v1"
+	structured := toolForm && toolWire == "structured-search-v1"
 	if !ok || !validID(text(manifest, "id")) || text(manifest, "name") == "" || text(manifest, "version") == "" ||
-		(!sendDelay && !publicGET && (len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter"))) {
+		(!sendDelay && !publicGET && !structured && (len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter"))) {
 		return errors.New("external_v2_manifest_invalid")
 	}
 	artifact := text(manifest, "artifact")
@@ -93,6 +95,15 @@ func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) er
 		}
 		binding.Schema, binding.Start = schema, m.startExternalPublicGET
 		manifest.Delete("toolWire")
+	case structured:
+		schema, _ := rawSchema.(*jsjson.Object)
+		route, _ := prop(manifest, "service").(*jsjson.Object)
+		binding, err = m.bindStructuredSearch(text(manifest, "id"), schema, route)
+		if err != nil {
+			return err
+		}
+		manifest.Delete("toolWire")
+		manifest.Delete("service")
 	case hasSchema:
 		return errors.New("external_v2_configuration_unsupported")
 	case capabilities[0] == "adapter":

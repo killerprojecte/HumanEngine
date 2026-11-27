@@ -231,6 +231,8 @@ func Invoke(input []byte) any {
 	switch in.Operation {
 	case "manifest":
 		return resources.Manifest()
+	case "search_registrations":
+		return searchRegistrations
 	case "search_plan":
 		value, err = PlanSearch(in.Provider, in.Input.Query, in.Input.Limit, in.MaxResults)
 	case "search_response":

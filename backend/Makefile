@@ -348,3 +348,11 @@ wasm-web-read-get-package:
 	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -tags web_read_public_get -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
 		-o "$(WEB_READ_GET_PACKAGE_DIR)/web-read.wasm" ./plugins/web-read/wasm
 	$(PYTHON) -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); m=json.loads(pathlib.Path("plugins/web-read/manifest.json").read_text()); m.update(artifact="web-read.wasm", toolWire="public-get-v1", description="Read public webpages and retrieve original bytes from the turn cache."); m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"web-read.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(WEB_READ_GET_PACKAGE_DIR)"
+
+# Explicit external package. Generated outputs belong outside Git.
+.PHONY: wasm-web-search-structured-package
+wasm-web-search-structured-package:
+	@test -n "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)" || { echo "Set WEB_SEARCH_STRUCTURED_PACKAGE_DIR" >&2; exit 2; }
+	mkdir -p "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)"
+	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' -o "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)/web-search.wasm" ./plugins/web-search/wasm
+	$(PYTHON) -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); r=pathlib.Path("plugins/web-search"); m=json.loads((r/"manifest.json").read_text()); profile=json.loads((r/"structured-profile.json").read_text()); m["configSchema"]["properties"]={k:m["configSchema"]["properties"][k] for k in profile.pop("properties")}; m.update(profile,artifact="web-search.wasm"); m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"web-search.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(WEB_SEARCH_STRUCTURED_PACKAGE_DIR)"

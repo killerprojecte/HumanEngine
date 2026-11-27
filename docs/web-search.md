@@ -50,3 +50,9 @@ Protocol sources checked 2026-10-27:
 - [DeepSeek Search](https://api-docs.deepseek.com/api/search/)
 - [Bing API retirement](https://learn.microsoft.com/en-us/lifecycle/announcements/bing-search-api-retirement)
 - [MaiBot community provider reference](https://github.com/YukiSakiko/google_search_plugin/tree/0dd3ad29e603bb6ac6d02c32cce55934ba07cb32)
+
+## Go migration: standalone Tavily profile
+
+Build the opt-in package with `make -C backend wasm-web-search-structured-package WEB_SEARCH_STRUCTURED_PACKAGE_DIR=/path/to/package`. Add its `web-search.v2.json` entry to the installation's `HUMANENGINE_PLUGINS` using its path within the plugin directory. The manifest and WASM are installed together; neither is part of the application binary's default plugin selection.
+
+This profile exposes only Tavily with the existing write-only `tavilyKey`, result count, timeout, parser budget and concurrency settings. It has no fallback, no live HTML provider, and does not change the TypeScript distribution. The tool never chooses a destination or sees the key; the host binds the package's TLS endpoint and injects its stored credential. The hosted receipt tests transport and caching against an isolated synthetic TLS origin, not Tavily's live availability.

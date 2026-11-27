@@ -132,3 +132,12 @@ yield one physical ACK each. These arrivals do not coalesce: the first A turn
 has already started when the second A event arrives. This proves independence
 and order for the same topic in the tested configuration, not multicore
 throughput or performance under sustained load.
+
+The same acceptance test exercises a signed turn on the native Responses
+protocol. The synthetic provider flushes metadata, then fragmented tool-call
+arguments, then terminal token usage. The next request must carry the exact
+function-call ID and result, and the real adapter must receive one quoted ACK.
+The stopped installation must retain four successful attempts with actual
+stream mode, first usable tool content before completion, and exact input,
+output, and cache-read counters. This is an offline protocol check, not a
+measurement of a hosted provider's performance.

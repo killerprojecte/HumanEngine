@@ -67,6 +67,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	const recalledRemote = `{"message_type":"private","self_id":42,"user_id":900,"message_id":7,"time":1700000000,"message":[{"type":"text","data":{"text":"Do not show recalled history"}}]}`
 	replies := make(chan struct{}, 2)
 	lanes := newSnowLaneWitness()
+	responses := new(snowResponsesWitness)
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/must-not-fetch" {
 			unexpectedDownloads.Add(1)
@@ -151,6 +152,10 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			}
 			if r.URL.Path == "/send_group_msg" && (action.Group == "911" || action.Group == "912") {
 				lanes.action(w, action.Group, action.Message)
+				return
+			}
+			if r.URL.Path == "/send_group_msg" && action.Group == responsesGroup {
+				responses.action(w, action.Message)
 				return
 			}
 			if (r.URL.Path == "/send_group_msg" && action.Group != "901") ||
@@ -379,6 +384,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	history(group, "available")
 	history(direct, "available")
 	lanes.run(t, addr, eventToken, post, encode)
+	responses.run(t, addr, eventToken, post, encode)
 	outboundGroup := "ob:s:" + encode(`["snowluma","42","group","901"]`)
 	sourceSetup := fmt.Sprintf(`{"id":%q,"adapterId":"snowluma","accountId":"42","platformSceneId":"901","kind":"group","name":"Outbound media source","participationEnabled":false,"learningEnabled":true,"proactiveEnabled":false}`, outboundGroup)
 	commandRequest(t, addr, "PUT", "/api/scenes/"+url.PathEscape(outboundGroup), []byte(sourceSetup), 200)
@@ -556,6 +562,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			t.Fatalf("event %s was not persisted in the right scene: count=%d err=%v", id, count, err)
 		}
 	}
+	verifySnowResponsesAttempts(t, db)
 	t.Log("standalone-snowluma-cross-group-ack-before-release-same-topic-fifo-three-turns")
 	t.Log("installed-snowluma-http-and-websocket-mention-quoted-order-and-history")
 }

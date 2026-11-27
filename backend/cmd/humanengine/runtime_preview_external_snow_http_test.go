@@ -66,6 +66,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	const friendWrongScope = `{"message_type":"private","self_id":42,"target_id":900,"user_id":42,"message_id":22,"time":1700000003,"message":[{"type":"image","data":{"file":"fixture-image-token"}}]}`
 	const recalledRemote = `{"message_type":"private","self_id":42,"user_id":900,"message_id":7,"time":1700000000,"message":[{"type":"text","data":{"text":"Do not show recalled history"}}]}`
 	replies := make(chan struct{}, 2)
+	lanes := newSnowLaneWitness()
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/must-not-fetch" {
 			unexpectedDownloads.Add(1)
@@ -141,12 +142,18 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			var action struct {
 				Group   string `json:"group_id"`
 				User    string `json:"user_id"`
-				Message []struct {
-					Type string
-					Data map[string]string
-				}
+				Message []snowLanePart
 			}
-			if json.NewDecoder(r.Body).Decode(&action) != nil || (r.URL.Path == "/send_group_msg" && action.Group != "901") ||
+			if err := json.NewDecoder(r.Body).Decode(&action); err != nil {
+				t.Error(err)
+				w.WriteHeader(400)
+				return
+			}
+			if r.URL.Path == "/send_group_msg" && (action.Group == "911" || action.Group == "912") {
+				lanes.action(w, action.Group, action.Message)
+				return
+			}
+			if (r.URL.Path == "/send_group_msg" && action.Group != "901") ||
 				(r.URL.Path == "/send_private_msg" && action.User != "901") || len(action.Message) < 2 ||
 				action.Message[0].Type != "reply" || action.Message[0].Data["id"] != "9" ||
 				action.Message[1].Type != "text" || action.Message[1].Data["text"] != "Independent reply." {
@@ -371,6 +378,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	history(group, "available")
 	history(direct, "available")
+	lanes.run(t, addr, eventToken, post, encode)
 	outboundGroup := "ob:s:" + encode(`["snowluma","42","group","901"]`)
 	sourceSetup := fmt.Sprintf(`{"id":%q,"adapterId":"snowluma","accountId":"42","platformSceneId":"901","kind":"group","name":"Outbound media source","participationEnabled":false,"learningEnabled":true,"proactiveEnabled":false}`, outboundGroup)
 	commandRequest(t, addr, "PUT", "/api/scenes/"+url.PathEscape(outboundGroup), []byte(sourceSetup), 200)
@@ -540,6 +548,15 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			t.Fatalf("persisted %s: got %d want %d (%v)", check.table, got, check.want, err)
 		}
 	}
+	for id, group := range laneGroup {
+		scene := snowLaneScene(group, encode)
+		var count int
+		if err := db.QueryRow("SELECT count(*) FROM source_event_heads WHERE scene_id=? AND message_id=?", scene,
+			snowLaneMessage(scene, id, encode)).Scan(&count); err != nil || count != 1 {
+			t.Fatalf("event %s was not persisted in the right scene: count=%d err=%v", id, count, err)
+		}
+	}
+	t.Log("standalone-snowluma-cross-group-ack-before-release-same-topic-fifo-three-turns")
 	t.Log("installed-snowluma-http-and-websocket-mention-quoted-order-and-history")
 }
 

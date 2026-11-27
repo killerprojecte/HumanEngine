@@ -118,3 +118,17 @@ invocation deltas, including the launch overhead and 250 ms lead-in. The raw
 boot-inclusive cgroup memory high-water includes charged cache and is not process RSS
 or the cache-adjusted memory displayed by Docker CLI. These are controlled synthetic
 comparisons, not predictions of production model or network latency.
+
+## Group concurrency correctness
+
+The native external SnowLuma acceptance test builds the Go executable without
+SnowLuma and installs a separate WASM package. With a 75 ms debounce, one active
+turn per scene, and two allowed model requests, it holds the first Planner
+response for group A, then sends another signed event to A and one to group B.
+B's reply must be acknowledged and visible in local history before the hold is
+released. The two A replies then arrive in order. All three events must reach
+each model stage once, retain the correct scene, sender and reply identity, and
+yield one physical ACK each. These arrivals do not coalesce: the first A turn
+has already started when the second A event arrives. This proves independence
+and order for the same topic in the tested configuration, not multicore
+throughput or performance under sustained load.

@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"runtime"
+	"runtime/metrics"
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
@@ -21,8 +23,30 @@ func alloc(size uint32) uint32 { return abi.Alloc(size) }
 func free(ptr uint32) { abi.Free(ptr) }
 
 //go:wasmexport plugin_call
-func call(ptr, size uint32) uint64 { return abi.Invoke(ptr, size, invoke) }
-func main()                        {}
+func call(ptr, size uint32) uint64 {
+	sampleGuestHeap(size)
+	return abi.Invoke(ptr, size, invoke)
+}
+
+func main() {}
+
+var inputSinceHeapSample uint64
+
+func sampleGuestHeap(size uint32) {
+	// Sustained inline media can stall automatic collection under the
+	// sandbox's synthetic clock. Sample after batches of input, and collect
+	// only when the heap has already grown past the automatic GC goal.
+	inputSinceHeapSample += uint64(size)
+	if inputSinceHeapSample < 1<<20 {
+		return
+	}
+	inputSinceHeapSample = 0
+	samples := [...]metrics.Sample{{Name: "/memory/classes/heap/objects:bytes"}, {Name: "/gc/heap/goal:bytes"}}
+	metrics.Read(samples[:])
+	if samples[0].Value.Uint64() > 2*samples[1].Value.Uint64() {
+		runtime.GC()
+	}
+}
 
 func get(o *jsjson.Object, key string) any {
 	if o == nil {

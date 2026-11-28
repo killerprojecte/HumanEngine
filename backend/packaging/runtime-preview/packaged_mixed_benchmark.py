@@ -74,6 +74,10 @@ def require_fixture_success(result, report):
     status = result.get("http_status")
     if type(status) is int and 100 <= status <= 599:
         report["fixture_http_status"] = status
+    if report["fixture_failure"] in ("burst_deadline", "fixed_window"):
+        keys = ("burst_lateness_ns", "dispatch_delay_ns", "dispatch_over_deadline", "ack_p95_us",
+                "pending_events", "pending_reader")
+        report["fixture_timing"] = {key: n for key in keys if type(n := result.get(key)) is int and 0 <= n < 2**53}
     raise RuntimeError("synthetic receive fixture failed")
 
 def verify_limits(cage):
@@ -184,13 +188,15 @@ class Mixed(Paired):
         started = time.monotonic_ns()
         result = json.loads(docker(*get_fixture, "drive", "--owner-port", self.port,
                                    "--timestamp", str(timestamp), *self.fixture_args, timeout=100))
-        require_fixture_success(result, self.report)
         elapsed = time.monotonic_ns() - started
         counters = cpu_delta(before, cpu_counters(cage))
         peer_counters = cpu_delta(peer_before, cpu_counters(peer, ("cpu_usage_usec",)))
         memory = {"memory_current_after_bytes": int((cage / "memory.current").read_text()),
                   "memory_peak_boot_inclusive_bytes": int((cage / "memory.peak").read_text()),
                   "memory_swap_current_bytes": int((cage / "memory.swap.current").read_text())}
+        if "fixture_failure" in result:
+            self.report["failed_window_owner_cgroup"] = {**limits, **counters, **memory}
+        require_fixture_success(result, self.report)
         self.phase = f"verify-live-{label}"
         checked = json.loads(docker(*get_fixture, "verify", "--owner-port", self.port, *self.fixture_args, timeout=45))
         self.phase = f"verify-extra-{label}"
@@ -378,11 +384,17 @@ def main():
             if trial and not trial.cleanup():
                 report.update(status="failed", cleanup_failed=True)
             evidence.write(json.dumps(report, indent=2) + "\n")
-    if report["status"] != "passed":
+    failed = report["status"] != "passed"
+    if failed:
         print("Packaged benchmark failed:", report.get("failure_phase", "cleanup"),
               report.get("fixture_failure", report.get("failure_type", "unknown")),
               report.get("fixture_http_status", ""))
-        return 1
+        if "fixture_timing" in report:
+            print("Failed window timing:", json.dumps(report["fixture_timing"]))
+        if "failed_window_owner_cgroup" in report:
+            print("Failed window cgroup:", json.dumps(report["failed_window_owner_cgroup"]))
+        if report["windows"]:
+            print("Validated windows from incomplete benchmark:")
     for row in report["windows"]:
         keys = ("engine", "owner_cgroup", "admin_http")
         keys += (("model_requests", "outbound_sends", "group_profile_requests", "durable_arrivals", "ingress_http") if args.receive_only
@@ -390,7 +402,7 @@ def main():
         if args.receive_images:
             keys += ("image_ingress_http", "text_ingress_http", "retained_live_image_parts")
         print(json.dumps({key: row[key] for key in keys}))
-    return 0
+    return int(failed)
 
 
 if __name__ == "__main__":

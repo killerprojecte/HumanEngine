@@ -31,10 +31,11 @@ FIRST_MESSAGE = 300001
 class ReceiveFailure(RuntimeError):
     """Only a fixed fixture code, never a request body or peer error."""
 
-    def __init__(self, code, status=None):
+    def __init__(self, code, status=None, **timing):
         super().__init__(code)
         self.code = code
         self.status = status
+        self.timing = timing
 
 
 def has_image(i):
@@ -179,12 +180,18 @@ def drive(port, timestamp, admin, token, with_images):
                             for i in range(burst * BURST, (burst + 1) * BURST))
         end = start + (bursts + 25) * INTERVAL_NS
         wait_until(end)
-        if not reader.done() or not all(result.done() for result in inflight):
-            raise ReceiveFailure("fixed_window")
+        reader_pending = not reader.done()
+        if reader_pending or not all(result.done() for result in inflight):
+            raise ReceiveFailure("fixed_window", burst_lateness_ns=lateness,
+                                 pending_events=sum(not result.done() for result in inflight),
+                                 pending_reader=int(reader_pending))
         latencies, delays = zip(*(result.result() for result in inflight), strict=True)
         admin_http = reader.result()
-    if lateness >= INTERVAL_NS or max(delays) >= 500_000_000:
-        raise ReceiveFailure("burst_deadline")
+    dispatch_delay = max(delays)
+    if lateness >= INTERVAL_NS or dispatch_delay >= 500_000_000:
+        raise ReceiveFailure("burst_deadline", burst_lateness_ns=lateness, dispatch_delay_ns=dispatch_delay,
+                             dispatch_over_deadline=sum(delay >= 500_000_000 for delay in delays),
+                             ack_p95_us=round(quantiles(latencies)["p95_ms"] * 1000))
     _, raw = ask(SNOW_ACTION_PORT, "/receipt")
     try:
         profiles = profile_requests(raw)
@@ -193,7 +200,7 @@ def drive(port, timestamp, admin, token, with_images):
     result = {"events": EVENTS, "model_requests": 0, "outbound_sends": 0,
             "group_profile_requests": profiles,
             "ingress_http": quantiles(latencies), "admin_http": admin_http,
-            "max_burst_lateness_ms": lateness / 1e6, "max_dispatch_delay_ms": max(delays) / 1e6}
+            "max_burst_lateness_ms": lateness / 1e6, "max_dispatch_delay_ms": dispatch_delay / 1e6}
     if with_images:
         result["image_ingress_http"] = quantiles([ns for i, ns in enumerate(latencies) if has_image(i)])
         result["text_ingress_http"] = quantiles([ns for i, ns in enumerate(latencies) if not has_image(i)])
@@ -221,7 +228,7 @@ def main():
             result = drive(args.owner_port, args.timestamp, os.environ["HUMANENGINE_ADMIN_TOKEN"],
                            os.environ["HE_MIX_EVENT_TOKEN"], args.with_images)
         except ReceiveFailure as failure:
-            result = {"fixture_failure": failure.code, "http_status": failure.status}
+            result = {"fixture_failure": failure.code, "http_status": failure.status, **failure.timing}
         print(json.dumps(result))
     elif args.mode == "receipt":
         _, body = ask(SNOW_ACTION_PORT, "/receipt")

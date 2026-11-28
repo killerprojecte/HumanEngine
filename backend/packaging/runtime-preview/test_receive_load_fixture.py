@@ -73,6 +73,18 @@ class ReceiveLoadTests(unittest.TestCase):
             require_fixture_success({"fixture_failure": "not for logs", "http_status": "not for logs"}, report)
         self.assertEqual(report, {"fixture_failure": "unknown"})
 
+    def test_deadline_report_keeps_only_numeric_fixture_timings(self):
+        report = {}
+        with self.assertRaisesRegex(RuntimeError, "synthetic receive fixture failed"):
+            require_fixture_success({
+                "fixture_failure": "burst_deadline", "dispatch_delay_ns": 515_000_000,
+                "burst_lateness_ns": "not for logs", "dispatch_over_deadline": 3, "pending_reader": True,
+                "ack_p95_us": 27_000, "raw": "not for logs",
+            }, report)
+        self.assertEqual(report, {"fixture_failure": "burst_deadline", "fixture_timing": {
+            "dispatch_delay_ns": 515_000_000, "dispatch_over_deadline": 3, "ack_p95_us": 27_000,
+        }})
+
     def test_peer_rejects_and_counts_forbidden_work(self):
         with tempfile.TemporaryDirectory() as tmp:
             witness = ReceiveWitness(Path(tmp))

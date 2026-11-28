@@ -49,19 +49,21 @@ func (s *Service) publishAsset(ctx context.Context, id string, expected *Object,
 // owning publication snapshot. No intermediate page crosses a write boundary.
 func (s *Service) PublishPage(ctx context.Context, o PageOptions, emit func([]byte) error) error {
 	return s.authority.Publish(ctx, s.main, func(c *sql.Conn) ([]byte, error) {
-		page, err := readAdminPage(o, func(q string, args ...any) (assertions.Rows, error) {
-			return c.QueryContext(ctx, q, args...)
-		})
-		if err != nil {
-			return nil, err
-		}
-		items := make([]any, len(page.Items))
-		for i, v := range page.Items {
-			items[i] = v
-		}
-		body, err := jsjson.Stringify(fields("items", items, "total", float64(page.Total), "page", page.Page, "pageSize", page.PageSize))
-		return []byte(body), err
+		return ProjectAdminPage(ctx, c, o)
 	}, emit)
+}
+
+// ProjectAdminPage uses the caller's existing publication snapshot.
+func ProjectAdminPage(ctx context.Context, c *sql.Conn, o PageOptions) ([]byte, error) {
+	page, err := readAdminPage(o, func(q string, args ...any) (assertions.Rows, error) { return c.QueryContext(ctx, q, args...) })
+	if err != nil {
+		return nil, err
+	}
+	items := make([]any, len(page.Items))
+	for i, v := range page.Items {
+		items[i] = v
+	}
+	return jsjson.Marshal(fields("items", items, "total", float64(page.Total), "page", page.Page, "pageSize", page.PageSize))
 }
 func (s *Service) AdminFile(ctx context.Context, id string) (*Object, []byte, error) {
 	asset, e := s.AdminGet(ctx, id)

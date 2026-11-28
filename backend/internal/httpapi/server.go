@@ -59,6 +59,7 @@ type Server struct {
 	diagnostics              DiagnosticReader
 	diagnosticPublisher      *recovery.ReadPublisher
 	configuration            *configurationOwner
+	projectionPublisher      *recovery.ReadPublisher
 	memes                    *memeengine.Service
 	experience               *experienceservice.Service
 	habits                   *habitservice.Service

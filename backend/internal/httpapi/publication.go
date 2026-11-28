@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
 // publicationResponse is the request's private, one-entry output queue. Only
@@ -110,9 +112,32 @@ func (p *publicationResponse) drain(ctx context.Context, w http.ResponseWriter) 
 }
 
 func (s *Server) publishResponse(ctx context.Context, path string, response *publicationResponse) error {
-	return s.authority.Publish(ctx, s.main, func(conn *sql.Conn) ([]byte, error) {
+	return s.publishProjection(ctx, func(conn *sql.Conn) ([]byte, error) {
 		return s.projection(ctx, conn, path)
 	}, func(body []byte) error {
 		return response.enqueue(ctx, body)
 	})
+}
+
+// WithProjectionPublisher moves readonly admin projections off the single
+// writer connection. Standalone read-only servers keep their owned reader.
+func (s *Server) WithProjectionPublisher(p *recovery.ReadPublisher) error {
+	if !p.OwnedBy(s.main, s.authority) {
+		return errors.New("http_projection_publisher_invalid")
+	}
+	s.projectionPublisher = p
+	return nil
+}
+
+func (s *Server) publishProjection(ctx context.Context, read func(*sql.Conn) ([]byte, error), emit func([]byte) error) error {
+	p := s.projectionPublisher
+	if p == nil {
+		return s.authority.Publish(ctx, s.main, read, emit)
+	}
+	err := p.Publish(ctx, read, emit)
+	if err != nil && p.AwaitLocalIntent(ctx, err) {
+		// Nothing was enqueued; re-read after the matching local write commits.
+		return p.Publish(ctx, read, emit)
+	}
+	return err
 }

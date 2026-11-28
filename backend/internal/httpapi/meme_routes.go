@@ -326,7 +326,9 @@ func (s *Server) runMemeRoute(ctx context.Context, operation, id string, input *
 		if !valid {
 			return publish(400, []byte(`{"error":"Invalid request"}`))
 		}
-		return owner.PublishPage(ctx, o, func(b []byte) error { response.status = 200; return response.enqueue(ctx, b) })
+		return s.publishProjection(ctx, func(c *sql.Conn) ([]byte, error) {
+			return memeservice.ProjectAdminPage(ctx, c, o)
+		}, func(b []byte) error { response.status = 200; return response.enqueue(ctx, b) })
 	case "get":
 		asset, e = owner.AdminGet(ctx, id)
 	case "file":

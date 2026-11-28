@@ -20,6 +20,40 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
+func TestProjectionPublisherDoesNotWaitForWriterPool(t *testing.T) {
+	server, main, _ := memeHTTP(t)
+	ctx := t.Context()
+	reader, err := recovery.NewReadPublisher(ctx, main, server.authority)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = reader.CloseAndWait(context.Background()) })
+	if err = server.WithProjectionPublisher(reader); err != nil {
+		t.Fatal(err)
+	}
+	main.SetMaxOpenConns(1)
+	held, err := main.Conn(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer held.Close()
+	waits := main.Stats().WaitCount
+	for _, path := range []string{"/api/settings", "/api/scenes", "/api/memes?pageSize=12"} {
+		c, cancel := context.WithTimeout(ctx, 2*time.Second)
+		request := httptest.NewRequestWithContext(c, http.MethodGet, path, nil)
+		request.Header.Set("Authorization", "Bearer "+fixtureToken)
+		response := httptest.NewRecorder()
+		server.ServeHTTP(response, request)
+		cancel()
+		if response.Code != 200 || response.Body.Len() == 0 {
+			t.Fatalf("%s waited for the occupied writer pool: %d %s", path, response.Code, response.Body)
+		}
+	}
+	if main.Stats().WaitCount != waits {
+		t.Fatal("read-only route checked out from the writer pool")
+	}
+}
+
 func TestPublicationResponseOwnsBytesAndConsumesOnce(t *testing.T) {
 	header := http.Header{"Content-Type": {"application/json"}, "X-Request-Id": {"original"}}
 	p := newPublicationResponse(header, false)

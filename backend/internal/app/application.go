@@ -289,6 +289,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	}
 	app.HTTP.WithBrowserSessions(options.SecureCookies)
 	for _, bind := range []func() error{
+		func() error { return app.HTTP.WithProjectionPublisher(app.readPublisher) },
 		func() error { return app.HTTP.WithMemoryDelete(app.Semantic.Memory) },
 		func() error { return app.HTTP.WithMemoryAdminRead(app.readPublisher) },
 		func() error { return app.HTTP.WithMemoryCommitmentRead(app.readPublisher) },

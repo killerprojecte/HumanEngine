@@ -55,6 +55,7 @@ type oneBotHTTP struct {
 	publicMedia bool
 	outbound    bool
 	history     bool
+	groupNames  bool
 	token       string
 	eventKey    []byte
 }
@@ -98,6 +99,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			if err != nil || text(protocol, "wire") != desc.Wire {
 				return nil, errors.New("external_adapter_wire_mismatch")
 			}
+			groupNames, _ := protocol.Get("groupNames")
 			token, err := oneBotSecret(ctx, in, "token", "credential_not_configured")
 			if err != nil {
 				return nil, err
@@ -130,9 +132,10 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			p := httpProfile{scope: scope{adapter: desc.AdapterID, account: account, onebot: true},
 				botID: account, listen: listen, action: text(cfg, "url"),
 				onebotHTTP: &oneBotHTTP{eventPath: route, websocket: websocket, token: token, eventKey: []byte(eventToken),
-					media: desc.Wire != oneBotHTTPWire, publicMedia: forward, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history}}
+					media: desc.Wire != oneBotHTTPWire, publicMedia: forward, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history,
+					groupNames: forward && groupNames == true && ports.SceneName != nil}}
 
-			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original})
+			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original, sceneName: ports.SceneName})
 		},
 		Policy: pluginmanager.BuiltinPolicy{
 			Validate: func(_ context.Context, in *jsjson.Object) error {

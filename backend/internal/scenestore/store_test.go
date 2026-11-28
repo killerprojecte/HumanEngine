@@ -10,6 +10,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	_ "github.com/mattn/go-sqlite3"
@@ -65,6 +66,42 @@ func sceneInput(t *testing.T, account string) *jsjson.Object {
 		t.Fatal(err)
 	}
 	return o
+}
+
+func TestGroupNameLookupDoesNotReplaceAnOperatorRename(t *testing.T) {
+	s := fixtureStore(t)
+	ctx := t.Context()
+	input := sceneInput(t, "bot")
+	_ = input.Set("name", "chat")
+	if _, err := s.Save(ctx, input); err != nil {
+		t.Fatal(err)
+	}
+	reader, err := recovery.NewReadPublisher(ctx, s.Main, s.Authority)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reader.CloseAndWait(context.Background())
+	scene := dispatch.SceneRef{ID: "scene", AdapterID: "adapter", AccountID: "bot", Kind: "group", PlatformSceneID: "chat"}
+	found, err := s.RefreshGroupName(ctx, reader, scene, func(c context.Context) (string, error) {
+		_ = input.Set("name", "Operator name")
+		_ = input.Set("proactiveEnabled", true)
+		_, err := s.Save(c, input)
+		return "Late platform name", err
+	})
+	if err != nil || !found {
+		t.Fatal(found, err)
+	}
+	var raw string
+	if err = s.Main.QueryRowContext(ctx, "SELECT value FROM scenes WHERE id='scene'").Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	got, err := jsjson.Parse(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if row := got.(*jsjson.Object); value(row, "name") != "Operator name" || value(row, "proactiveEnabled") != true {
+		t.Fatal(raw)
+	}
 }
 func TestSceneWriteTransactionsAndConcurrentRevision(t *testing.T) {
 	store := fixtureStore(t)

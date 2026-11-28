@@ -10,6 +10,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
+	"github.com/killerprojecte/HumanEngine/backend/internal/scenestore"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
 
@@ -17,6 +18,15 @@ func (a *Application) externalAdapterResolver(owners Owners) pluginmanager.V2Ada
 	return externaladapter.Resolve(externaladapter.BindingPorts{
 		Runtime: a.Engine.Runtime, HasSecret: owners.Credentials.Has, Stopped: a.cancelAdapterScenes,
 		Ingest: a.ingestExternalAdapter,
+		SceneName: func(ctx context.Context, scene dispatch.SceneRef, lookup func(context.Context) (string, error)) (bool, error) {
+			root, release, err := a.Engine.RootContext(ctx)
+			if err != nil {
+				return false, err
+			}
+			defer release()
+			scenes := scenestore.Store{Main: owners.Main, Authority: owners.Authority}
+			return scenes.RefreshGroupName(root, a.readPublisher, scene, lookup)
+		},
 		Original: func(ctx context.Context, scene, asset string) (memeservice.Original, error) {
 			root, release, err := a.Engine.RootContext(ctx)
 			if err != nil {

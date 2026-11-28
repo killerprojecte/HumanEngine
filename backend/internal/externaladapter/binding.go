@@ -39,6 +39,7 @@ type BindingPorts struct {
 	Stopped   func(string) error
 	HasSecret func(context.Context, string, string) (bool, error)
 	Original  func(context.Context, string, string) (memeservice.Original, error)
+	SceneName func(context.Context, dispatch.SceneRef, func(context.Context) (string, error)) (bool, error)
 }
 
 func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/profileidentity"
 	"github.com/killerprojecte/HumanEngine/backend/plugins/abi"
 	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/core"
 )
@@ -42,7 +43,21 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]string{"wire": "onebot11-forward-1"}
+		return map[string]any{"wire": "onebot11-forward-1", "groupNames": true}
+	case "adapterGroupName":
+		response := obj(get(in, "response"))
+		data := obj(get(response, "data"))
+		group, valid := snow.RawID(get(data, "group_id"))
+		if valid && group == str(in, "group") && get(response, "status") == "ok" && get(response, "retcode") == float64(0) {
+			name, present, _ := profileidentity.DisplayName(get(data, "group_name"))
+			if present {
+				output, _ := jsjson.NewObject(jsjson.Member{Key: "displayName", Value: name})
+				raw, err := jsjson.Marshal(output)
+				if err == nil {
+					return json.RawMessage(raw)
+				}
+			}
+		}
 	case "adapterLogin":
 		account := str(in, "account")
 		response := obj(get(in, "response"))

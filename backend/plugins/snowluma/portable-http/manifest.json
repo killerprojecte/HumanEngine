@@ -2,7 +2,7 @@
   "apiVersion": 2,
   "id": "snowluma",
   "name": "SnowLuma",
-  "version": "0.6.0-forward-preview",
+  "version": "0.6.1-forward-preview",
   "description": "External OneBot HTTP preview for text, still images, recall and remote history. Not a replacement for the bundled adapter.",
   "capabilities": ["adapter"],
   "adapter": {"id": "snowluma", "wire": "onebot11-forward-1"},

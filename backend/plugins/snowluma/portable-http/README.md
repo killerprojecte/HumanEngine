@@ -10,6 +10,10 @@ forward WebSocket with actions and events on the same connection. Use a
 available when switching back to HTTP.
 
 Remote group and friend history use the existing bounded history window.
+Standard group events can omit the group name. The forward package opts in to
+an asynchronous group-info action so the message is acknowledged before the
+name resolves. It fills only a numeric discovery placeholder, never an
+operator's chosen name, and does not request names for already-named groups.
 Single-message lookups validate the exact requested conversation, so an equal
 platform message ID in another conversation cannot supply a history image.
 History reads do not ingest or replay messages.

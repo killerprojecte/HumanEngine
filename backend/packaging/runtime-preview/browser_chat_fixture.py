@@ -99,6 +99,13 @@ def configure(port, request, params, probe, discover_names=False):
     })
     assert request(port, "PUT", "/api/plugins/snowluma/enabled", {"enabled": True})["ok"]
     assert probe("seed"), "signed browser fixture ingress failed"
+    if discover_names:
+        # All standard events acknowledged while the action peer is still holding the lookup.
+        wait_for(lambda: ready(probe, "group-held"), "asynchronous group profile lookup", seconds=5)
+        assert any(row["id"] == SCENE and row["name"] == str(GROUP) for row in request(port, "GET", "/api/scenes"))
+        assert probe("group-release"), "group profile lookup did not release"
+        wait_for(lambda: any(row["id"] == SCENE and row["name"] == NAME
+                             for row in request(port, "GET", "/api/scenes")), "resolved group name", seconds=5)
 
     def retained():
         data = request(port, "GET", HISTORY + "?source=local")

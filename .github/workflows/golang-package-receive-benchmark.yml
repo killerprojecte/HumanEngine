@@ -13,6 +13,10 @@ on:
       - 'backend/internal/httpapi/server.go'
       - 'backend/internal/memeservice/http_publication.go'
       - 'backend/internal/app/application.go'
+      - 'backend/internal/app/external_adapter.go'
+      - 'backend/internal/externaladapter/onebot_group_names.go'
+      - 'backend/internal/scenestore/profile.go'
+      - 'backend/plugins/snowluma/portable-http/**'
       - 'backend/packaging/runtime-preview/packaged_mixed_benchmark.py'
       - '.github/workflows/golang-package-receive-benchmark.yml'
 
@@ -24,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 65
     env:
-      GO_RECEIVE_BASELINE: 660e5add85bcefc695f5636da89f6f1ef1380973
+      GO_RECEIVE_BASELINE: cefb229ef36bc442e68ac447952c286181d3d32d
     steps:
       - uses: actions/checkout@v7.0.1
         with:

@@ -44,6 +44,8 @@ async function body(req) {
 function server() {
   let held
   let released = false
+  let groupHeld
+  let groupReleased = false
   let messages = 0, images = 0
   const json = (res, data) => res.writeHead(200, { 'Content-Type': 'application/json' })
     .end(JSON.stringify({ status: 'ok', retcode: 0, data }))
@@ -61,13 +63,28 @@ function server() {
     }
     if (req.method === 'GET' && req.url === '/fixture/media')
       return res.writeHead(messages === 1 && images === 1 ? 204 : 409).end()
+    if (req.method === 'GET' && req.url === '/fixture/group-held')
+      return res.writeHead(groupHeld && !groupReleased && !groupHeld.destroyed ? 204 : 409).end()
+    if (req.method === 'POST' && req.url === '/fixture/group-release') {
+      if (!groupHeld || groupReleased || groupHeld.destroyed) return res.writeHead(409).end()
+      groupReleased = true
+      json(groupHeld, { group_id: group, group_name: name })
+      return res.writeHead(204).end()
+    }
     if (req.method !== 'POST') return res.writeHead(405).end()
     if (req.url === '/get_login_info') {
       req.resume()
       return json(res, { user_id: 42 })
     }
     if (req.url === '/get_group_info') {
-      req.resume()
+      let args
+      try { args = await body(req) } catch { return res.writeHead(400).end() }
+      if (String(args.group_id) !== String(group)) return res.writeHead(409).end()
+      if (imageURL) {
+        if (groupHeld) return res.writeHead(409).end()
+        groupHeld = res
+        return
+      }
       return json(res, { group_id: group, group_name: name })
     }
     if (req.url === historyAction || imageURL && ['/get_msg', '/get_image'].includes(req.url)) {
@@ -97,7 +114,6 @@ async function probe(mode) {
     for (let index = 0; index < 32; index++) {
       const row = message(100 + index, index === 31 ? local : 'Synthetic row ' + index, timestamp - 31 + index)
       if (index === 0 && card) {
-        row.group_name = name
         row.sender.card = card
       } else if (card) {
         delete row.sender
@@ -116,9 +132,9 @@ async function probe(mode) {
     const response = await fetch(new URL('/fixture/' + mode.slice(4), imageURL), { signal: AbortSignal.timeout(5000) })
     return console.log(response.status)
   }
-  assert(['ready', 'held', 'release', 'media'].includes(mode))
+  assert(['ready', 'held', 'release', 'media', 'group-held', 'group-release'].includes(mode))
   const response = await fetch(origin(actionPort) + '/fixture/' + mode, {
-    method: mode === 'release' ? 'POST' : 'GET',
+    method: mode.endsWith('release') ? 'POST' : 'GET',
     headers: { Authorization: 'Bearer ' + actionToken }, signal: AbortSignal.timeout(5000),
   })
   console.log(response.status)

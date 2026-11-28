@@ -54,6 +54,8 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	run(".", "go", "build", "-tags=sqlite_fts5,humanengine_icu", "-o", binary, ".")
 	const token, eventToken = "synthetic-portable-action", "synthetic-portable-event"
 	var logins, imageLookups, unexpectedDownloads, messageLookups atomic.Int32
+	var groupLookups atomic.Int32
+	groupHeld, releaseGroup := make(chan struct{}), make(chan struct{})
 	var recalledPage atomic.Bool
 	pixels := image.NewNRGBA(image.Rect(0, 0, 3, 2))
 	pixels.SetNRGBA(1, 0, color.NRGBA{R: 13, G: 95, B: 200, A: 255})
@@ -83,6 +85,31 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		case "/get_login_info":
 			logins.Add(1)
 			fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":42}}`)
+		case "/get_group_info":
+			var request struct {
+				Group string `json:"group_id"`
+			}
+			if json.NewDecoder(r.Body).Decode(&request) != nil {
+				t.Error("invalid group profile request")
+				w.WriteHeader(400)
+				return
+			}
+			if request.Group != "904" {
+				// Other fixture groups do not provide a name lookup.
+				w.WriteHeader(404)
+				return
+			}
+			if groupLookups.Add(1) != 1 {
+				t.Error("duplicated in-flight group profile lookup")
+				w.WriteHeader(409)
+				return
+			}
+			close(groupHeld)
+			select {
+			case <-releaseGroup:
+				fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"group_id":904,"group_name":"  异步群名称  "}}`)
+			case <-r.Context().Done():
+			}
 		case "/get_group_msg_history", "/get_friend_msg_history":
 			var request struct {
 				Group   string `json:"group_id"`
@@ -240,7 +267,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.0-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.1-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -339,6 +366,28 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	namedEvent("private", 303, `,"sender":{"card":"  ","nickname":"对话昵称"}`)
 	assertName(namedGroup, "合成群组", "群名片", namedAvatar, 302)
 	assertName(namedPrivate, "对话昵称", "对话昵称", namedAvatar, 303)
+	lookupGroup := "ob:s:" + encode(`["snowluma","42","group","904"]`)
+	for _, id := range []int{401, 402} {
+		post(fmt.Sprintf(`{"post_type":"message","message_type":"group","sub_type":"normal","self_id":42,"group_id":904,"user_id":903,"message_id":%d,"time":%d,"message":[{"type":"text","data":{"text":"Standard event without a group name"}}],"sender":{"card":"标准群名片"}}`, id, time.Now().Unix()), eventToken, 204)
+	}
+	select {
+	case <-groupHeld:
+	case <-time.After(4 * time.Second):
+		t.Fatal("acknowledged events did not request the group profile")
+	}
+	assertName(lookupGroup, "904", "标准群名片", namedAvatar, 402)
+	close(releaseGroup)
+	for deadline := time.Now().Add(5 * time.Second); ; {
+		raw := commandRequest(t, addr, "GET", "/api/scenes", nil, 200)
+		if bytes.Contains(raw, []byte("异步群名称")) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("asynchronous group name was not saved")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	assertName(lookupGroup, "异步群名称", "标准群名片", namedAvatar, 402)
 	mediaScene := "ob:s:" + encode(`["snowluma","42","group","902"]`)
 	mediaID := mediaScene + ":m:" + encode(`"11"`)
 	mediaRaw := fmt.Sprintf(`{"post_type":"message","message_type":"group","self_id":42,"group_id":902,"user_id":900,"message_id":11,"time":%d,"message":[{"type":"text","data":{"text":"Independent caption"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`, time.Now().Unix())
@@ -495,6 +544,9 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	history(direct, "")
 	namedEvent("group", 304, "")
 	assertName(namedGroup, "合成群组", "群名片", namedAvatar, 304)
+	if !bytes.Contains(commandRequest(t, addr, "GET", "/api/scenes", nil, 200), []byte("异步群名称")) {
+		t.Fatal("resolved group name not retained after cold reopen")
+	}
 	t.Log("external-snow-chat-names-card-avatar-and-cold-reopen")
 	type remoteRow struct {
 		ID, SceneID, Origin, SenderID string
@@ -689,6 +741,19 @@ func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token,
 					return
 				}
 				response = []byte(`{"status":"ok","retcode":0,"data":{"user_id":42}}`)
+			case "get_group_info":
+				var requestGroup struct {
+					Group string `json:"group_id"`
+				}
+				if err := json.Unmarshal(request.Params, &requestGroup); err != nil {
+					t.Error(err)
+					return
+				}
+				if requestGroup.Group == "906" {
+					response = []byte(`{"status":"ok","retcode":0,"data":{"group_id":906,"group_name":"Socket group profile"}}`)
+				} else {
+					response = []byte(`{"status":"failed","retcode":100}`)
+				}
 			case "send_group_msg", "send_private_msg":
 				var action struct {
 					Group   string `json:"group_id"`
@@ -797,6 +862,18 @@ func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token,
 	}
 	send(second, snowSocketEvent("group", 904, 83))
 	snowSocketHistory(t, addr, "group", 904, 83, 81, 82)
+	send(second, snowSocketEvent("group", 906, 86))
+	snowSocketHistory(t, addr, "group", 906, 86)
+	for deadline := time.Now().Add(5 * time.Second); ; {
+		data := commandRequest(t, addr, "GET", "/api/scenes", nil, 200)
+		if bytes.Contains(data, []byte("Socket group profile")) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("group name did not resolve over the authenticated socket")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
 	send(second, snowSocketEvent("private", 904, 83))
 	snowSocketHistory(t, addr, "private", 904, 83, 81, 82)
 	send(second, fmt.Sprintf(`{"post_type":"notice","notice_type":"friend_recall","self_id":42,"user_id":904,"message_id":83,"time":%d}`, time.Now().Unix()))

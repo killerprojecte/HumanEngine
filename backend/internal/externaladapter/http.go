@@ -41,10 +41,11 @@ type httpProfile struct {
 type guestCall func(context.Context, context.Context, []byte) ([]byte, error)
 
 type sourcePorts struct {
-	ingest   func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
-	recall   func(context.Context, dispatch.SceneRef, string) error
-	stopped  func(string) error
-	original func(context.Context, string, string) (memeservice.Original, error)
+	ingest    func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
+	recall    func(context.Context, dispatch.SceneRef, string) error
+	stopped   func(string) error
+	original  func(context.Context, string, string) (memeservice.Original, error)
+	sceneName func(context.Context, dispatch.SceneRef, func(context.Context) (string, error)) (bool, error)
 }
 
 type httpSession struct {
@@ -66,6 +67,7 @@ type httpSession struct {
 	served      chan struct{}
 	done        chan struct{}
 	closeErr    error
+	groupNames  groupNameLookups
 }
 
 func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile httpProfile, call guestCall, source sourcePorts) (*httpSession, error) {
@@ -331,6 +333,9 @@ func (s *httpSession) receiveEvent(ctx context.Context, raw []byte) int {
 			return http.StatusUnprocessableEntity
 		}
 		err = s.source.ingest(ctx, &s.adapter, scene, message)
+		if err == nil && p != nil && p.groupNames && ev.Peer.Kind == "group" && ev.SceneDisplayName == nil {
+			s.lookupGroupName(scene)
+		}
 	case "recall":
 		err = s.source.recall(ctx, scene, messageID(scene, ev.Message))
 	}

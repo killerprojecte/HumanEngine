@@ -134,3 +134,13 @@ func UTF8Text(s string) (string, error) {
 	}
 	return string(b), nil
 }
+
+// plainJSONPrefix stops before bytes needing JSON escaping or WTF-8 decoding.
+func plainJSONPrefix(s string) int {
+	for i := 0; i < len(s); i++ {
+		if c := s[i]; c < 0x20 || c >= 0x80 || c == '"' || c == '\\' {
+			return i
+		}
+	}
+	return len(s)
+}

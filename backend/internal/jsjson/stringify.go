@@ -24,22 +24,19 @@ var (
 // JS insertion order, property presence, or Number conversion semantics.
 // Cycles are errors; repeated noncyclic references are allowed.
 func Stringify(value any) (string, error) {
-	if IsUndefined(value) {
-		return "", ErrUndefinedRoot
-	}
-	e := encoder{active: make(map[reference]bool)}
-	if err := e.value(value); err != nil {
-		return "", err
-	}
-	return string(e.out), nil
+	wire, err := Marshal(value)
+	return string(wire), err
 }
 
 func Marshal(value any) ([]byte, error) {
-	s, err := Stringify(value)
-	if err != nil {
+	if IsUndefined(value) {
+		return nil, ErrUndefinedRoot
+	}
+	e := encoder{active: make(map[reference]bool)}
+	if err := e.value(value); err != nil {
 		return nil, err
 	}
-	return []byte(s), nil
+	return e.out, nil
 }
 
 type reference struct {
@@ -126,10 +123,14 @@ func (e *encoder) value(value any) error {
 }
 
 func (e *encoder) string(s string) error {
-	if err := ValidateString(s); err != nil {
+	prefix := plainJSONPrefix(s)
+	suffix := s[prefix:]
+	if err := ValidateString(suffix); err != nil {
 		return err
 	}
 	e.out = append(e.out, '"')
+	e.out = append(e.out, s[:prefix]...)
+	s = suffix
 	for i := 0; i < len(s); {
 		r, n := decodeRune(s[i:])
 		i += n

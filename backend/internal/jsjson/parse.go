@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // SyntaxError identifies a byte offset (zero-based) in the supplied text.
@@ -157,7 +158,17 @@ func (p *parser) object() (any, error) {
 
 func (p *parser) string() (string, error) {
 	p.pos++ // opening quote, checked by caller
-	units := make([]uint16, 0)
+	start := p.pos
+	p.pos += plainJSONPrefix(p.text[start:])
+	if p.pos < len(p.text) && p.text[p.pos] == '"' {
+		p.pos++
+		// Small fields must not retain the whole input.
+		return strings.Clone(p.text[start : p.pos-1]), nil
+	}
+	units := make([]uint16, p.pos-start)
+	for i := range units {
+		units[i] = uint16(p.text[start+i])
+	}
 	for p.pos < len(p.text) {
 		c := p.text[p.pos]
 		if c == '"' {

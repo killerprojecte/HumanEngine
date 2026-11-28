@@ -19,6 +19,7 @@ AVATAR_URLS = frozenset({
     f"https://q1.qlogo.cn/g?b=qq&nk={SENDER}&s=100",
 })
 NAME = "Synthetic dense group"
+CARD = "Synthetic group card"
 LOCAL = "Synthetic retained message witness."
 REMOTE = "Synthetic remote-only history witness."
 SCENE = "ob:s:" + urlsafe_b64encode(
@@ -39,7 +40,7 @@ def peer(name, image, port, request, standalone_version=None):
     cdn = name + "-chat-cdn"
     network = name + "-chat-origin"
     script = Path(__file__).with_name("browser_chat_fixture.cjs").read_text()
-    params = dict(group=GROUP, sender=SENDER, name=NAME, local=LOCAL, remote=REMOTE,
+    params = dict(group=GROUP, sender=SENDER, name=NAME, card=CARD, local=LOCAL, remote=REMOTE,
                   actionPort=ACTION_PORT, eventPort=EVENT_PORT, timestamp=int(time.time()),
                   actionToken=uuid4().hex, eventToken=uuid4().hex)
     if standalone_version is not None:
@@ -68,7 +69,7 @@ def peer(name, image, port, request, standalone_version=None):
                "--entrypoint", "node", "-e", "HE_BROWSER_CHAT", image,
                "-e", script, "peer", env=env)
         wait_for(lambda: ready(probe), "synthetic browser SnowLuma peer", seconds=20)
-        configure(port, request, params, probe)
+        configure(port, request, params, probe, discover_names=standalone_version is not None)
         if standalone_version is not None:
             row, = (row for row in request(port, "GET", "/api/plugins") if row["id"] == "snowluma")
             assert row["builtin"] is False and row["enabled"] is True and row["version"] == standalone_version
@@ -82,12 +83,15 @@ def peer(name, image, port, request, standalone_version=None):
                 subprocess.run(["docker", *command], capture_output=True, timeout=20)
 
 
-def configure(port, request, params, probe):
-    request(port, "PUT", "/api/scenes/" + SCENE, {
-        "id": SCENE, "kind": "group", "adapterId": "snowluma", "accountId": "42",
-        "platformSceneId": str(GROUP), "name": NAME,
-        "participationEnabled": False, "learningEnabled": False, "proactiveEnabled": False,
-    })
+def configure(port, request, params, probe, discover_names=False):
+    if discover_names:
+        assert all(row["id"] != SCENE for row in request(port, "GET", "/api/scenes"))
+    else:
+        request(port, "PUT", "/api/scenes/" + SCENE, {
+            "id": SCENE, "kind": "group", "adapterId": "snowluma", "accountId": "42",
+            "platformSceneId": str(GROUP), "name": NAME,
+            "participationEnabled": False, "learningEnabled": False, "proactiveEnabled": False,
+        })
     request(port, "PUT", "/api/plugins/snowluma/config", {
         "transport": "http", "url": f"http://127.0.0.1:{ACTION_PORT}", "accountId": "42",
         "eventHost": "127.0.0.1", "eventPort": EVENT_PORT,
@@ -99,7 +103,8 @@ def configure(port, request, params, probe):
     def retained():
         data = request(port, "GET", HISTORY + "?source=local")
         rows = data["items"]
-        return len(rows) == 30 and LOCAL in json.dumps(rows[-1]) and REMOTE not in json.dumps(rows)
+        return (len(rows) == 30 and LOCAL in json.dumps(rows[-1]) and REMOTE not in json.dumps(rows)
+                and (not discover_names or rows[-1].get("senderDisplayName") == CARD))
 
     wait_for(retained, "30 retained synthetic rows", seconds=10)
 
@@ -149,6 +154,7 @@ def assert_history(page, origin, expect, probe, with_image=False):
         expect(remote).to_be_in_viewport()
         expect(retained).to_be_visible()
         if with_image:
+            expect(row.filter(has_text=LOCAL).get_by_role("button", name=CARD, exact=True)).to_be_visible()
             sticker = row.filter(has_text=REMOTE).locator('img[src^="blob:"]')
             expect(sticker).to_be_in_viewport()
             assert sticker.evaluate("async img => { await img.decode(); return [img.naturalWidth, img.naturalHeight] }") == [3, 2]

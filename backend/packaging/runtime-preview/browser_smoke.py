@@ -275,6 +275,7 @@ def run(port, token, evidence, usage_start, chat_history=None, chat_image=False,
                     phase = "dense-chat-local-before-platform"
                     browser_chat_fixture.assert_history(page, origin, expect, chat_history, with_image=chat_image)
                     if chat_image:
+                        outcomes.append({"action": "standalone-signed-chat-discovered-group-and-card", "status": 200})
                         outcomes.append({"action": "standalone-expired-sticker-rendered", "status": 200,
                                          "width": 3, "height": 2})
                     outcomes.append({"action": "dense-chat-local-before-platform", "status": 200})

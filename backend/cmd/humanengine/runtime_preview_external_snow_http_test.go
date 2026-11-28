@@ -299,6 +299,46 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	encode := func(s string) string { return base64.RawURLEncoding.EncodeToString([]byte(s)) }
 	group := "ob:s:" + encode(`["snowluma","42","group","900"]`)
 	direct := "ob:s:" + encode(`["snowluma","42","private","900"]`)
+	namedGroup := "ob:s:" + encode(`["snowluma","42","group","903"]`)
+	namedPrivate := "ob:s:" + encode(`["snowluma","42","private","903"]`)
+	assertName := func(scene, label, senderLabel, avatar string, message int) {
+		t.Helper()
+		var scenes []struct{ ID, Name string }
+		if err := json.Unmarshal(commandRequest(t, addr, "GET", "/api/scenes", nil, 200), &scenes); err != nil {
+			t.Fatal(err)
+		}
+		found := false
+		for _, s := range scenes {
+			if s.ID == scene {
+				found = s.Name == label
+			}
+		}
+		if !found {
+			t.Fatalf("discovered scene %q did not preserve presentation name %q", scene, label)
+		}
+		var page struct {
+			Items []struct{ ID, SenderDisplayName, SenderAvatarURL string }
+		}
+		if err := json.Unmarshal(commandRequest(t, addr, "GET", "/api/scenes/"+url.PathEscape(scene)+"/history?source=local", nil, 200), &page); err != nil {
+			t.Fatal(err)
+		}
+		for _, row := range page.Items {
+			if row.ID == scene+":m:"+encode(fmt.Sprintf(`"%d"`, message)) && row.SenderDisplayName == senderLabel && row.SenderAvatarURL == avatar {
+				return
+			}
+		}
+		t.Fatalf("history did not preserve sender presentation for message %d: %+v", message, page)
+	}
+	namedEvent := func(kind string, id int, nameFields string) {
+		t.Helper()
+		post(fmt.Sprintf(`{"post_type":"message","message_type":%q,"sub_type":"normal","self_id":42,"group_id":903,"user_id":903,"message_id":%d,"time":%d,"message":[{"type":"text","data":{"text":"Presentation witness"}}]%s}`, kind, id, time.Now().Unix(), nameFields), eventToken, 204)
+	}
+	const namedAvatar = "https://q1.qlogo.cn/g?b=qq&nk=903&s=100"
+	namedEvent("group", 301, `,"group_name":"  合成群组  ","sender":{"card":"  群名片  ","nickname":"不是显示名"}`)
+	namedEvent("group", 302, "")
+	namedEvent("private", 303, `,"sender":{"card":"  ","nickname":"对话昵称"}`)
+	assertName(namedGroup, "合成群组", "群名片", namedAvatar, 302)
+	assertName(namedPrivate, "对话昵称", "对话昵称", namedAvatar, 303)
 	mediaScene := "ob:s:" + encode(`["snowluma","42","group","902"]`)
 	mediaID := mediaScene + ":m:" + encode(`"11"`)
 	mediaRaw := fmt.Sprintf(`{"post_type":"message","message_type":"group","self_id":42,"group_id":902,"user_id":900,"message_id":11,"time":%d,"message":[{"type":"text","data":{"text":"Independent caption"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`, time.Now().Unix())
@@ -453,6 +493,9 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	history(group, "")
 	history(direct, "")
+	namedEvent("group", 304, "")
+	assertName(namedGroup, "合成群组", "群名片", namedAvatar, 304)
+	t.Log("external-snow-chat-names-card-avatar-and-cold-reopen")
 	type remoteRow struct {
 		ID, SceneID, Origin, SenderID string
 		Parts                         []struct{ Type, Text, MediaURL, UserID string }

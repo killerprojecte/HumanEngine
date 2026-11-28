@@ -157,6 +157,19 @@ func normalizedMessage(adapter, account string, event *jsjson.Object, origin, me
 	out := map[string]any{"type": "message", "message": messageID,
 		"peer":   map[string]string{"kind": str(scene, "kind"), "id": str(scene, "platformSceneId")},
 		"sender": str(message, "senderPlatformId"), "parts": json.RawMessage(wire), "sentAt": str(message, "sentAt")}
+	for _, name := range [...]struct{ key, value string }{
+		{"sceneDisplayName", str(scene, "displayName")},
+		{"senderDisplayName", str(message, "senderDisplayName")},
+	} {
+		if name.value != "" {
+			// Preserve the normalizer's exact UTF-16 presentation semantics.
+			encoded, err := jsjson.Marshal(name.value)
+			if err != nil {
+				return nil
+			}
+			out[name.key] = json.RawMessage(encoded)
+		}
+	}
 	if reply, err := platformReply(str(scene, "id"), str(message, "replyToId")); err == nil && reply != "" {
 		out["replyTo"] = reply
 	}

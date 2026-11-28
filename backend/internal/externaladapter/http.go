@@ -325,6 +325,7 @@ func (s *httpSession) receiveEvent(ctx context.Context, raw []byte) int {
 	}
 	switch ev.Type {
 	case "message":
+		scene.DisplayName = ev.SceneDisplayName
 		message, e := s.profile.message(scene, ev, time.Now())
 		if e != nil {
 			return http.StatusUnprocessableEntity

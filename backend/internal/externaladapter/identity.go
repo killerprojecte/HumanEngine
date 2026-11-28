@@ -11,6 +11,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsoncompat"
+	"github.com/killerprojecte/HumanEngine/backend/internal/profileidentity"
 )
 
 // scope is established by the native installer from its descriptor and active
@@ -88,13 +89,15 @@ func encode(values ...string) string {
 // The signed-json and initial OneBot profile provide text; the newer OneBot
 // profile carries ordered message parts.
 type event struct {
-	Type    string
-	Peer    peer
-	Message string
-	Sender  string
-	ReplyTo string
-	SentAt  time.Time
-	Parts   []any
+	Type              string
+	Peer              peer
+	Message           string
+	Sender            string
+	ReplyTo           string
+	SceneDisplayName  *string
+	SenderDisplayName *string
+	SentAt            time.Time
+	Parts             []any
 }
 
 func validWireIdentity(value string) bool { return value != "" && utf8.ValidString(value) }
@@ -103,6 +106,15 @@ func text(o *jsjson.Object, key string) string {
 	raw, _ := o.Get(key)
 	value, _ := raw.(string)
 	return value
+}
+
+func displayName(o *jsjson.Object, key string) *string {
+	value, _ := o.Get(key)
+	name, present, _ := profileidentity.DisplayName(value)
+	if !present {
+		return nil
+	}
+	return &name
 }
 
 func fieldObject(o *jsjson.Object, key string) *jsjson.Object {
@@ -148,6 +160,8 @@ func (s scope) projectParsedEvent(o *jsjson.Object, structured bool) (event, err
 				return event{}, errors.New("external_adapter_message_invalid")
 			}
 			if structured {
+				ev.SceneDisplayName = displayName(o, "sceneDisplayName")
+				ev.SenderDisplayName = displayName(o, "senderDisplayName")
 				value, _ := o.Get("parts")
 				ev.Parts, err = s.projectParts(value)
 				if err != nil {
@@ -183,6 +197,9 @@ func (s scope) messageWithOrigin(scene dispatch.SceneRef, in event, now time.Tim
 		jsjson.Member{Key: "receivedAt", Value: now.UTC().Format(clock)},
 		jsjson.Member{Key: "parts", Value: in.Parts},
 	)
+	if err == nil && in.SenderDisplayName != nil {
+		err = out.Set("senderDisplayName", *in.SenderDisplayName)
+	}
 	if err == nil && in.ReplyTo != "" {
 		err = out.Set("replyToId", messageID(scene, in.ReplyTo))
 	}

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict')
 const { createHmac } = require('node:crypto')
 const { createServer } = require('node:http')
 const fixture = JSON.parse(process.env.HE_BROWSER_CHAT)
-const { actionPort, eventPort, eventToken, actionToken, timestamp, group, sender, name, local, remote, imageURL } = fixture
+const { actionPort, eventPort, eventToken, actionToken, timestamp, group, sender, name, card, local, remote, imageURL } = fixture
 const origin = port => 'http://127.0.0.1:' + port
 const message = (id, text, time) => ({
   post_type: 'message', message_type: 'group', sub_type: 'normal', self_id: 42,
@@ -95,8 +95,14 @@ function server() {
 async function probe(mode) {
   if (mode === 'seed') {
     for (let index = 0; index < 32; index++) {
-      const body = JSON.stringify(message(100 + index, index === 31 ? local : 'Synthetic row ' + index,
-        timestamp - 31 + index))
+      const row = message(100 + index, index === 31 ? local : 'Synthetic row ' + index, timestamp - 31 + index)
+      if (index === 0 && card) {
+        row.group_name = name
+        row.sender.card = card
+      } else if (card) {
+        delete row.sender
+      }
+      const body = JSON.stringify(row)
       const signature = createHmac('sha1', eventToken).update(body).digest('hex')
       const response = await fetch(origin(eventPort) + '/onebot/events', {
         method: 'POST', body, signal: AbortSignal.timeout(5000),

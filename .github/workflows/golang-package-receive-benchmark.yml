@@ -16,7 +16,7 @@ permissions:
 jobs:
   paired-receive:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -49,6 +49,21 @@ jobs:
           test "$revision" = 39d8deb8922684298bab8ecb139be04555e8474a
           docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-receive-ts:local "$legacy"
           docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-receive-tools:local "$legacy"
+      - name: Build the Go reference from before the receive-path optimizations
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: c9a00c191825d0b83e35f7978316d76ef1e2e87c
+          path: .benchmark-go-baseline
+          persist-credentials: false
+      - name: Package the exact Go reference with the external-only profile
+        run: |
+          legacy=.benchmark-go-baseline
+          revision=$(git -C "$legacy" rev-parse HEAD)
+          test "$revision" = c9a00c191825d0b83e35f7978316d76ef1e2e87c
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$revision" \
+            --build-arg PREVIEW_PLUGIN_PROFILE=external-only \
+            -f "$legacy/backend/packaging/runtime-preview/Dockerfile" -t humanengine-receive-go-baseline:local "$legacy"
+          test "$(docker run --rm --network none humanengine-receive-go-baseline:local --inspect-builtins)" = '[]'
       - name: Measure equal receive-only traffic and assert no model calls or sends
         run: |
           python3 backend/packaging/runtime-preview/packaged_mixed_benchmark.py \
@@ -56,10 +71,21 @@ jobs:
             --go-image humanengine-receive-go:local --go-revision "$GITHUB_SHA" \
             --receive-only --external-snow-package "$RUNNER_TEMP/operator-plugins" \
             --evidence "$RUNNER_TEMP/humanengine-paired-receive.json"
+      - name: Measure Go before and after on the same runner and plugin bytes
+        run: |
+          python3 backend/packaging/runtime-preview/packaged_mixed_benchmark.py \
+            --ts-image humanengine-receive-ts:local --ts-tools-image humanengine-receive-tools:local \
+            --go-image humanengine-receive-go:local --go-revision "$GITHUB_SHA" \
+            --go-baseline-image humanengine-receive-go-baseline:local \
+            --go-baseline-revision c9a00c191825d0b83e35f7978316d76ef1e2e87c \
+            --receive-only --external-snow-package "$RUNNER_TEMP/operator-plugins" \
+            --evidence "$RUNNER_TEMP/humanengine-paired-go-receive.json"
       - name: Preserve aggregate benchmark evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: paired-packaged-receive-benchmark
-          path: ${{ runner.temp }}/humanengine-paired-receive.json
+          path: |
+            ${{ runner.temp }}/humanengine-paired-receive.json
+            ${{ runner.temp }}/humanengine-paired-go-receive.json
           if-no-files-found: ignore

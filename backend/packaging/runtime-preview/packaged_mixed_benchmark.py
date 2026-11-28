@@ -88,6 +88,7 @@ class Mixed(Paired):
 
     def __init__(self, args, report):
         super().__init__(args, report)
+        self.order = ("go_baseline", "go", "go", "go_baseline") if args.go_baseline_image else ORDER
         allowed = sorted(os.sched_getaffinity(0))
         require(len(allowed) >= 2, "benchmark needs distinct owner and peer CPUs")
         self.owner_cpu, self.peer_cpu = (str(core) for core in allowed[:2])
@@ -137,15 +138,17 @@ class Mixed(Paired):
 
     def workload(self):
         return {"window_seconds": mix.WINDOW, "events_per_second": mix.RATE,
-                "admin_reads": mix.READS, "order": ORDER, "external_snow_version": self.version}
+                "admin_reads": mix.READS, "order": self.order, "external_snow_version": self.version}
 
-    def window(self, engine, timestamp, index):
-        label = f"{engine}-{index}"
+    def window(self, arm, timestamp, index):
+        engine = "ts" if arm == "ts" else "go"
+        label = f"{arm}-{index}"
         external = ("--mount", f"type=bind,source={self.package},target=/app/plugins,readonly",
                     "-e", "HUMANENGINE_PLUGINS=" + ",".join(self.entries))
         self.phase = f"start-{label}"
         self.start(engine, network="container:" + self.peer,
-                   runtime_args=self.limits + (external if engine == "go" else ()))
+                   runtime_args=self.limits + (external if engine == "go" else ()),
+                   image=self.report["images"][arm])
         self.phase = f"verify-settings-{label}"
         row, = (row for row in self.api("GET", "/api/plugins") if row["id"] == "snowluma")
         require(row["enabled"] is True, "seed plugin is not enabled")
@@ -182,7 +185,7 @@ class Mixed(Paired):
         self.phase = f"verify-durable-{label}"
         durable = self.verify_durable()
         self.verify_pair()
-        return dict(engine=engine, **result, **checked, **durable, driver_invocation_elapsed_ns=elapsed,
+        return dict(engine=arm, **result, **checked, **durable, driver_invocation_elapsed_ns=elapsed,
                     owner_cgroup={"leader_cpu_affinity": affinity, **limits, **counters, **memory},
                     peer_cgroup={"leader_cpu_affinity": peer_affinity, **peer_counters})
 
@@ -202,6 +205,8 @@ class Mixed(Paired):
             "ts_tools": self.image(self.args.ts_tools_image, TS_REVISION),
             "go": self.image(self.args.go_image, self.args.go_revision),
         }
+        if self.args.go_baseline_image:
+            self.report["images"]["go_baseline"] = self.image(self.args.go_baseline_image, self.args.go_baseline_revision)
         self.report["runner"] = {
             "architecture": platform.machine(), "kernel": platform.release(),
             "logical_cpus": os.cpu_count(), "image_os": os.getenv("ImageOS"), "image_version": os.getenv("ImageVersion"),
@@ -216,7 +221,7 @@ class Mixed(Paired):
         self.start_peer(timestamp)
         self.phase = "seed-exact-typescript"
         self.seed_pair(timestamp)
-        for index, engine in enumerate(ORDER, 1):
+        for index, engine in enumerate(self.order, 1):
             self.phase = f"clone-trial-{index}"
             self.clone(self.name + f"-trial-{index}")
             self.report["windows"].append(self.window(engine, timestamp, index))
@@ -302,7 +307,7 @@ class ReceiveOnly(Mixed):
     def workload(self):
         return dict(scenes=rx.SCENE_COUNT, recall_tombstones=rx.RECALLS, meme_metadata=rx.MEMES,
                     text_arrivals=rx.EVENTS, events_per_burst=rx.BURST,
-                    burst_interval_ms=rx.INTERVAL_NS / 1e6, admin_reads_per_route=50, order=ORDER)
+                    burst_interval_ms=rx.INTERVAL_NS / 1e6, admin_reads_per_route=50, order=self.order)
 
     def verify_extra(self):
         raw = docker("exec", self.peer, "python3", "/fixture/" + self.fixture, "receipt")
@@ -326,12 +331,21 @@ def main():
     for name in ("external-snow-package", "evidence"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--receive-only", action="store_true")
+    parser.add_argument("--go-baseline-image")
+    parser.add_argument("--go-baseline-revision")
     parser.set_defaults(cpus=1)
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}", args.go_revision):
         parser.error("--go-revision must be a full SHA")
+    if args.go_baseline_image is not None or args.go_baseline_revision is not None:
+        if (not args.receive_only or not args.go_baseline_image or
+                not re.fullmatch(r"[0-9a-f]{40}", args.go_baseline_revision or "") or
+                args.go_baseline_revision == args.go_revision):
+            parser.error("a Go baseline needs receive-only mode, an image and a distinct full revision")
     report = {"kind": "paired_packaged_receive_only" if args.receive_only else "paired_packaged_mixed", "ts_revision": TS_REVISION,
               "go_revision": args.go_revision, "status": "failed", "windows": []}
+    if args.go_baseline_image:
+        report.update(kind="paired_go_receive_only", go_baseline_revision=args.go_baseline_revision)
     trial = None
     with args.evidence.open("x") as evidence:
         try:

@@ -2,11 +2,36 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
+import packaged_mixed_benchmark as benchmark
 from packaged_mixed_benchmark import mix, verify_limits
 
 
 class MixedBenchmarkTests(unittest.TestCase):
+    def test_go_comparison_records_exact_arms_on_the_same_fixture(self):
+        baseline, candidate = "a" * 40, "b" * 40
+        with tempfile.TemporaryDirectory() as scratch:
+            report = Path(scratch) / "evidence.json"
+            argv = ["receive", "--ts-image", "ts", "--ts-tools-image", "tools",
+                    "--go-image", "candidate", "--go-revision", candidate,
+                    "--go-baseline-image", "baseline", "--go-baseline-revision", baseline,
+                    "--receive-only", "--external-snow-package", scratch, "--evidence", str(report)]
+            with (patch("sys.argv", argv), patch.object(benchmark, "load_packages", return_value={}),
+                  patch.object(Path, "read_text", return_value='{"version":"synthetic"}'),
+                  patch.object(benchmark.os, "sched_getaffinity", return_value={0, 1}),
+                  patch.object(benchmark.ReceiveOnly, "run", autospec=True) as run,
+                  patch.object(benchmark.ReceiveOnly, "cleanup", return_value=True)):
+                self.assertEqual(benchmark.main(), 0)
+                trial, = run.call_args.args
+                self.assertEqual(trial.order, ("go_baseline", "go", "go", "go_baseline"))
+                self.assertEqual(trial.args.go_baseline_image, "baseline")
+                self.assertEqual(trial.args.go_image, "candidate")
+            evidence = json.loads(report.read_text())
+            self.assertEqual(evidence["kind"], "paired_go_receive_only")
+            self.assertEqual(evidence["go_baseline_revision"], baseline)
+            self.assertEqual(evidence["go_revision"], candidate)
+
     def test_limits_require_one_cpu_equal_ram_and_no_swap(self):
         with tempfile.TemporaryDirectory() as scratch:
             cage = Path(scratch)

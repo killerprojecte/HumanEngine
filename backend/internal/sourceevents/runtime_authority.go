@@ -3,6 +3,7 @@ package sourceevents
 import (
 	"context"
 	"errors"
+	"sync/atomic"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
@@ -15,10 +16,36 @@ import (
 // The source store's owner must outlive every runtime operation.
 type RuntimeAuthority struct {
 	*runtimeReads
-	schemas           *contract.Schemas
+	revisionSettings  *revisionSettings
 	routing           *ingressrouting.Router
 	recallPreparation RecallPreparation
 	recallCompletion  func(context.Context) error
+}
+
+type revisionSettings struct {
+	schemas *contract.Schemas
+	cached  atomic.Pointer[revisionSetting]
+}
+
+type revisionSetting struct {
+	raw     string
+	enabled bool
+}
+
+// The transaction still supplies the current Settings row. Only its exact,
+// immutable bytes may reuse a prior validation; edits and rollbacks cannot
+// substitute a stale flag. Keep one entry, not a history of settings values.
+func (a *revisionSettings) enabled(raw string) (bool, error) {
+	if entry := a.cached.Load(); entry != nil && raw == entry.raw {
+		return entry.enabled, nil
+	}
+	settings, err := a.schemas.Parse("Settings", []byte(raw))
+	if err != nil {
+		return false, err
+	}
+	enabled := settings["sourceEventRevisionsEnabled"] == true
+	a.cached.Store(&revisionSetting{raw: raw, enabled: enabled})
+	return enabled, nil
 }
 
 func NewRuntimeAuthority(store *Store) (*RuntimeAuthority, error) {
@@ -37,7 +64,7 @@ func NewRuntimeAuthority(store *Store) (*RuntimeAuthority, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &RuntimeAuthority{runtimeReads: &runtimeReads{store: store}, schemas: schemas, routing: routing}, nil
+	return &RuntimeAuthority{runtimeReads: &runtimeReads{store: store}, revisionSettings: &revisionSettings{schemas: schemas}, routing: routing}, nil
 }
 
 // RouteIngress persists discovery/identity before duplicate and recall admission.
@@ -127,11 +154,11 @@ func (a *RuntimeAuthority) observeDetailed(ctx context.Context, scene botruntime
 			if !exists {
 				raw = string(contract.DefaultSettingsInput())
 			}
-			settings, e := a.schemas.Parse("Settings", []byte(raw))
+			enabled, e := a.revisionSettings.enabled(raw)
 			if e != nil {
 				return e
 			}
-			if settings["sourceEventRevisionsEnabled"] != true && enrolled == nil {
+			if !enabled && enrolled == nil {
 				m.Delete("sourceEventRef")
 				status, trusted = "new", m
 				if capture != nil {

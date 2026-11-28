@@ -6,6 +6,7 @@ on:
     branches: [feat/refactor-golang]
     paths:
       - 'backend/packaging/runtime-preview/receive_load_fixture.py'
+      - 'backend/internal/sourceevents/runtime_authority.go'
       - 'backend/packaging/runtime-preview/packaged_mixed_benchmark.py'
       - '.github/workflows/golang-package-receive-benchmark.yml'
 

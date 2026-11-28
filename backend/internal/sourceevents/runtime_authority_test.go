@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
@@ -481,4 +482,48 @@ func TestBoundDisplayWithoutPersistedScene(t *testing.T) {
 	if err != nil || bound || len(rows) != 1 {
 		t.Fatalf("unpersisted projection: rows=%v bound=%v err=%v", rows, bound, err)
 	}
+}
+
+func TestRuntimeRevisionSettingTracksExactValidatedValue(t *testing.T) {
+	_, authority := runtimeFixture(t, Options{})
+	off, on := ingressSettings(t, false), ingressSettings(t, true)
+	for _, step := range []struct {
+		raw     string
+		want    bool
+		invalid bool
+	}{
+		{off, false, false}, {off, false, false},
+		{on, true, false}, {`{"sourceEventRevisionsEnabled":"wrong"}`, false, true},
+		{on, true, false}, {off, false, false},
+	} {
+		got, err := authority.revisionSettings.enabled(step.raw)
+		if got != step.want || (err != nil) != step.invalid {
+			t.Fatalf("revision flag = %v, err=%v, want %v, invalid=%v", got, err, step.want, step.invalid)
+		}
+	}
+}
+
+func BenchmarkRuntimeRevisionSetting(b *testing.B) {
+	schemas, err := contract.SharedSchemas()
+	if err != nil {
+		b.Fatal(err)
+	}
+	revisions := &revisionSettings{schemas: schemas}
+	raw := string(contract.DefaultSettingsInput())
+	b.Run("validate", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			if _, err := schemas.Parse("Settings", []byte(raw)); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+	b.Run("same-row", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			if _, err := revisions.enabled(raw); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
 }

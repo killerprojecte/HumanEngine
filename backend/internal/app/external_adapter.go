@@ -7,6 +7,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/externaladapter"
+	"github.com/killerprojecte/HumanEngine/backend/internal/ingressrouting"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
@@ -26,6 +27,14 @@ func (a *Application) externalAdapterResolver(owners Owners) pluginmanager.V2Ada
 			defer release()
 			scenes := scenestore.Store{Main: owners.Main, Authority: owners.Authority}
 			return scenes.RefreshSceneName(root, a.readPublisher, scene, lookup)
+		},
+		SenderName: func(ctx context.Context, scene dispatch.SceneRef, sender, platform string, lookup func(context.Context) (string, error)) (bool, error) {
+			root, release, err := a.Engine.RootContext(ctx)
+			if err != nil {
+				return false, err
+			}
+			defer release()
+			return ingressrouting.RefreshSenderName(root, owners.Main, owners.Authority, a.readPublisher, scene, sender, platform, lookup)
 		},
 		Original: func(ctx context.Context, scene, asset string) (memeservice.Original, error) {
 			root, release, err := a.Engine.RootContext(ctx)

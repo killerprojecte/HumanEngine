@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 65
     env:
-      GO_RECEIVE_BASELINE: a910b44681fad4474a8abbbf2734c6353b54da15
+      GO_RECEIVE_BASELINE: b54df25e11f3f3f576740aa4393740839a9427af
     steps:
       - uses: actions/checkout@v7.0.1
         with:

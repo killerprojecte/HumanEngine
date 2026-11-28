@@ -43,7 +43,7 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]any{"wire": "onebot11-forward-1", "groupNames": true, "privateNames": true}
+		return map[string]any{"wire": "onebot11-forward-1", "groupNames": true, "privateNames": true, "senderNames": true}
 	case "adapterGroupName":
 		return sceneName(in, "group", "group_id", "group_name")
 	case "adapterPrivateName":

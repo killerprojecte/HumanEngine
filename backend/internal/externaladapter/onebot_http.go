@@ -57,6 +57,7 @@ type oneBotHTTP struct {
 	history      bool
 	groupNames   bool
 	privateNames bool
+	senderNames  bool
 	token        string
 	eventKey     []byte
 }
@@ -102,6 +103,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			}
 			groupNames, _ := protocol.Get("groupNames")
 			privateNames, _ := protocol.Get("privateNames")
+			senderNames, _ := protocol.Get("senderNames")
 			token, err := oneBotSecret(ctx, in, "token", "credential_not_configured")
 			if err != nil {
 				return nil, err
@@ -136,9 +138,10 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				onebotHTTP: &oneBotHTTP{eventPath: route, websocket: websocket, token: token, eventKey: []byte(eventToken),
 					media: desc.Wire != oneBotHTTPWire, publicMedia: forward, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history,
 					groupNames:   forward && groupNames == true && ports.SceneName != nil,
-					privateNames: forward && privateNames == true && ports.SceneName != nil}}
+					privateNames: forward && privateNames == true && ports.SceneName != nil,
+					senderNames:  forward && senderNames == true && ports.SenderName != nil}}
 
-			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original, sceneName: ports.SceneName})
+			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original, sceneName: ports.SceneName, senderName: ports.SenderName})
 		},
 		Policy: pluginmanager.BuiltinPolicy{
 			Validate: func(_ context.Context, in *jsjson.Object) error {

@@ -33,13 +33,14 @@ const rawSchema = `{
 }`
 
 type BindingPorts struct {
-	Runtime   *botruntime.Runtime
-	Ingest    func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
-	Recall    func(context.Context, dispatch.SceneRef, string) error
-	Stopped   func(string) error
-	HasSecret func(context.Context, string, string) (bool, error)
-	Original  func(context.Context, string, string) (memeservice.Original, error)
-	SceneName func(context.Context, dispatch.SceneRef, func(context.Context) (string, error)) (bool, error)
+	Runtime    *botruntime.Runtime
+	Ingest     func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
+	Recall     func(context.Context, dispatch.SceneRef, string) error
+	Stopped    func(string) error
+	HasSecret  func(context.Context, string, string) (bool, error)
+	Original   func(context.Context, string, string) (memeservice.Original, error)
+	SenderName func(context.Context, dispatch.SceneRef, string, string, func(context.Context) (string, error)) (bool, error)
+	SceneName  func(context.Context, dispatch.SceneRef, func(context.Context) (string, error)) (bool, error)
 }
 
 func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {

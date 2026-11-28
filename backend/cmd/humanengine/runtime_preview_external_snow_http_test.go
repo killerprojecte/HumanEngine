@@ -58,6 +58,8 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	groupHeld, releaseGroup := make(chan struct{}), make(chan struct{})
 	privateHeld, releasePrivate := make(chan struct{}), make(chan struct{})
 	wrongPrivate := make(chan struct{}, 1)
+	var senderLookups atomic.Int32
+	senderHeld, releaseSender, secondSender := make(chan struct{}), make(chan struct{}), make(chan struct{})
 	var recalledPage atomic.Bool
 	pixels := image.NewNRGBA(image.Rect(0, 0, 3, 2))
 	pixels.SetNRGBA(1, 0, color.NRGBA{R: 13, G: 95, B: 200, A: 255})
@@ -123,12 +125,9 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			}
 			switch request.User {
 			case "907":
-				if privateLookups.Add(1) != 1 {
-					t.Error("duplicated in-flight private profile lookup")
-					w.WriteHeader(409)
-					return
+				if privateLookups.Add(1) == 1 {
+					close(privateHeld)
 				}
-				close(privateHeld)
 				select {
 				case <-releasePrivate:
 					fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":907,"nickname":"  异步私聊昵称  "}}`)
@@ -140,9 +139,22 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 				case wrongPrivate <- struct{}{}:
 				default:
 				}
-			case "42":
-				t.Error("bot sender identity was used as a private peer")
-				fallthrough
+			case "919":
+				switch senderLookups.Add(1) {
+				case 1:
+					close(senderHeld)
+					select {
+					case <-releaseSender:
+						fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":919,"nickname":"  异步成员昵称  "}}`)
+					case <-r.Context().Done():
+					}
+				case 2:
+					close(secondSender)
+					fmt.Fprint(w, `{"status":"failed","retcode":100}`)
+				default:
+					t.Error("duplicate lookup for already observed sender scope")
+					fmt.Fprint(w, `{"status":"failed","retcode":100}`)
+				}
 			default:
 				fmt.Fprint(w, `{"status":"failed","retcode":100}`)
 			}
@@ -303,7 +315,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.2-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.3-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -456,13 +468,51 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 	assertName(lookupPrivate, "异步私聊昵称", "合成机器人", "https://q1.qlogo.cn/g?b=qq&nk=42&s=100", 403)
-	assertName(lookupPrivate, "异步私聊昵称", "", privateAvatar, 404)
 	privateEvent("message", 908, 42, 405, "")
 	select {
 	case <-wrongPrivate:
 	case <-time.After(4 * time.Second):
 		t.Fatal("missing private nickname did not exercise mismatched result")
 	}
+	senderA := "ob:s:" + encode(`["snowluma","42","group","909"]`)
+	senderB := "ob:s:" + encode(`["snowluma","42","group","910"]`)
+	senderEvent := func(group, id int, fields string) {
+		post(fmt.Sprintf(`{"post_type":"message","message_type":"group","sub_type":"normal","self_id":42,"user_id":919,
+			"group_id":%d,"group_name":"稳定群名","message_id":%d,"time":%d,"message":[{"type":"text","data":{"text":"Sender name witness"}}]%s}`,
+			group, id, time.Now().Unix(), fields), eventToken, 204)
+	}
+	const senderAvatar = "https://q1.qlogo.cn/g?b=qq&nk=919&s=100"
+	senderEvent(909, 406, "")
+	select {
+	case <-senderHeld:
+	case <-time.After(4 * time.Second):
+		t.Fatal("missing sender name did not request scoped profile")
+	}
+	assertName(senderA, "稳定群名", "", senderAvatar, 406)
+	senderEvent(910, 407, "")
+	select {
+	case <-secondSender:
+	case <-time.After(4 * time.Second):
+		t.Fatal("one scene's sender lookup suppressed another scene")
+	}
+	assertName(senderB, "稳定群名", "", senderAvatar, 407)
+	close(releaseSender)
+	senderHistory := "/api/scenes/" + url.PathEscape(senderA) + "/history?source=local"
+	for deadline := time.Now().Add(5 * time.Second); ; {
+		if bytes.Contains(commandRequest(t, addr, "GET", senderHistory, nil, 200), []byte("异步成员昵称")) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("existing nameless message did not acquire nickname")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	assertName(senderA, "稳定群名", "异步成员昵称", senderAvatar, 406)
+	assertName(senderB, "稳定群名", "", senderAvatar, 407)
+	senderEvent(909, 408, `,"sender":{"card":"群内名片","nickname":"不是名片"}`)
+	assertName(senderA, "稳定群名", "群内名片", senderAvatar, 408)
+	assertName(senderB, "稳定群名", "", senderAvatar, 407)
+	t.Log("external-snow-sender-identity-refresh-same-message-card-and-scene-isolation")
 	mediaScene := "ob:s:" + encode(`["snowluma","42","group","902"]`)
 	mediaID := mediaScene + ":m:" + encode(`"11"`)
 	mediaRaw := fmt.Sprintf(`{"post_type":"message","message_type":"group","self_id":42,"group_id":902,"user_id":900,"message_id":11,"time":%d,"message":[{"type":"text","data":{"text":"Independent caption"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`, time.Now().Unix())

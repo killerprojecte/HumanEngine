@@ -41,11 +41,12 @@ type httpProfile struct {
 type guestCall func(context.Context, context.Context, []byte) ([]byte, error)
 
 type sourcePorts struct {
-	ingest    func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
-	recall    func(context.Context, dispatch.SceneRef, string) error
-	stopped   func(string) error
-	original  func(context.Context, string, string) (memeservice.Original, error)
-	sceneName func(context.Context, dispatch.SceneRef, func(context.Context) (string, error)) (bool, error)
+	ingest     func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
+	recall     func(context.Context, dispatch.SceneRef, string) error
+	stopped    func(string) error
+	original   func(context.Context, string, string) (memeservice.Original, error)
+	senderName func(context.Context, dispatch.SceneRef, string, string, func(context.Context) (string, error)) (bool, error)
+	sceneName  func(context.Context, dispatch.SceneRef, func(context.Context) (string, error)) (bool, error)
 }
 
 type httpSession struct {
@@ -67,7 +68,7 @@ type httpSession struct {
 	served      chan struct{}
 	done        chan struct{}
 	closeErr    error
-	sceneNames  sceneNameLookups
+	profiles    profileLookups
 }
 
 func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile httpProfile, call guestCall, source sourcePorts) (*httpSession, error) {
@@ -333,17 +334,8 @@ func (s *httpSession) receiveEvent(ctx context.Context, raw []byte) int {
 			return http.StatusUnprocessableEntity
 		}
 		err = s.source.ingest(ctx, &s.adapter, scene, message)
-		if err == nil && p != nil && ev.SceneDisplayName == nil {
-			switch ev.Peer.Kind {
-			case "group":
-				if p.groupNames {
-					s.lookupSceneName(scene, "get_group_info", "group_id", "adapterGroupName", "group")
-				}
-			case "private":
-				if p.privateNames {
-					s.lookupSceneName(scene, "get_stranger_info", "user_id", "adapterPrivateName", "peer")
-				}
-			}
+		if err == nil && p != nil {
+			s.queueProfiles(p, scene, ev)
 		}
 	case "recall":
 		err = s.source.recall(ctx, scene, messageID(scene, ev.Message))

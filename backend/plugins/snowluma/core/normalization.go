@@ -372,21 +372,35 @@ func firstTruthy(values ...any) any {
 	}
 	return missing{}
 }
+func inlineMediaReference(text string) bool {
+	// Only a prefix decides the scheme. Leave room for a multibyte rune
+	// lowering to ASCII so classification matches full-string ToLower.
+	lower := strings.ToLower(text[:min(len(text), 4*len("data:image/"))])
+	return strings.HasPrefix(lower, "base64://") || strings.HasPrefix(lower, "data:image/")
+}
 func mediaReference(value any) (string, error) {
 	text, ok := value.(string)
 	if !ok || text == "" {
 		return "", protocolError("invalid_media_reference")
 	}
-	units, err := jsjson.UTF16(text)
-	if err != nil {
-		return "", err
+	units := len(text)
+	for i := 0; i < len(text); i++ {
+		if text[i] >= 0x80 {
+			// The ASCII prefix contributes one code unit per byte. The
+			// remaining WTF-8 still needs canonical encoding validation.
+			tail, err := jsjson.UTF16Len(text[i:])
+			if err != nil {
+				return "", err
+			}
+			units = i + tail
+			break
+		}
 	}
 	limit := 16384
-	lower := strings.ToLower(text)
-	if strings.HasPrefix(lower, "base64://") || strings.HasPrefix(lower, "data:image/") {
+	if inlineMediaReference(text) {
 		limit = (64*1024*1024+2)/3*4 + 64
 	}
-	if len(units) > limit {
+	if units > limit {
 		return "", protocolError("invalid_media_reference")
 	}
 	return text, nil
@@ -425,11 +439,8 @@ func imageParts(sceneID, kind string, data *jsjson.Object) ([]any, error) {
 	if text, ok := property(data, "base64").(string); ok && text != "" {
 		inline = "base64://" + text
 	}
-	if text, ok := property(data, "file").(string); ok {
-		lower := strings.ToLower(text)
-		if strings.HasPrefix(lower, "base64://") || strings.HasPrefix(lower, "data:image/") {
-			inlineFile = text
-		}
+	if text, ok := property(data, "file").(string); ok && inlineMediaReference(text) {
+		inlineFile = text
 	}
 	source := firstTruthy(inline, inlineFile, property(data, "url"), property(data, "file"), property(data, "file_id"))
 	file, err := mediaReference(source)

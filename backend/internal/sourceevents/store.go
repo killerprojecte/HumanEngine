@@ -378,7 +378,7 @@ func (s *Store) observe(c Change) (Result, error) {
 	if collision {
 		return result("conflict", nil, nil)
 	}
-	old, e := v.head(c.Identity)
+	old, e := v.headByKey(key)
 	if e != nil {
 		return Result{}, e
 	}
@@ -409,13 +409,14 @@ func (s *Store) observe(c Change) (Result, error) {
 		}
 		return result(status, &old.Metadata.Ref, nil)
 	}
-	changeHash, e := ChangeHash(c)
-	if e != nil {
-		return Result{}, e
-	}
+	var changeHash string
 	if c.Kind == "edit" {
 		if old == nil {
 			return result("unorderable", nil, nil)
+		}
+		changeHash, e = ChangeHash(c)
+		if e != nil {
+			return Result{}, e
 		}
 		var rawRevision any
 		var hash string
@@ -471,7 +472,7 @@ func (s *Store) observe(c Change) (Result, error) {
 			head.Sequence = &seq
 		}
 	}
-	hash, e := HeadHash(metadata, head.Sequence, head.OrderMode)
+	hash, e := headHashForKey(key, metadata, head.Sequence, head.OrderMode)
 	if e != nil {
 		return Result{}, e
 	}

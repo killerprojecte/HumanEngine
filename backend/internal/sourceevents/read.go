@@ -138,6 +138,9 @@ func (v *View) head(i Identity) (*Head, error) {
 	if e != nil {
 		return nil, e
 	}
+	return v.headByKey(key)
+}
+func (v *View) headByKey(key string) (*Head, error) {
 	var storedKey, eventID, sceneID, messageID, value string
 	exists, e := v.one("SELECT identity_key,event_id,scene_id,message_id,value FROM source_event_heads WHERE identity_key=?", []any{key}, &storedKey, &eventID, &sceneID, &messageID, &value)
 	if e != nil || !exists {

@@ -163,6 +163,9 @@ func HeadHash(m Metadata, sequence *int64, mode *string) (string, error) {
 	if e != nil {
 		return "", e
 	}
+	return headHashForKey(key, m, sequence, mode)
+}
+func headHashForKey(key string, m Metadata, sequence *int64, mode *string) (string, error) {
 	return digest([]any{key, m.Ref.EventID, float64(m.Ref.Revision), float64(m.Ref.DeletionEpoch), m.BodyHash, m.ObservedAt, nullable(m.OccurredAt), Coverage, nullableInt(sequence), nullable(mode)})
 }
 func ChangeHash(c Change) (string, error) {

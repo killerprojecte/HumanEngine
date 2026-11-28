@@ -23,7 +23,7 @@ type fixture struct {
 	store     *Store
 }
 
-func newFixture(t *testing.T, options Options) fixture {
+func newFixture(t testing.TB, options Options) fixture {
 	t.Helper()
 	root := t.TempDir()
 	path := filepath.Join(root, "authority")
@@ -461,5 +461,18 @@ func TestLocalReadinessHookRunsInsideReadSnapshot(t *testing.T) {
 	e = f.store.Read(ctx, func(v *View) error { _, e := v.Registered("scene", "message"); return e })
 	if e == nil || e.Error() != "local-not-ready" {
 		t.Fatal(e)
+	}
+}
+
+func BenchmarkObserveNewSourceEvent(b *testing.B) {
+	f := newFixture(b, Options{})
+	c := ingress()
+	ctx := context.Background()
+	b.ReportAllocs()
+	for i := 0; b.Loop(); i++ {
+		c.Identity.MessageID = fmt.Sprintf("message-%d", i)
+		if result, err := f.store.Observe(ctx, c); err != nil || result.Status != "new" {
+			b.Fatal(result, err)
+		}
 	}
 }

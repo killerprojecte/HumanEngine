@@ -353,6 +353,9 @@ func TestInvalidStringEncoding(t *testing.T) {
 		if _, err := UTF16(s); !errors.Is(err, ErrStringEncoding) {
 			t.Fatalf("%s: UTF16 accepted invalid string", encoded)
 		}
+		if _, err := UTF8Text("valid prefix\x00" + s); !errors.Is(err, ErrStringEncoding) {
+			t.Fatalf("%s: SQLite text conversion accepted invalid string", encoded)
+		}
 		if _, err := UTF16Len(s); !errors.Is(err, ErrStringEncoding) {
 			t.Fatalf("%s: UTF16Len accepted invalid string", encoded)
 		}

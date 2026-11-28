@@ -117,6 +117,9 @@ func appendRune(b []byte, r rune) []byte {
 // Never use this conversion before hashing JSON.stringify output or comparing
 // JavaScript identities. Embedded NUL bytes are retained.
 func UTF8Text(s string) (string, error) {
+	if utf8.ValidString(s) {
+		return s, nil
+	}
 	if err := ValidateString(s); err != nil {
 		return "", err
 	}

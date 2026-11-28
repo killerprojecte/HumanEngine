@@ -7,6 +7,7 @@ on:
     paths:
       - 'backend/packaging/runtime-preview/receive_load_fixture.py'
       - 'backend/internal/sourceevents/*.go'
+      - 'backend/internal/jsjson/*.go'
       - 'backend/packaging/runtime-preview/packaged_mixed_benchmark.py'
       - '.github/workflows/golang-package-receive-benchmark.yml'
 
@@ -17,6 +18,8 @@ jobs:
   paired-receive:
     runs-on: ubuntu-24.04
     timeout-minutes: 65
+    env:
+      GO_RECEIVE_BASELINE: d8bc3f8a86a2391b4d4e02197f9e8bfcc4c4c7b1
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -49,17 +52,17 @@ jobs:
           test "$revision" = 39d8deb8922684298bab8ecb139be04555e8474a
           docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-receive-ts:local "$legacy"
           docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-receive-tools:local "$legacy"
-      - name: Build the Go reference from before the receive-path optimizations
+      - name: Check out the exact Go receive reference
         uses: actions/checkout@v7.0.1
         with:
-          ref: c9a00c191825d0b83e35f7978316d76ef1e2e87c
+          ref: ${{ env.GO_RECEIVE_BASELINE }}
           path: .benchmark-go-baseline
           persist-credentials: false
       - name: Package the exact Go reference with the external-only profile
         run: |
           legacy=.benchmark-go-baseline
           revision=$(git -C "$legacy" rev-parse HEAD)
-          test "$revision" = c9a00c191825d0b83e35f7978316d76ef1e2e87c
+          test "$revision" = "$GO_RECEIVE_BASELINE"
           docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$revision" \
             --build-arg PREVIEW_PLUGIN_PROFILE=external-only \
             -f "$legacy/backend/packaging/runtime-preview/Dockerfile" -t humanengine-receive-go-baseline:local "$legacy"
@@ -77,7 +80,7 @@ jobs:
             --ts-image humanengine-receive-ts:local --ts-tools-image humanengine-receive-tools:local \
             --go-image humanengine-receive-go:local --go-revision "$GITHUB_SHA" \
             --go-baseline-image humanengine-receive-go-baseline:local \
-            --go-baseline-revision c9a00c191825d0b83e35f7978316d76ef1e2e87c \
+            --go-baseline-revision "$GO_RECEIVE_BASELINE" \
             --receive-only --external-snow-package "$RUNNER_TEMP/operator-plugins" \
             --evidence "$RUNNER_TEMP/humanengine-paired-go-receive.json"
       - name: Preserve aggregate benchmark evidence

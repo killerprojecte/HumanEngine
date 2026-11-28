@@ -17,6 +17,8 @@ import subprocess
 import time
 import uuid
 
+from operator_packages import PACKAGES, load_packages
+
 TOKEN = "synthetic-package-token"
 
 
@@ -144,14 +146,15 @@ def main():
     parser.add_argument("--image", default="humanengine-go-preview:local")
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--browser-smoke", action="store_true", help="run real host Chromium against this package")
-    parser.add_argument("--external-snow-package", type=Path, help="mount the standalone package for the browser proof")
+    parser.add_argument("--external-package-dir", type=Path, help="use the operator's four external packages")
     args = parser.parse_args()
     standalone_version = None
-    if args.external_snow_package is not None:
+    candidate = args.external_package_dir
+    if candidate is not None:
         if not args.browser_smoke:
-            parser.error("--external-snow-package requires --browser-smoke")
-        args.external_snow_package = args.external_snow_package.resolve(strict=True)
-        standalone_version = json.loads((args.external_snow_package / "snowluma-http.v2.json").read_text())["version"]
+            parser.error("--external-package-dir requires --browser-smoke")
+        candidate = candidate.resolve(strict=True)
+        standalone_version = json.loads((candidate / PACKAGES["snowluma"]).read_bytes())["version"]
     if args.browser_smoke:
         TOKEN = "synthetic-package-" + uuid.uuid4().hex
     args.evidence.mkdir(parents=True, exist_ok=True)
@@ -162,6 +165,10 @@ def main():
     report = {"image": image["Id"],
               "revision": (image["Config"].get("Labels") or {}).get("org.opencontainers.image.revision"),
               "checks": []}
+    if candidate is not None:
+        report["external_packages"] = load_packages(candidate)
+        assert json.loads(docker("run", "--rm", "--network", "none", image["Id"], "--inspect-builtins")) == []
+
 
     def logs(name):
         return docker("logs", name)
@@ -174,24 +181,24 @@ def main():
             return False
         return docker("inspect", "-f", "{{.State.ExitCode}}", name) == "0"
 
-    def start(label, data, authority, plugin=False):
+    def start(label, data, authority, v1=False, external=False):
         name = prefix + "-" + label
         containers.append(name)
         command = ["run", "-d", "--name", name, "--platform", "linux/amd64",
                    "-p", "127.0.0.1::3001", "-e", "HUMANENGINE_ADMIN_TOKEN",
                    "-v", data + ":/app/data", "-v", authority + ":/app/authority"]
-        if plugin:
+        entries = []
+        if v1:
             fixture = Path(__file__).with_name("fixture.mjs").resolve()
             for plugin_id in ("package-fixture-a", "package-fixture-b"):
-                command += ["--mount", f"type=bind,source={fixture},target=/app/plugins/{plugin_id}.mjs,readonly"]
-            entries = ["package-fixture-a.mjs", "package-fixture-b.mjs"]
-            if args.external_snow_package is not None:
-                for artifact in ("snowluma-http.v2.json", "snowluma-http.wasm"):
-                    package = args.external_snow_package / artifact
-                    command += ["--mount", f"type=bind,source={package},target=/app/plugins/{artifact},readonly"]
-                entries.append("snowluma-http.v2.json")
-            command += ["-e", "HUMANENGINE_PLUGINS=" + ",".join(entries)]
-        docker(*command, args.image, env={**os.environ, "HUMANENGINE_ADMIN_TOKEN": TOKEN})
+                entry = plugin_id + ".mjs"
+                command += ["--mount", f"type=bind,source={fixture},target=/app/plugins/{entry},readonly"]
+                entries.append(entry)
+        if external:
+            command += ["--mount", f"type=bind,source={candidate},target=/app/plugins,readonly"]
+            entries.extend(PACKAGES.values())
+        command += ["-e", "HUMANENGINE_PLUGINS=" + ",".join(entries)]
+        docker(*command, image["Id"], env={**os.environ, "HUMANENGINE_ADMIN_TOKEN": TOKEN})
         return name
 
     def ready(name):
@@ -252,7 +259,7 @@ def main():
         assert '"code":"app.drained"' in logs(first)
         report["checks"].append("sigterm-held-http-commits-before-owner-drain")
         usage_start = seed_browser_usage(image["Id"], volumes[0]) if args.browser_smoke else None
-        restarted = start("restart", *volumes, plugin=True)
+        restarted = start("restart", *volumes, v1=candidate is None, external=candidate is not None)
         port = ready(restarted)
         assert request(port, "GET", "/api/settings")["debugModelIO"] is False
         wait_for(lambda: not node_pids(restarted), "disabled V1 startup inspection settled")
@@ -264,11 +271,15 @@ def main():
             with browser_chat_fixture.peer(restarted, image["Id"], port, request, standalone_version) as chat_history:
                 report["browser"].pop("failed_phase")
                 browser_smoke.run(port, TOKEN, report["browser"], usage_start, chat_history,
-                                  chat_image=standalone_version is not None)
+                                  chat_image=standalone_version is not None, operator_plugins=candidate is not None)
             if standalone_version is not None:
                 report["external_snow_version"] = standalone_version
             assert not node_pids(restarted), "browser caused a Node runtime inside the image"
             report["checks"].append("hosted-chromium-real-ui")
+        if candidate is not None:
+            drain(restarted)
+            restarted = start("v1-lifecycle", *volumes, v1=True)
+            port = ready(restarted)
         a, b = "package-fixture-a", "package-fixture-b"
 
         def echo(plugin_id):

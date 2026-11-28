@@ -8,17 +8,12 @@ import subprocess
 import tempfile
 import time
 
-from migration_drill import AUTHORITY, DATABASE, SNOW_HTTP_MANIFEST, TS_REVISION, Drill, docker, require
+from migration_drill import AUTHORITY, DATABASE, TS_REVISION, Drill, docker, require
+from operator_packages import PACKAGES, load_packages
 
 
 HERE = Path(__file__).resolve().parent
 TARGET = "/app/data"
-PACKAGES = {
-    "snowluma": SNOW_HTTP_MANIFEST,
-    "typing-delay": "typing-delay.v2.json",
-    "web-read": "web-read.v2.json",
-    "web-search": "web-search.v2.json",
-}
 
 
 def fixture_service(image, data, plugins, port):
@@ -166,8 +161,7 @@ class BindDrill(Drill):
         }
         self.phase = "prepare-synthetic-bind"
         self.package = self.args.external_package_dir.resolve(strict=True)
-        require(all((self.package / manifest).is_file() for manifest in PACKAGES.values()),
-                "missing independent package")
+        self.report["external_packages"] = load_packages(self.package)
         require(json.loads(docker("run", "--rm", "--network", "none", self.report["images"]["go"],
                                   "--inspect-builtins")) == [], "Go candidate embeds plugins")
         self.project = self.name + "-bind"

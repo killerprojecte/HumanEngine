@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ $GITHUB_EVENT_NAME == workflow_dispatch && $GITHUB_REF == refs/heads/feat/refactor-golang && ${OPERATOR_CANDIDATE:-false} == true ]]; then
+  printf 'browser=true\nrestore=false\ncompose=false\nstandalone=false\nbind=true\n'
+  exit
+fi
+
 if [[ $GITHUB_EVENT_NAME != push || $GITHUB_REF != refs/heads/feat/refactor-golang ]]; then
   printf 'browser=false\nrestore=false\ncompose=false\nstandalone=false\nbind=false\n'
   exit
@@ -36,7 +41,7 @@ detect() {
 }
 
 root=backend/packaging/runtime-preview
-detect browser "$root/browser_smoke.py" "$root/browser_usage_seed.mjs" "$root/browser-requirements.txt" \
+detect browser "$root/acceptance.py" "$root/operator_packages.py" "$root/browser_smoke.py" "$root/browser_usage_seed.mjs" "$root/browser-requirements.txt" \
   "$root/browser_chat_fixture.py" "$root/browser_chat_fixture.cjs" "$root/test_browser_chat_fixture.py"
 detect restore "$root/migration_drill.py" "$root/test_migration_drill.py" "$root/recall_fixture.cjs" \
   backend/internal/externaladapter backend/internal/onebotwire backend/internal/publicimage backend/plugins/snowluma/portable-http
@@ -47,4 +52,4 @@ detect standalone "$root/Dockerfile" "$root/build-host.sh" "$root/select-proofs.
   .github/workflows/golang-package-preview.yml backend/Makefile backend/cmd/humanengine/runtime_preview_bundled.go \
   backend/internal/app/distribution_without_snowluma.go backend/internal/app/snowluma_bundled.go backend/plugins/metadata
 
-detect bind "$root/bind_compose_drill.py" "$root/compose-go-candidate.yaml"
+detect bind "$root/operator_packages.py" "$root/bind_compose_drill.py" "$root/compose-go-candidate.yaml"

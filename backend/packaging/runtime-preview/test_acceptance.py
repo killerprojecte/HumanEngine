@@ -1,5 +1,7 @@
 """Driver tests only; these never replace the actual Docker acceptance gate."""
+from hashlib import sha256
 import io
+import json
 import os
 import shutil
 import subprocess
@@ -9,9 +11,30 @@ import unittest
 from unittest.mock import patch
 
 import acceptance
+from operator_packages import PACKAGES, load_packages
 
 
 class DriverTests(unittest.TestCase):
+    def test_operator_artifact_identity_includes_manifest_and_wasm(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for plugin, filename in PACKAGES.items():
+                wasm = filename.removesuffix(".v2.json") + ".wasm"
+                binary = ("fixture-" + plugin).encode()
+                (root / wasm).write_bytes(binary)
+                (root / filename).write_text(json.dumps(dict(
+                    id=plugin, apiVersion=2, artifact=wasm, artifactSha256=sha256(binary).hexdigest(),
+                )))
+            old = load_packages(root)
+            snow = root / PACKAGES["snowluma"]
+            snow.write_text(snow.read_text() + "\n")
+            new = load_packages(root)
+            self.assertNotEqual(old["snowluma"]["manifest"], new["snowluma"]["manifest"])
+            self.assertEqual(old["snowluma"]["artifact"], new["snowluma"]["artifact"])
+            (root / "snowluma-http.wasm").write_bytes(b"different")
+            with self.assertRaisesRegex(ValueError, "does not match"):
+                load_packages(root)
+
     def test_node_identity_probe_runs_inside_container_as_normal_user(self):
         for rows, expected in [("", []), ("42\n7", [7, 42])]:
             with self.subTest(rows=rows), patch.object(acceptance, "docker", return_value=rows) as call:

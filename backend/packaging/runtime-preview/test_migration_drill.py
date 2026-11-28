@@ -352,11 +352,12 @@ class MigrationDrillTests(unittest.TestCase):
             base = git("rev-parse", "HEAD")
             branch = "refs/heads/feat/refactor-golang"
 
-            def select(before, *, sha=None, event="push", ref=branch):
+            def select(before, *, sha=None, event="push", ref=branch, operator=False):
                 output = subprocess.check_output(
                     ["bash", selector], cwd=temp, text=True,
                     env=dict(os.environ, BEFORE=before, GITHUB_EVENT_NAME=event,
-                             GITHUB_REF=ref, GITHUB_SHA=sha or git("rev-parse", "HEAD")),
+                             GITHUB_REF=ref, GITHUB_SHA=sha or git("rev-parse", "HEAD"),
+                             OPERATOR_CANDIDATE=str(operator).lower()),
                 )
                 return dict(line.split("=") for line in output.splitlines())
 
@@ -366,6 +367,7 @@ class MigrationDrillTests(unittest.TestCase):
 
             files = {
                 "browser_smoke.py": "browser", "browser-requirements.txt": "browser",
+                "acceptance.py": "browser", "operator_packages.py": ("browser", "bind"),
                 "browser_chat_fixture.cjs": "browser", "browser_chat_fixture.py": "browser",
                 "migration_drill.py": "restore", "test_migration_drill.py": "restore",
                 "recall_fixture.cjs": "restore",
@@ -414,6 +416,8 @@ class MigrationDrillTests(unittest.TestCase):
                 "Ordinary commit\n\nHumanEngine-Package-Proofs: all\n"
                 "This is an example, not an opt-in.\n\nAnother paragraph.")
             off = expected()
+            self.assertEqual(select("", event="workflow_dispatch", operator=True), expected("browser", "bind"))
+            self.assertEqual(select("", event="workflow_dispatch", operator=True, ref="refs/heads/master"), off)
             self.assertEqual(select(base, sha=selected), expected("browser", "restore", "compose", "standalone", "bind"))
             self.assertEqual(select(base), off)
             for event, ref, before in [

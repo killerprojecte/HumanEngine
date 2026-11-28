@@ -138,7 +138,7 @@ def browser_request_guard(origin, fixture_avatars, blocked):
     return intercept
 
 
-def run(port, token, evidence, usage_start, chat_history=None, chat_image=False):
+def run(port, token, evidence, usage_start, chat_history=None, chat_image=False, operator_plugins=False):
     # Kept out of normal package runs and out of both runtime images.
     from playwright.sync_api import expect, sync_playwright
 
@@ -241,15 +241,27 @@ def run(port, token, evidence, usage_start, chat_history=None, chat_image=False)
                 assert listed.value.status == 200
                 expect(page.get_by_role("heading", name="Plugins", exact=True)).to_be_visible()
                 fixtures = page.get_by_role("button", name=re.compile(r"^Package acceptance fixture\b"))
-                expect(fixtures).to_have_count(2)
-                for i in range(2):
-                    fixture = fixtures.nth(i)
-                    expect(fixture.get_by_text("Disabled", exact=True)).to_be_visible()
-                    expect(fixture.get_by_text("V1", exact=True)).to_be_visible()
-                    expect(fixture).to_contain_text("v1 · Local plugin")
-                typing = page.get_by_role("button", name=re.compile(r"^Typing delay\b"))
-                expect(typing.get_by_text("V2", exact=True)).to_be_visible()
-                expect(typing).to_contain_text("v0.1.0 · Built-in")
+                if operator_plugins:
+                    from operator_packages import PACKAGES
+                    expect(fixtures).to_have_count(0)
+                    rows = listed.value.json()
+                    assert sorted(row["id"] for row in rows) == sorted(PACKAGES)
+                    for row in rows:
+                        assert row["apiVersion"] == 2 and row["builtin"] is False
+                        plugin = page.get_by_role("button", name=re.compile("^" + re.escape(row["name"]) + r"\b"))
+                        expect(plugin.get_by_text("V2", exact=True)).to_be_visible()
+                        expect(plugin).to_contain_text("Local plugin")
+                    outcomes.append({"action": "operator-four-external-v2-plugin-badges", "status": 200})
+                else:
+                    expect(fixtures).to_have_count(2)
+                    for i in range(2):
+                        fixture = fixtures.nth(i)
+                        expect(fixture.get_by_text("Disabled", exact=True)).to_be_visible()
+                        expect(fixture.get_by_text("V1", exact=True)).to_be_visible()
+                        expect(fixture).to_contain_text("v1 · Local plugin")
+                    typing = page.get_by_role("button", name=re.compile(r"^Typing delay\b"))
+                    expect(typing.get_by_text("V2", exact=True)).to_be_visible()
+                    expect(typing).to_contain_text("v0.1.0 · Built-in")
                 outcomes.append({"action": "plugin-api-version-badges", "status": 200})
 
                 def usage_phase(code):

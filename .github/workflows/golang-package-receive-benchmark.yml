@@ -1,0 +1,64 @@
+name: Paired packaged receive-only benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/refactor-golang]
+    paths:
+      - 'backend/packaging/runtime-preview/receive_load_fixture.py'
+      - 'backend/packaging/runtime-preview/packaged_mixed_benchmark.py'
+      - '.github/workflows/golang-package-receive-benchmark.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  paired-receive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build the exact external-only image and four separate packages
+        run: |
+          dir="$RUNNER_TEMP/operator-plugins"
+          make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$dir"
+          make -C backend wasm-typing-delay-package TYPING_DELAY_PACKAGE_DIR="$dir"
+          make -C backend wasm-web-read-request-package WEB_READ_REQUEST_PACKAGE_DIR="$dir"
+          make -C backend wasm-web-search-structured-package WEB_SEARCH_PROFILE=routed-profile.json WEB_SEARCH_STRUCTURED_PACKAGE_DIR="$dir"
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+            --build-arg PREVIEW_PLUGIN_PROFILE=external-only \
+            -f backend/packaging/runtime-preview/Dockerfile -t humanengine-receive-go:local .
+          test "$(docker run --rm --network none humanengine-receive-go:local --inspect-builtins)" = '[]'
+      - name: Check out the exact TypeScript behavioral reference
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: 39d8deb8922684298bab8ecb139be04555e8474a
+          path: .benchmark-typescript
+          persist-credentials: false
+      - name: Build the exact TypeScript runtime and fixture tools
+        run: |
+          legacy=.benchmark-typescript
+          revision=$(git -C "$legacy" rev-parse HEAD)
+          test "$revision" = 39d8deb8922684298bab8ecb139be04555e8474a
+          docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-receive-ts:local "$legacy"
+          docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-receive-tools:local "$legacy"
+      - name: Measure equal receive-only traffic and assert no model calls or sends
+        run: |
+          python3 backend/packaging/runtime-preview/packaged_mixed_benchmark.py \
+            --ts-image humanengine-receive-ts:local --ts-tools-image humanengine-receive-tools:local \
+            --go-image humanengine-receive-go:local --go-revision "$GITHUB_SHA" \
+            --receive-only --external-snow-package "$RUNNER_TEMP/operator-plugins" \
+            --evidence "$RUNNER_TEMP/humanengine-paired-receive.json"
+      - name: Preserve aggregate benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paired-packaged-receive-benchmark
+          path: ${{ runner.temp }}/humanengine-paired-receive.json
+          if-no-files-found: ignore

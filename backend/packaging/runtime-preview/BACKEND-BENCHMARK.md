@@ -141,3 +141,22 @@ The stopped installation must retain four successful attempts with actual
 stream mode, first usable tool content before completion, and exact input,
 output, and cache-read counters. This is an offline protocol check, not a
 measurement of a hosted provider's performance.
+
+### Receive-only comparison
+
+The separate **Paired packaged receive-only benchmark** uses the same cold-clone
+and cgroup accounting as the mixed benchmark, but disables participation,
+learning, and proactive work in all 100 synthetic scenes. Each owner receives
+the same 2,000 signed text events in bursts of five, against 250 seeded recall
+tombstones and 5,000 sticker metadata records. The driver measures 50 reads
+each of settings, scenes, status, and sticker pagination during ingress. It
+checks zero model requests and sends and verifies exact retained message IDs
+both before shutdown and in the reopened database.
+
+The Go image contains no built-in plugins; the report identifies the same four
+independently built package types used in the operator candidate, with only
+SnowLuma enabled. The TS and Go owners run in TS, Go, Go, TS order with matched
+one-CPU and memory limits, and the synthetic client runs separately. Do not
+compare these timings directly with the older direct-Engine TypeScript profile
+or the active-model packaged benchmark. The workflow uses only local images
+and uploads only synthetic aggregate evidence.

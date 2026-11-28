@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from receive_load_fixture import ReceiveWitness, SCENES, expected_id, post_event
+from receive_load_fixture import ReceiveWitness, SCENES, expected_id, post_event, profile_requests
 
 
 class ReceiveLoadTests(unittest.TestCase):
@@ -31,11 +31,15 @@ class ReceiveLoadTests(unittest.TestCase):
             witness = ReceiveWitness(Path(tmp))
             self.assertNotIn("model_requests", witness.snapshot()["counts"])
             witness.action("/get_login_info", {})
+            self.assertEqual(profile_requests(json.dumps(witness.snapshot())), 0)
+            witness.action("/get_group_info", {"group_id": "200001"})
+            self.assertEqual(profile_requests(json.dumps(witness.snapshot())), 1)
             with self.assertRaisesRegex(RuntimeError, "unexpected model"):
                 witness.model("/v1/embeddings", {})
             with self.assertRaisesRegex(RuntimeError, "unexpected action"):
                 witness.action("/send_group_msg", {})
-            self.assertEqual(witness.snapshot()["counts"], {"unexpected_actions": 1, "model_requests": 1})
+            with self.assertRaisesRegex(RuntimeError, "attempted model or outbound"):
+                profile_requests(json.dumps(witness.snapshot()))
 
     def test_workflow_builds_external_only_without_publishing(self):
         workflow = (Path(__file__).resolve().parents[3] / ".github/workflows/golang-package-receive-benchmark.yml").read_text()

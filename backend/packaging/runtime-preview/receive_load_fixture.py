@@ -31,11 +31,22 @@ class ReceiveWitness(Witness):
         raise RuntimeError("unexpected model request")
 
     def action(self, path, body):
+        if path == "/get_group_info":
+            with self.lock:
+                self.counts["group_profile_requests"] += 1
         if path in ("/get_login_info", "/get_group_info"):
             return super().action(path, body)
         with self.lock:
             self.counts["unexpected_actions"] += 1
         raise RuntimeError("unexpected action")
+
+
+def profile_requests(raw):
+    receipt = json.loads(raw)
+    profiles = receipt["counts"].pop("group_profile_requests", 0)
+    require(receipt == {"counts": {}, "acks": {}, "errors": 0, "observations": 0},
+            "receive-only workload attempted model or outbound actions")
+    return profiles
 
 
 def scene_config(i):
@@ -120,9 +131,8 @@ def drive(port, timestamp, admin, token):
     require(lateness < INTERVAL_NS and max(delays) < 500_000_000,
             "receive driver did not meet burst schedule")
     _, raw = ask(SNOW_ACTION_PORT, "/receipt")
-    require(json.loads(raw) == {"counts": {}, "acks": {}, "errors": 0, "observations": 0},
-            "receive-only workload attempted model or outbound actions")
     return {"events": EVENTS, "model_requests": 0, "outbound_sends": 0,
+            "group_profile_requests": profile_requests(raw),
             "ingress_http": quantiles(latencies), "admin_http": admin_http,
             "max_burst_lateness_ms": lateness / 1e6, "max_dispatch_delay_ms": max(delays) / 1e6}
 

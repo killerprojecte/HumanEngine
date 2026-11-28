@@ -54,8 +54,10 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	run(".", "go", "build", "-tags=sqlite_fts5,humanengine_icu", "-o", binary, ".")
 	const token, eventToken = "synthetic-portable-action", "synthetic-portable-event"
 	var logins, imageLookups, unexpectedDownloads, messageLookups atomic.Int32
-	var groupLookups atomic.Int32
+	var groupLookups, privateLookups atomic.Int32
 	groupHeld, releaseGroup := make(chan struct{}), make(chan struct{})
+	privateHeld, releasePrivate := make(chan struct{}), make(chan struct{})
+	wrongPrivate := make(chan struct{}, 1)
 	var recalledPage atomic.Bool
 	pixels := image.NewNRGBA(image.Rect(0, 0, 3, 2))
 	pixels.SetNRGBA(1, 0, color.NRGBA{R: 13, G: 95, B: 200, A: 255})
@@ -109,6 +111,40 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 			case <-releaseGroup:
 				fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"group_id":904,"group_name":"  异步群名称  "}}`)
 			case <-r.Context().Done():
+			}
+		case "/get_stranger_info":
+			var request struct {
+				User string `json:"user_id"`
+			}
+			if json.NewDecoder(r.Body).Decode(&request) != nil {
+				t.Error("invalid private profile request")
+				w.WriteHeader(400)
+				return
+			}
+			switch request.User {
+			case "907":
+				if privateLookups.Add(1) != 1 {
+					t.Error("duplicated in-flight private profile lookup")
+					w.WriteHeader(409)
+					return
+				}
+				close(privateHeld)
+				select {
+				case <-releasePrivate:
+					fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":907,"nickname":"  异步私聊昵称  "}}`)
+				case <-r.Context().Done():
+				}
+			case "908":
+				fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":42,"nickname":"错误会话名称"}}`)
+				select {
+				case wrongPrivate <- struct{}{}:
+				default:
+				}
+			case "42":
+				t.Error("bot sender identity was used as a private peer")
+				fallthrough
+			default:
+				fmt.Fprint(w, `{"status":"failed","retcode":100}`)
 			}
 		case "/get_group_msg_history", "/get_friend_msg_history":
 			var request struct {
@@ -267,7 +303,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.1-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.6.2-forward-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -328,7 +364,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	direct := "ob:s:" + encode(`["snowluma","42","private","900"]`)
 	namedGroup := "ob:s:" + encode(`["snowluma","42","group","903"]`)
 	namedPrivate := "ob:s:" + encode(`["snowluma","42","private","903"]`)
-	assertName := func(scene, label, senderLabel, avatar string, message int) {
+	assertSceneName := func(scene, label string) {
 		t.Helper()
 		var scenes []struct{ ID, Name string }
 		if err := json.Unmarshal(commandRequest(t, addr, "GET", "/api/scenes", nil, 200), &scenes); err != nil {
@@ -343,6 +379,10 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !found {
 			t.Fatalf("discovered scene %q did not preserve presentation name %q", scene, label)
 		}
+	}
+	assertName := func(scene, label, senderLabel, avatar string, message int) {
+		t.Helper()
+		assertSceneName(scene, label)
 		var page struct {
 			Items []struct{ ID, SenderDisplayName, SenderAvatarURL string }
 		}
@@ -388,6 +428,41 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 	assertName(lookupGroup, "异步群名称", "标准群名片", namedAvatar, 402)
+	lookupPrivate := "ob:s:" + encode(`["snowluma","42","private","907"]`)
+	mismatchedPrivate := "ob:s:" + encode(`["snowluma","42","private","908"]`)
+	privateEvent := func(postType string, sender, target, id int, senderFields string) {
+		post(fmt.Sprintf(`{"post_type":%q,"message_type":"private","sub_type":"friend","self_id":42,"user_id":%d,"target_id":%d,"message_id":%d,"time":%d,"message":[{"type":"text","data":{"text":"Private profile witness"}}]%s}`,
+			postType, sender, target, id, time.Now().Unix(), senderFields), eventToken, 204)
+	}
+	// The echo starts the lookup, so accidentally asking for the bot would
+	// not be hidden by a prior successful lookup from an inbound message.
+	privateEvent("message_sent", 42, 907, 403, `,"sender":{"nickname":"合成机器人"}`)
+	select {
+	case <-privateHeld:
+	case <-time.After(4 * time.Second):
+		t.Fatal("acknowledged private echo did not look up its target")
+	}
+	privateEvent("message", 907, 42, 404, "")
+	const privateAvatar = "https://q1.qlogo.cn/g?b=qq&nk=907&s=100"
+	assertName(lookupPrivate, "907", "", privateAvatar, 404)
+	close(releasePrivate)
+	for deadline := time.Now().Add(5 * time.Second); ; {
+		if bytes.Contains(commandRequest(t, addr, "GET", "/api/scenes", nil, 200), []byte("异步私聊昵称")) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("asynchronous private name was not saved")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	assertName(lookupPrivate, "异步私聊昵称", "合成机器人", "https://q1.qlogo.cn/g?b=qq&nk=42&s=100", 403)
+	assertName(lookupPrivate, "异步私聊昵称", "", privateAvatar, 404)
+	privateEvent("message", 908, 42, 405, "")
+	select {
+	case <-wrongPrivate:
+	case <-time.After(4 * time.Second):
+		t.Fatal("missing private nickname did not exercise mismatched result")
+	}
 	mediaScene := "ob:s:" + encode(`["snowluma","42","group","902"]`)
 	mediaID := mediaScene + ":m:" + encode(`"11"`)
 	mediaRaw := fmt.Sprintf(`{"post_type":"message","message_type":"group","self_id":42,"group_id":902,"user_id":900,"message_id":11,"time":%d,"message":[{"type":"text","data":{"text":"Independent caption"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`, time.Now().Unix())
@@ -544,10 +619,10 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	history(direct, "")
 	namedEvent("group", 304, "")
 	assertName(namedGroup, "合成群组", "群名片", namedAvatar, 304)
-	if !bytes.Contains(commandRequest(t, addr, "GET", "/api/scenes", nil, 200), []byte("异步群名称")) {
-		t.Fatal("resolved group name not retained after cold reopen")
-	}
-	t.Log("external-snow-chat-names-card-avatar-and-cold-reopen")
+	assertSceneName(lookupGroup, "异步群名称")
+	assertSceneName(lookupPrivate, "异步私聊昵称")
+	assertSceneName(mismatchedPrivate, "908")
+	t.Log("external-snow-chat-names-card-avatar-private-echo-identity-and-cold-reopen")
 	type remoteRow struct {
 		ID, SceneID, Origin, SenderID string
 		Parts                         []struct{ Type, Text, MediaURL, UserID string }

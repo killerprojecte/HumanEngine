@@ -67,7 +67,7 @@ type httpSession struct {
 	served      chan struct{}
 	done        chan struct{}
 	closeErr    error
-	groupNames  groupNameLookups
+	sceneNames  sceneNameLookups
 }
 
 func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile httpProfile, call guestCall, source sourcePorts) (*httpSession, error) {
@@ -333,8 +333,17 @@ func (s *httpSession) receiveEvent(ctx context.Context, raw []byte) int {
 			return http.StatusUnprocessableEntity
 		}
 		err = s.source.ingest(ctx, &s.adapter, scene, message)
-		if err == nil && p != nil && p.groupNames && ev.Peer.Kind == "group" && ev.SceneDisplayName == nil {
-			s.lookupGroupName(scene)
+		if err == nil && p != nil && ev.SceneDisplayName == nil {
+			switch ev.Peer.Kind {
+			case "group":
+				if p.groupNames {
+					s.lookupSceneName(scene, "get_group_info", "group_id", "adapterGroupName", "group")
+				}
+			case "private":
+				if p.privateNames {
+					s.lookupSceneName(scene, "get_stranger_info", "user_id", "adapterPrivateName", "peer")
+				}
+			}
 		}
 	case "recall":
 		err = s.source.recall(ctx, scene, messageID(scene, ev.Message))

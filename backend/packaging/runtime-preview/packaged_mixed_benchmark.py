@@ -311,8 +311,7 @@ class ReceiveOnly(Mixed):
 
     def verify_extra(self):
         raw = docker("exec", self.peer, "python3", "/fixture/" + self.fixture, "receipt")
-        require(json.loads(raw) == {"counts": {}, "acks": {}, "errors": 0, "observations": 0},
-                "receive-only witness changed after the timing window")
+        rx.profile_requests(raw)
 
     def verify_receive(self, events):
         self.tool("node", "-e", VERIFY_RECEIVE, DATABASE, json.dumps(rx.SCENES),
@@ -364,7 +363,7 @@ def main():
         return 1
     for row in report["windows"]:
         keys = ("engine", "owner_cgroup", "admin_http")
-        keys += (("model_requests", "outbound_sends", "durable_arrivals", "ingress_http") if args.receive_only
+        keys += (("model_requests", "outbound_sends", "group_profile_requests", "durable_arrivals", "ingress_http") if args.receive_only
                  else ("physical_ack", "durable_completed_model_calls"))
         print(json.dumps({key: row[key] for key in keys}))
     return 0

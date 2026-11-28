@@ -11,13 +11,13 @@ import (
 
 // A generation owns its pending actions and existing OneBot profile cooldowns.
 // No waiting lookup holds ingress, a database reservation, or a guest call open.
-type groupNameLookups struct {
+type sceneNameLookups struct {
 	mu      sync.Mutex
 	next    map[string]time.Time
 	pending map[string]struct{}
 }
 
-func (g *groupNameLookups) admit(id string, now time.Time) bool {
+func (g *sceneNameLookups) admit(id string, now time.Time) bool {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if len(g.pending) == 4 || g.next[id].After(now) {
@@ -43,7 +43,7 @@ func (g *groupNameLookups) admit(id string, now time.Time) bool {
 	return true
 }
 
-func (g *groupNameLookups) finish(id string, found bool) {
+func (g *sceneNameLookups) finish(id string, found bool) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	delete(g.pending, id)
@@ -52,13 +52,13 @@ func (g *groupNameLookups) finish(id string, found bool) {
 	}
 }
 
-func (s *httpSession) lookupGroupName(scene dispatch.SceneRef) {
-	if !s.groupNames.admit(scene.ID, time.Now()) {
+func (s *httpSession) lookupSceneName(scene dispatch.SceneRef, action, idField, operation, inputField string) {
+	if !s.sceneNames.admit(scene.ID, time.Now()) {
 		return
 	}
 	done, ok := s.work.Start()
 	if !ok {
-		s.groupNames.finish(scene.ID, false)
+		s.sceneNames.finish(scene.ID, false)
 		return
 	}
 	go func() {
@@ -66,18 +66,15 @@ func (s *httpSession) lookupGroupName(scene dispatch.SceneRef) {
 		ctx, cancel := context.WithTimeout(s.life, 20*time.Second)
 		defer cancel()
 		found, err := s.source.sceneName(ctx, scene, func(ctx context.Context) (string, error) {
-			req, err := json.Marshal(map[string]string{"group_id": scene.PlatformSceneID})
+			req, err := json.Marshal(map[string]string{idField: scene.PlatformSceneID})
 			if err != nil {
 				return "", err
 			}
-			raw, err := s.oneBotRead(ctx, "get_group_info", req, nil)
+			raw, err := s.oneBotRead(ctx, action, req, nil)
 			if err != nil {
 				return "", err
 			}
-			answer, err := s.invoke(ctx, "adapterGroupName", struct {
-				Group    string          `json:"group"`
-				Response json.RawMessage `json:"response"`
-			}{scene.PlatformSceneID, raw})
+			answer, err := s.invoke(ctx, operation, map[string]any{inputField: scene.PlatformSceneID, "response": json.RawMessage(raw)})
 			if err != nil {
 				return "", err
 			}
@@ -87,6 +84,6 @@ func (s *httpSession) lookupGroupName(scene dispatch.SceneRef) {
 			}
 			return text(name, "displayName"), nil
 		})
-		s.groupNames.finish(scene.ID, err == nil && found)
+		s.sceneNames.finish(scene.ID, err == nil && found)
 	}()
 }

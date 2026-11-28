@@ -49,15 +49,16 @@ const oneBotHTTPSchema = `{
 }`
 
 type oneBotHTTP struct {
-	eventPath   string
-	websocket   bool
-	media       bool
-	publicMedia bool
-	outbound    bool
-	history     bool
-	groupNames  bool
-	token       string
-	eventKey    []byte
+	eventPath    string
+	websocket    bool
+	media        bool
+	publicMedia  bool
+	outbound     bool
+	history      bool
+	groupNames   bool
+	privateNames bool
+	token        string
+	eventKey     []byte
 }
 
 type oneBotIngress struct {
@@ -100,6 +101,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				return nil, errors.New("external_adapter_wire_mismatch")
 			}
 			groupNames, _ := protocol.Get("groupNames")
+			privateNames, _ := protocol.Get("privateNames")
 			token, err := oneBotSecret(ctx, in, "token", "credential_not_configured")
 			if err != nil {
 				return nil, err
@@ -133,7 +135,8 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				botID: account, listen: listen, action: text(cfg, "url"),
 				onebotHTTP: &oneBotHTTP{eventPath: route, websocket: websocket, token: token, eventKey: []byte(eventToken),
 					media: desc.Wire != oneBotHTTPWire, publicMedia: forward, outbound: history || desc.Wire == oneBotHTTPOutboundWire, history: history,
-					groupNames: forward && groupNames == true && ports.SceneName != nil}}
+					groupNames:   forward && groupNames == true && ports.SceneName != nil,
+					privateNames: forward && privateNames == true && ports.SceneName != nil}}
 
 			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original, sceneName: ports.SceneName})
 		},

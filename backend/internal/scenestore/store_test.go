@@ -82,7 +82,7 @@ func TestGroupNameLookupDoesNotReplaceAnOperatorRename(t *testing.T) {
 	}
 	defer reader.CloseAndWait(context.Background())
 	scene := dispatch.SceneRef{ID: "scene", AdapterID: "adapter", AccountID: "bot", Kind: "group", PlatformSceneID: "chat"}
-	found, err := s.RefreshGroupName(ctx, reader, scene, func(c context.Context) (string, error) {
+	found, err := s.RefreshSceneName(ctx, reader, scene, func(c context.Context) (string, error) {
 		_ = input.Set("name", "Operator name")
 		_ = input.Set("proactiveEnabled", true)
 		_, err := s.Save(c, input)

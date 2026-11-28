@@ -43,21 +43,11 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]any{"wire": "onebot11-forward-1", "groupNames": true}
+		return map[string]any{"wire": "onebot11-forward-1", "groupNames": true, "privateNames": true}
 	case "adapterGroupName":
-		response := obj(get(in, "response"))
-		data := obj(get(response, "data"))
-		group, valid := snow.RawID(get(data, "group_id"))
-		if valid && group == str(in, "group") && get(response, "status") == "ok" && get(response, "retcode") == float64(0) {
-			name, present, _ := profileidentity.DisplayName(get(data, "group_name"))
-			if present {
-				output, _ := jsjson.NewObject(jsjson.Member{Key: "displayName", Value: name})
-				raw, err := jsjson.Marshal(output)
-				if err == nil {
-					return json.RawMessage(raw)
-				}
-			}
-		}
+		return sceneName(in, "group", "group_id", "group_name")
+	case "adapterPrivateName":
+		return sceneName(in, "peer", "user_id", "nickname")
 	case "adapterLogin":
 		account := str(in, "account")
 		response := obj(get(in, "response"))
@@ -91,6 +81,25 @@ func invoke(raw []byte) any {
 		}
 	}
 	return nil
+}
+
+func sceneName(in *jsjson.Object, expected, field, nameField string) any {
+	response := obj(get(in, "response"))
+	data := obj(get(response, "data"))
+	id, valid := snow.RawID(get(data, field))
+	if !valid || id != str(in, expected) || get(response, "status") != "ok" || get(response, "retcode") != float64(0) {
+		return nil
+	}
+	name, present, _ := profileidentity.DisplayName(get(data, nameField))
+	if !present {
+		return nil
+	}
+	output, _ := jsjson.NewObject(jsjson.Member{Key: "displayName", Value: name})
+	raw, err := jsjson.Marshal(output)
+	if err != nil {
+		return nil
+	}
+	return json.RawMessage(raw)
 }
 
 func ingress(adapter, account string, event *jsjson.Object) any {

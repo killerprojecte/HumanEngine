@@ -11,9 +11,9 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
-// RefreshGroupName replaces only a numeric discovery placeholder. It never
+// RefreshSceneName replaces only a numeric discovery placeholder. It never
 // creates a scene or lets a late action replace its current name or switches.
-func (s *Store) RefreshGroupName(ctx context.Context, reader *recovery.ReadPublisher, scene dispatch.SceneRef, lookup func(context.Context) (string, error)) (bool, error) {
+func (s *Store) RefreshSceneName(ctx context.Context, reader *recovery.ReadPublisher, scene dispatch.SceneRef, lookup func(context.Context) (string, error)) (bool, error) {
 	var missing bool
 	err := reader.Publish(ctx, func(c *sql.Conn) ([]byte, error) {
 		var raw string
@@ -77,7 +77,7 @@ func profilePlaceholder(scene dispatch.SceneRef, raw string) (*jsjson.Object, er
 	}
 	current, ok := parsed.(*jsjson.Object)
 	if !ok || value(current, "id") != scene.ID || value(current, "adapterId") != scene.AdapterID ||
-		value(current, "accountId") != scene.AccountID || value(current, "kind") != "group" ||
+		value(current, "accountId") != scene.AccountID || value(current, "kind") != scene.Kind ||
 		value(current, "platformSceneId") != scene.PlatformSceneID || value(current, "name") != scene.PlatformSceneID {
 		return nil, nil
 	}

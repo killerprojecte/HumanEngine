@@ -5,8 +5,10 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 
-from receive_load_fixture import (EVENTS, SCENE_COUNT, ReceiveWitness, SCENES, expected_id, has_image,
+from packaged_mixed_benchmark import require_fixture_success
+from receive_load_fixture import (EVENTS, SCENE_COUNT, ReceiveFailure, ReceiveWitness, SCENES, expected_id, has_image,
                                   post_event, profile_requests, synthetic_image, verify_live)
 
 
@@ -55,6 +57,21 @@ class ReceiveLoadTests(unittest.TestCase):
             buckets[SCENES[0]][0]["parts"].pop()
             with self.assertRaisesRegex(RuntimeError, "image part missing"):
                 verify_live(3000, "synthetic", True)
+
+    def test_image_http_failure_only_publishes_code_and_status(self):
+        error = HTTPError("http://loopback", 503, "not for logs", None, None)
+        with patch("receive_load_fixture.ask", side_effect=error):
+            with self.assertRaises(ReceiveFailure) as rejected:
+                post_event(0, 1720000000, "synthetic", image="aW1hZ2U=")
+        self.assertEqual((rejected.exception.code, rejected.exception.status), ("image_status", 503))
+        report = {}
+        with self.assertRaisesRegex(RuntimeError, "synthetic receive fixture failed"):
+            require_fixture_success({"fixture_failure": "image_status", "http_status": 503}, report)
+        self.assertEqual(report, {"fixture_failure": "image_status", "fixture_http_status": 503})
+        report = {}
+        with self.assertRaises(RuntimeError):
+            require_fixture_success({"fixture_failure": "not for logs", "http_status": "not for logs"}, report)
+        self.assertEqual(report, {"fixture_failure": "unknown"})
 
     def test_peer_rejects_and_counts_forbidden_work(self):
         with tempfile.TemporaryDirectory() as tmp:

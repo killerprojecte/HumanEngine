@@ -11,6 +11,7 @@ from pathlib import Path
 import struct
 import threading
 import time
+from urllib.error import HTTPError, URLError
 import zlib
 
 from migration_drill import SNOW_ACTION_PORT, SNOW_EVENT_PORT, require
@@ -25,6 +26,15 @@ INTERVAL_NS = 80_000_000
 ROUTES = ("settings", "scenes", "status", "memes?pageSize=12")
 SCENES = tuple("ob:s:" + encoded(["snowluma", "42", "group", str(200001 + i)]) for i in range(SCENE_COUNT))
 FIRST_MESSAGE = 300001
+
+
+class ReceiveFailure(RuntimeError):
+    """Only a fixed fixture code, never a request body or peer error."""
+
+    def __init__(self, code, status=None):
+        super().__init__(code)
+        self.code = code
+        self.status = status
 
 
 def has_image(i):
@@ -88,9 +98,15 @@ def post_event(i, timestamp, token, recall=False, image=None):
             body["message"].append(dict(type="image", data={"base64": image}))
     signature = hmac.new(token.encode(), json.dumps(body).encode(), hashlib.sha1).hexdigest()
     before = time.monotonic_ns()
-    status, _ = ask(SNOW_EVENT_PORT, "/onebot/events", "POST", body,
-                    {"X-Self-ID": "42", "Content-Type": "application/json", "X-Signature": "sha1=" + signature})
-    require(status == 204, "signed event not admitted")
+    try:
+        status, _ = ask(SNOW_EVENT_PORT, "/onebot/events", "POST", body,
+                        {"X-Self-ID": "42", "Content-Type": "application/json", "X-Signature": "sha1=" + signature})
+    except HTTPError as failure:
+        status = failure.code
+    except (URLError, TimeoutError) as failure:
+        raise ReceiveFailure("image_transport" if image else "text_transport") from failure
+    if status != 204:
+        raise ReceiveFailure("image_status" if image else "text_status", status)
     return time.monotonic_ns() - before
 
 
@@ -134,10 +150,16 @@ def drive(port, timestamp, admin, token, with_images):
             wait_until(start + (2 * j) * INTERVAL_NS + 10_000_000)
             path = ROUTES[j % len(ROUTES)]
             begin = time.monotonic_ns()
-            value = admin_read(port, admin, "/api/" + path)
+            try:
+                value = admin_read(port, admin, "/api/" + path)
+            except HTTPError as failure:
+                raise ReceiveFailure("admin_status", failure.code) from failure
+            except (URLError, TimeoutError) as failure:
+                raise ReceiveFailure("admin_transport") from failure
             samples[path].append(time.monotonic_ns() - begin)
             if path == ROUTES[-1]:
-                require(value["total"] == MEMES and len(value["items"]) == 12, "meme page differs")
+                if value["total"] != MEMES or len(value["items"]) != 12:
+                    raise ReceiveFailure("meme_page")
         return {path: quantiles(ns) for path, ns in samples.items()}
 
     def submit_event(i, due):
@@ -157,14 +179,19 @@ def drive(port, timestamp, admin, token, with_images):
                             for i in range(burst * BURST, (burst + 1) * BURST))
         end = start + (bursts + 25) * INTERVAL_NS
         wait_until(end)
-        require(reader.done() and all(result.done() for result in inflight), "receive traffic exceeded fixed window")
+        if not reader.done() or not all(result.done() for result in inflight):
+            raise ReceiveFailure("fixed_window")
         latencies, delays = zip(*(result.result() for result in inflight), strict=True)
         admin_http = reader.result()
-    require(lateness < INTERVAL_NS and max(delays) < 500_000_000,
-            "receive driver did not meet burst schedule")
+    if lateness >= INTERVAL_NS or max(delays) >= 500_000_000:
+        raise ReceiveFailure("burst_deadline")
     _, raw = ask(SNOW_ACTION_PORT, "/receipt")
+    try:
+        profiles = profile_requests(raw)
+    except (RuntimeError, KeyError, ValueError) as failure:
+        raise ReceiveFailure("peer_witness") from failure
     result = {"events": EVENTS, "model_requests": 0, "outbound_sends": 0,
-            "group_profile_requests": profile_requests(raw),
+            "group_profile_requests": profiles,
             "ingress_http": quantiles(latencies), "admin_http": admin_http,
             "max_burst_lateness_ms": lateness / 1e6, "max_dispatch_delay_ms": max(delays) / 1e6}
     if with_images:
@@ -190,8 +217,12 @@ def main():
         for i in range(-RECALLS, 0):
             post_event(i, args.timestamp, os.environ["HE_MIX_EVENT_TOKEN"], recall=True)
     elif args.mode == "drive":
-        print(json.dumps(drive(args.owner_port, args.timestamp, os.environ["HUMANENGINE_ADMIN_TOKEN"],
-                               os.environ["HE_MIX_EVENT_TOKEN"], args.with_images)))
+        try:
+            result = drive(args.owner_port, args.timestamp, os.environ["HUMANENGINE_ADMIN_TOKEN"],
+                           os.environ["HE_MIX_EVENT_TOKEN"], args.with_images)
+        except ReceiveFailure as failure:
+            result = {"fixture_failure": failure.code, "http_status": failure.status}
+        print(json.dumps(result))
     elif args.mode == "receipt":
         _, body = ask(SNOW_ACTION_PORT, "/receipt")
         print(body.decode())

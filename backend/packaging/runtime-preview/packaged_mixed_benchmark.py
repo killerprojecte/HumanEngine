@@ -63,6 +63,19 @@ try {
 """
 
 
+
+def require_fixture_success(result, report):
+    failure = result.get("fixture_failure")
+    if failure is None:
+        return
+    permitted = {"image_transport", "text_transport", "image_status", "text_status", "admin_status",
+                 "admin_transport", "meme_page", "fixed_window", "burst_deadline", "peer_witness"}
+    report["fixture_failure"] = failure if isinstance(failure, str) and failure in permitted else "unknown"
+    status = result.get("http_status")
+    if type(status) is int and 100 <= status <= 599:
+        report["fixture_http_status"] = status
+    raise RuntimeError("synthetic receive fixture failed")
+
 def verify_limits(cage):
     quota, period = (int(value) for value in (cage / "cpu.max").read_text().split())
     ram = int((cage / "memory.max").read_text())
@@ -171,6 +184,7 @@ class Mixed(Paired):
         started = time.monotonic_ns()
         result = json.loads(docker(*get_fixture, "drive", "--owner-port", self.port,
                                    "--timestamp", str(timestamp), *self.fixture_args, timeout=100))
+        require_fixture_success(result, self.report)
         elapsed = time.monotonic_ns() - started
         counters = cpu_delta(before, cpu_counters(cage))
         peer_counters = cpu_delta(peer_before, cpu_counters(peer, ("cpu_usage_usec",)))
@@ -365,7 +379,9 @@ def main():
                 report.update(status="failed", cleanup_failed=True)
             evidence.write(json.dumps(report, indent=2) + "\n")
     if report["status"] != "passed":
-        print("Packaged benchmark failed:", report.get("failure_phase", "cleanup"))
+        print("Packaged benchmark failed:", report.get("failure_phase", "cleanup"),
+              report.get("fixture_failure", report.get("failure_type", "unknown")),
+              report.get("fixture_http_status", ""))
         return 1
     for row in report["windows"]:
         keys = ("engine", "owner_cgroup", "admin_http")

@@ -116,10 +116,14 @@ class Mixed(Paired):
         self.create(self.seed)
         self.tool("sh", "-ec", "mkdir /drill/live /drill/authority; chown 1000:1000 /drill/live /drill/authority",
                   setup=True)
-        self.seed_offline()
+        self.phase = "seed-typescript-start"
         self.start("ts", network="container:" + self.peer, runtime_args=self.limits)
+        self.phase = "seed-typescript-runtime"
         self.seed_live(timestamp)
+        self.phase = "seed-typescript-stop"
         self.stop()
+        self.phase = "seed-typescript-offline-fixtures"
+        self.seed_offline()
         self.verify_pair()
 
     def seed_offline(self):
@@ -223,9 +227,9 @@ class Mixed(Paired):
 SEED_RECEIVE_METADATA = r"""
 const Database = require('better-sqlite3')
 const {createHash} = require('node:crypto')
-const db = new Database(process.argv[1])
+// The disposable TS owner has already enrolled the pair and created the schema.
+const db = new Database(process.argv[1], {fileMustExist:true})
 try {
-  db.exec('CREATE TABLE meme_assets(id TEXT PRIMARY KEY, value TEXT NOT NULL)')
   const insert = db.prepare('INSERT INTO meme_assets VALUES (?,?)')
   db.transaction(() => {
     for (let n = 0; n < Number(process.argv[2]); n++) {
@@ -250,7 +254,7 @@ const id = (n) => {
   return [scene, scene + ':m:' + Buffer.from(JSON.stringify(String(Number(first) + n))).toString('base64url')]
 }
 try {
-  const heads = db.prepare('SELECT scene_id, message_id FROM source_event_heads').raw().all()
+  const heads = Number(events) ? db.prepare('SELECT scene_id, message_id FROM source_event_heads').raw().all() : []
   const tombstones = db.prepare('SELECT scene_id, message_id FROM recall_tombstones').raw().all()
   const sort = rows => rows.map(x => JSON.stringify(x)).sort()
   assert.deepEqual(sort(tombstones), sort(Array.from({length:Number(recalls)}, (_, n) => id(n - Number(recalls)))))
@@ -274,6 +278,7 @@ class ReceiveOnly(Mixed):
 
     def seed_offline(self):
         self.tool("node", "-e", SEED_RECEIVE_METADATA, DATABASE, str(rx.MEMES), data="live")
+        self.verify_receive(0)
 
     def seed_live(self, timestamp):
         self.api("PUT", "/api/settings", {**self.api("GET", "/api/settings"), **self.fields})
@@ -283,6 +288,7 @@ class ReceiveOnly(Mixed):
                 "could not enable the receive fixture")
         for n in range(rx.SCENE_COUNT):
             self.api("PUT", "/api/scenes/" + rx.SCENES[n], rx.scene_config(n))
+        self.phase = "seed-typescript-recall-tombstones"
         docker("exec", self.peer, "python3", "/fixture/" + self.fixture,
                "recall", "--timestamp", str(timestamp), timeout=65)
 
@@ -303,9 +309,12 @@ class ReceiveOnly(Mixed):
         require(json.loads(raw) == {"counts": {}, "acks": {}, "errors": 0, "observations": 0},
                 "receive-only witness changed after the timing window")
 
-    def verify_durable(self):
+    def verify_receive(self, events):
         self.tool("node", "-e", VERIFY_RECEIVE, DATABASE, json.dumps(rx.SCENES),
-                  *(str(n) for n in (rx.FIRST_MESSAGE, rx.EVENTS, rx.RECALLS, rx.MEMES)), data="live")
+                  *(str(n) for n in (rx.FIRST_MESSAGE, events, rx.RECALLS, rx.MEMES)), data="live")
+
+    def verify_durable(self):
+        self.verify_receive(rx.EVENTS)
         return dict(durable_arrivals=rx.EVENTS, durable_recalls=rx.RECALLS, durable_meme_metadata=rx.MEMES,
                     durable_model_calls=0)
 

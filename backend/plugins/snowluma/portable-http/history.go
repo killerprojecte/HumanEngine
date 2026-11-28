@@ -38,7 +38,7 @@ func historyResult(in *jsjson.Object) any {
 		}
 	}
 	adapter, account := str(in, "adapter"), str(in, "account")
-	out := make([]map[string]any, 0, len(rows))
+	out := make([]*jsjson.Object, 0, len(rows))
 	for _, item := range rows {
 		raw := obj(item)
 		id, ok := snow.RawID(get(raw, "message_id"))
@@ -49,18 +49,18 @@ func historyResult(in *jsjson.Object) any {
 		if value == nil {
 			return nil
 		}
-		if value["type"] == "ignore" {
+		if str(value, "type") == "ignore" {
 			continue
 		}
 		out = append(out, value)
 	}
-	slices.SortStableFunc(out, func(a, b map[string]any) int {
-		return cmp.Compare(a["sentAt"].(string), b["sentAt"].(string))
+	slices.SortStableFunc(out, func(a, b *jsjson.Object) int {
+		return cmp.Compare(str(a, "sentAt"), str(b, "sentAt"))
 	})
 	unique := out[:0]
 	indexes := make(map[string]int, len(out))
 	for _, row := range out {
-		id := row["message"].(string)
+		id := str(row, "message")
 		if i, dupe := indexes[id]; dupe {
 			unique[i] = row
 		} else {
@@ -68,5 +68,10 @@ func historyResult(in *jsjson.Object) any {
 			unique = append(unique, row)
 		}
 	}
-	return map[string]any{"items": unique}
+	items := make([]any, len(unique))
+	for i, row := range unique {
+		items[i] = row
+	}
+	result, _ := jsjson.NewObject(jsjson.Member{Key: "items", Value: items})
+	return result
 }

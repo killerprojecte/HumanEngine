@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
 func TestPortableSnowInlineReceiveWorkingSet(t *testing.T) {
@@ -35,7 +37,7 @@ func TestPortableSnowInlineReceiveWorkingSet(t *testing.T) {
 	}
 	// The adapter normalizes the inline locator without decoding the photo.
 	inline := strings.Repeat("AbC0/a+1", 48*1024)
-	raw := []byte(`{"operation":"adapterIngress","input":{"adapter":"snowluma","account":"42","event":{"post_type":"message","message_type":"group","self_id":42,"group_id":7,"user_id":8,"message_id":9,"time":1795499999,"message":[{"type":"text","data":{"text":"caption"}},{"type":"image","data":{"base64":"` + inline + `"}}]}}}`)
+	raw := []byte(`{"operation":"adapterIngress","input":{"adapter":"snowluma","account":"42","event":{"post_type":"message","message_type":"group","self_id":42,"group_id":7,"user_id":8,"message_id":9,"time":1795499999,"sender":{"nickname":"A<&>\ud800"},"message":[{"type":"text","data":{"text":"caption"}},{"type":"image","data":{"base64":"` + inline + `"}}]}}}`)
 	var first []byte
 	for i := 0; i < 140; i++ {
 		out, err := host.Call(ctx, id, raw)
@@ -44,6 +46,14 @@ func TestPortableSnowInlineReceiveWorkingSet(t *testing.T) {
 		}
 		if i == 0 {
 			first = out
+			value, err := jsjson.ParseBytes(out)
+			if err != nil {
+				t.Fatal(err)
+			}
+			name, _ := value.(*jsjson.Object).Get("senderDisplayName")
+			if name != "A<&>\xed\xa0\x80" {
+				t.Fatal("UTF-16 display name changed")
+			}
 			var result struct {
 				Parts []struct{ Type, Text, AssetID string }
 			}

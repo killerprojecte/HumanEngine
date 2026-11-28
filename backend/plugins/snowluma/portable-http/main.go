@@ -165,7 +165,7 @@ func ingress(adapter, account string, event *jsjson.Object) any {
 	return projected
 }
 
-func normalizedMessage(adapter, account string, event *jsjson.Object, origin, messageID string) map[string]any {
+func normalizedMessage(adapter, account string, event *jsjson.Object, origin, messageID string) *jsjson.Object {
 	// Canonical message IDs, origin, and authority are owned by the host.
 	message, scene, err := snow.Normalize(adapter, account, event, origin, "", false, nil)
 	if err != nil {
@@ -196,30 +196,29 @@ func normalizedMessage(adapter, account string, event *jsjson.Object, origin, me
 		parts[i] = fallback
 	}
 	if len(parts) == 0 {
-		return map[string]any{"type": "ignore"}
+		ignored, _ := jsjson.NewObject(jsjson.Member{Key: "type", Value: "ignore"})
+		return ignored
 	}
-	wire, err := jsjson.Marshal(parts)
-	if err != nil {
-		return nil
+	peer, _ := jsjson.NewObject(
+		jsjson.Member{Key: "kind", Value: str(scene, "kind")},
+		jsjson.Member{Key: "id", Value: str(scene, "platformSceneId")},
+	)
+	out, _ := jsjson.NewObject(
+		jsjson.Member{Key: "type", Value: "message"},
+		jsjson.Member{Key: "message", Value: messageID},
+		jsjson.Member{Key: "peer", Value: peer},
+		jsjson.Member{Key: "sender", Value: str(message, "senderPlatformId")},
+		jsjson.Member{Key: "parts", Value: parts},
+		jsjson.Member{Key: "sentAt", Value: str(message, "sentAt")},
+	)
+	if name := str(scene, "displayName"); name != "" {
+		_ = out.Set("sceneDisplayName", name)
 	}
-	out := map[string]any{"type": "message", "message": messageID,
-		"peer":   map[string]string{"kind": str(scene, "kind"), "id": str(scene, "platformSceneId")},
-		"sender": str(message, "senderPlatformId"), "parts": json.RawMessage(wire), "sentAt": str(message, "sentAt")}
-	for _, name := range [...]struct{ key, value string }{
-		{"sceneDisplayName", str(scene, "displayName")},
-		{"senderDisplayName", str(message, "senderDisplayName")},
-	} {
-		if name.value != "" {
-			// Preserve the normalizer's exact UTF-16 presentation semantics.
-			encoded, err := jsjson.Marshal(name.value)
-			if err != nil {
-				return nil
-			}
-			out[name.key] = json.RawMessage(encoded)
-		}
+	if name := str(message, "senderDisplayName"); name != "" {
+		_ = out.Set("senderDisplayName", name)
 	}
 	if reply, err := platformReply(str(scene, "id"), str(message, "replyToId")); err == nil && reply != "" {
-		out["replyTo"] = reply
+		_ = out.Set("replyTo", reply)
 	}
 	return out
 }

@@ -6,7 +6,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from receive_load_fixture import ReceiveWitness, SCENES, expected_id, post_event, profile_requests
+from receive_load_fixture import (EVENTS, SCENE_COUNT, ReceiveWitness, SCENES, expected_id, has_image,
+                                  post_event, profile_requests, synthetic_image, verify_live)
 
 
 class ReceiveLoadTests(unittest.TestCase):
@@ -25,6 +26,35 @@ class ReceiveLoadTests(unittest.TestCase):
             self.assertEqual(recall["group_id"], body["group_id"])
             self.assertNotEqual(recall["message_id"], text_id)
             self.assertEqual(recall["notice_type"], "group_recall")
+
+    def test_captioned_photo_subset_is_signed_and_checked_on_existing_history(self):
+        photo = synthetic_image()
+        picks = [i for i in range(EVENTS) if has_image(i)]
+        self.assertEqual(len(picks), 100)
+        self.assertEqual(len({i % SCENE_COUNT for i in picks}), SCENE_COUNT)
+        self.assertGreater(len(photo), 100_000)
+        with patch("receive_load_fixture.ask", return_value=(204, b"")) as ask:
+            post_event(picks[0], 1720000000, "synthetic", image=photo)
+            _, _, _, wire, headers = ask.call_args.args
+            self.assertEqual([part["type"] for part in wire["message"]], ["text", "image"])
+            digest = hmac.new(b"synthetic", json.dumps(wire).encode(), hashlib.sha1).hexdigest()
+            self.assertEqual(headers["X-Signature"], "sha1=" + digest)
+
+        buckets = {scene: [] for scene in SCENES}
+        for i in range(EVENTS):
+            parts = [{"type": "text"}]
+            if has_image(i):
+                parts.append({"type": "media"})
+            buckets[SCENES[i % SCENE_COUNT]].append(dict(id=expected_id(i), status="available", parts=parts))
+        def read(_port, _admin, path):
+            if path == "/api/learning/status":
+                return dict.fromkeys(("accepted", "queued", "active", "completed", "failed", "retried"), 0)
+            return {"items": buckets[path.split("/")[3]]}
+        with patch("receive_load_fixture.admin_read", side_effect=read):
+            self.assertEqual(verify_live(3000, "synthetic", True)["retained_live_image_parts"], 100)
+            buckets[SCENES[0]][0]["parts"].pop()
+            with self.assertRaisesRegex(RuntimeError, "image part missing"):
+                verify_live(3000, "synthetic", True)
 
     def test_peer_rejects_and_counts_forbidden_work(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -48,4 +78,5 @@ class ReceiveLoadTests(unittest.TestCase):
                        "wasm-web-read-request-package", "wasm-web-search-structured-package"):
             self.assertIn(target, workflow)
         self.assertIn("--receive-only", workflow)
+        self.assertIn("--receive-only --receive-images", workflow)
         self.assertNotRegex(workflow, r"docker (push|login)|push: true|permissions: write")

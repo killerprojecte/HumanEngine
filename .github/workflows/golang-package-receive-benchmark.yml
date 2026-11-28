@@ -14,7 +14,7 @@ on:
       - 'backend/internal/memeservice/http_publication.go'
       - 'backend/internal/app/application.go'
       - 'backend/internal/app/external_adapter.go'
-      - 'backend/internal/externaladapter/onebot_group_names.go'
+      - 'backend/internal/externaladapter/onebot_profiles.go'
       - 'backend/internal/scenestore/profile.go'
       - 'backend/plugins/snowluma/portable-http/**'
       - 'backend/packaging/runtime-preview/packaged_mixed_benchmark.py'
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 65
     env:
-      GO_RECEIVE_BASELINE: b54df25e11f3f3f576740aa4393740839a9427af
+      GO_RECEIVE_BASELINE: cec2ed75af06c0a207be6e29bad7bb5ce1355274
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -92,6 +92,13 @@ jobs:
             --go-baseline-revision "$GO_RECEIVE_BASELINE" \
             --receive-only --external-snow-package "$RUNNER_TEMP/operator-plugins" \
             --evidence "$RUNNER_TEMP/humanengine-paired-go-receive.json"
+      - name: Measure captioned image intake without model or send work
+        run: |
+          python3 backend/packaging/runtime-preview/packaged_mixed_benchmark.py \
+            --ts-image humanengine-receive-ts:local --ts-tools-image humanengine-receive-tools:local \
+            --go-image humanengine-receive-go:local --go-revision "$GITHUB_SHA" \
+            --receive-only --receive-images --external-snow-package "$RUNNER_TEMP/operator-plugins" \
+            --evidence "$RUNNER_TEMP/humanengine-paired-image-receive.json"
       - name: Preserve aggregate benchmark evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,4 +107,5 @@ jobs:
           path: |
             ${{ runner.temp }}/humanengine-paired-receive.json
             ${{ runner.temp }}/humanengine-paired-go-receive.json
+            ${{ runner.temp }}/humanengine-paired-image-receive.json
           if-no-files-found: ignore

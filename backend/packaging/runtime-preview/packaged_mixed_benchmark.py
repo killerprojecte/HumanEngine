@@ -94,6 +94,7 @@ class Mixed(Paired):
         self.owner_cpu, self.peer_cpu = (str(core) for core in allowed[:2])
         self.limits += ("--memory-swap", f"{MEMORY_MIB}m", "--cpuset-cpus", self.owner_cpu)
         self.env.update(HE_MIX_SNOW_TOKEN=self.snow_token, HE_MIX_EVENT_TOKEN=self.snow_event_token)
+        self.fixture_args = ("--with-images",) if args.receive_images else ()
         self.package = args.external_snow_package.resolve(strict=True)
         self.version = json.loads((self.package / SNOW_HTTP_MANIFEST).read_text())["version"]
         self.entries = (SNOW_HTTP_MANIFEST,)
@@ -169,7 +170,7 @@ class Mixed(Paired):
         peer_before = cpu_counters(peer, ("cpu_usage_usec",))
         started = time.monotonic_ns()
         result = json.loads(docker(*get_fixture, "drive", "--owner-port", self.port,
-                                   "--timestamp", str(timestamp), timeout=100))
+                                   "--timestamp", str(timestamp), *self.fixture_args, timeout=100))
         elapsed = time.monotonic_ns() - started
         counters = cpu_delta(before, cpu_counters(cage))
         peer_counters = cpu_delta(peer_before, cpu_counters(peer, ("cpu_usage_usec",)))
@@ -177,7 +178,7 @@ class Mixed(Paired):
                   "memory_peak_boot_inclusive_bytes": int((cage / "memory.peak").read_text()),
                   "memory_swap_current_bytes": int((cage / "memory.swap.current").read_text())}
         self.phase = f"verify-live-{label}"
-        checked = json.loads(docker(*get_fixture, "verify", "--owner-port", self.port, timeout=45))
+        checked = json.loads(docker(*get_fixture, "verify", "--owner-port", self.port, *self.fixture_args, timeout=45))
         self.phase = f"verify-extra-{label}"
         self.verify_extra()
         self.phase = f"drain-{label}"
@@ -306,7 +307,7 @@ class ReceiveOnly(Mixed):
 
     def workload(self):
         return dict(scenes=rx.SCENE_COUNT, recall_tombstones=rx.RECALLS, meme_metadata=rx.MEMES,
-                    text_arrivals=rx.EVENTS, events_per_burst=rx.BURST,
+                    text_arrivals=rx.EVENTS, captioned_images=sum(map(rx.has_image, range(rx.EVENTS))) if self.fixture_args else 0, events_per_burst=rx.BURST,
                     burst_interval_ms=rx.INTERVAL_NS / 1e6, admin_reads_per_route=50, order=self.order)
 
     def verify_extra(self):
@@ -330,12 +331,15 @@ def main():
     for name in ("external-snow-package", "evidence"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--receive-only", action="store_true")
+    parser.add_argument("--receive-images", action="store_true")
     parser.add_argument("--go-baseline-image")
     parser.add_argument("--go-baseline-revision")
     parser.set_defaults(cpus=1)
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}", args.go_revision):
         parser.error("--go-revision must be a full SHA")
+    if args.receive_images and (not args.receive_only or args.go_baseline_image):
+        parser.error("--receive-images needs the receive-only TypeScript/Go pair")
     if args.go_baseline_image is not None or args.go_baseline_revision is not None:
         if (not args.receive_only or not args.go_baseline_image or
                 not re.fullmatch(r"[0-9a-f]{40}", args.go_baseline_revision or "") or
@@ -345,6 +349,8 @@ def main():
               "go_revision": args.go_revision, "status": "failed", "windows": []}
     if args.go_baseline_image:
         report.update(kind="paired_go_receive_only", go_baseline_revision=args.go_baseline_revision)
+    if args.receive_images:
+        report["kind"] = "paired_packaged_captioned_image_receive"
     trial = None
     with args.evidence.open("x") as evidence:
         try:
@@ -365,6 +371,8 @@ def main():
         keys = ("engine", "owner_cgroup", "admin_http")
         keys += (("model_requests", "outbound_sends", "group_profile_requests", "durable_arrivals", "ingress_http") if args.receive_only
                  else ("physical_ack", "durable_completed_model_calls"))
+        if args.receive_images:
+            keys += ("image_ingress_http", "text_ingress_http", "retained_live_image_parts")
         print(json.dumps({key: row[key] for key in keys}))
     return 0
 

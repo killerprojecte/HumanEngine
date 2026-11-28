@@ -338,19 +338,21 @@ class Drill:
                 and self.snow_token not in serialized and self.snow_event_token not in serialized,
                 "SnowLuma disabled configuration did not preserve both write-only credentials")
 
-    def seed_snowluma_credential(self):
+    def configure_snowluma_http(self, **credentials):
         row = next((row for row in self.api("GET", "/api/plugins")
                     if row.get("id") == "snowluma"), {})
         require(row.get("enabled") is False, "SnowLuma must be disabled before fixture setup")
         self.api("PUT", "/api/plugins/snowluma/config", {
             "transport": "http", "url": f"http://127.0.0.1:{SNOW_ACTION_PORT}",
             "accountId": "42", "eventHost": "127.0.0.1", "eventPort": SNOW_EVENT_PORT,
-            "token": self.snow_token, "eventToken": self.snow_event_token,
+            **credentials,
         })
 
-    def prove_snowluma_login(self, seed_media=False):
-        self.verify_snowluma_disabled()
-        options = {"sentinel": self.snow_token, "actionPort": SNOW_ACTION_PORT}
+    def seed_snowluma_credential(self):
+        self.configure_snowluma_http(token=self.snow_token, eventToken=self.snow_event_token)
+
+    def exchange_snowluma_login(self, token, seed_media=False):
+        options = {"sentinel": token, "actionPort": SNOW_ACTION_PORT}
         if seed_media:
             options["media"] = {"pngs": MEDIA_PNGS, "eventToken": self.snow_event_token,
                                 "eventPort": SNOW_EVENT_PORT}
@@ -358,12 +360,17 @@ class Drill:
         media_ids = outcome.pop("mediaIds", []) if seed_media else []
         require(outcome == {"enableStatus": 200, "disableStatus": 200,
                             "enabledOK": True, "disabledOK": True, "received": 1, "matched": 1},
-                "SnowLuma login did not use its stored credential exactly once")
-        self.verify_snowluma_disabled()
+                "SnowLuma login did not use the expected credential exactly once")
         if seed_media:
             require(isinstance(media_ids, list) and len(media_ids) == 2
                     and all(isinstance(value, str) and re.fullmatch(r"[a-f0-9]{64}", value) for value in media_ids)
                     and media_ids[0] != media_ids[1], "synthetic imports did not return two distinct asset IDs")
+        return media_ids
+
+    def prove_snowluma_login(self, seed_media=False):
+        self.verify_snowluma_disabled()
+        media_ids = self.exchange_snowluma_login(self.snow_token, seed_media)
+        self.verify_snowluma_disabled()
         return media_ids
 
     def verify_media(self, media_ids, deleted=False):

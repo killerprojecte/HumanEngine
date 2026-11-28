@@ -176,7 +176,7 @@ class MigrationDrillTests(unittest.TestCase):
             self.assertNotIn(drill.snow_event_token, json.dumps(probe.call_args.args[1]))
             for bad in (dict(good, received=2), dict(good, matched=0), dict(good, disabledOK=False)):
                 probe.return_value = bad
-                with self.assertRaisesRegex(RuntimeError, "stored credential exactly once"):
+                with self.assertRaisesRegex(RuntimeError, "expected credential exactly once"):
                     drill.prove_snowluma_login()
 
     def test_media_import_receipt_and_original_proof_are_exact(self):

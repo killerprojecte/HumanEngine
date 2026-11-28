@@ -14,6 +14,8 @@ from operator_packages import PACKAGES, load_packages
 
 HERE = Path(__file__).resolve().parent
 TARGET = "/app/data"
+LEGACY_ACTION = "HE_FIXTURE_SNOW_LEGACY_ACTION"
+LEGACY_EVENT = "HE_FIXTURE_SNOW_LEGACY_EVENT"
 
 
 def fixture_service(image, data, plugins, port):
@@ -29,6 +31,8 @@ def fixture_service(image, data, plugins, port):
                 "HUMANENGINE_LOG_DIR": "/app/data/logs",
                 "HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY": AUTHORITY,
                 "HUMANENGINE_PLUGINS": "",
+                LEGACY_ACTION: None,
+                LEGACY_EVENT: None,
             },
             "volumes": [
                 {"type": "bind", "source": str(data), "target": TARGET, "bind": {"create_host_path": False}},
@@ -61,6 +65,9 @@ class BindDrill(Drill):
         self.phase = f"{self.leg}-compose-config"
         resolved = json.loads(self.compose("config", "--format", "json"))["services"]["humanengine"]
         volumes = {v["target"]: v for v in resolved["volumes"]}
+        present = tuple(bool(resolved["environment"].get(key)) for key in (LEGACY_ACTION, LEGACY_EVENT))
+        legacy = self.leg == "ts-seed"
+        require(present == (legacy, legacy), "unexpected legacy fixture environment")
         require(resolved["image"] == image and resolved["read_only"] is True and
                 volumes[TARGET]["type"] == "bind" and volumes[TARGET]["source"] == str(self.data) and
                 volumes[AUTHORITY]["type"] == "volume" and
@@ -117,14 +124,24 @@ class BindDrill(Drill):
 
     def rehearse(self):
         self.leg = "ts-seed"
+        self.env[LEGACY_ACTION] = "legacy-" + self.snow_token
+        self.env[LEGACY_EVENT] = "legacy-" + self.snow_event_token
         self.start("ts")
         marker = self.seed_unicode_memory()
         initial = self.setting()
         self.seed_credential()
         self.prove_credential()
+        self.phase = "ts-legacy-snowluma"
+        self.configure_snowluma_http(credentialEnv=LEGACY_ACTION, eventCredentialEnv=LEGACY_EVENT)
+        row = next(p for p in self.api("GET", "/api/plugins") if p["id"] == "snowluma")
+        require(row["configuredSecrets"] == {"token": False, "eventToken": False},
+                "legacy SnowLuma already has database credentials")
+        self.exchange_snowluma_login(self.env[LEGACY_ACTION])
         self.seed_snowluma_credential()
-        self.verify_snowluma_disabled()
+        self.prove_snowluma_login()
+        self.record("ts-legacy-snowluma-env-to-database-and-reconnect")
         self.stop()
+        del self.env[LEGACY_ACTION], self.env[LEGACY_EVENT]
         self.leg = "go-bare"
         self.start("go", installed=False)
         require(self.api("GET", "/api/plugins") == [], "bare candidate catalog not empty")
@@ -149,7 +166,7 @@ class BindDrill(Drill):
         self.start("ts")
         self.verify_unicode_memory(marker, self.leg)
         self.prove_credential()
-        self.verify_snowluma_disabled()
+        self.prove_snowluma_login()
         require(self.setting() is not initial, "TypeScript rollback did not read the latest Go state")
         self.stop()
         self.record("bind-compose-ts-go-ts-no-parallel-main-sqlite")
